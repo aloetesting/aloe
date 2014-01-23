@@ -2,15 +2,17 @@
 A Gherkin parser written using pyparsing
 """
 
-from pyparsing import (Keyword,
+from pyparsing import (CharsNotIn,
+                       Group,
+                       Keyword,
                        lineStart,
                        lineEnd,
+                       OneOrMore,
                        Optional,
                        printables,
                        restOfLine,
                        stringEnd,
                        Suppress,
-                       unicodeString,
                        White,
                        Word,
                        ZeroOrMore)
@@ -36,7 +38,19 @@ class Statement(object):
     """
 
     def __init__(self, tokens):
-        self.statement = ' '.join(tokens)
+
+        # statements are made up of a statement sentence + optional data
+        # the optional data can either be a table or a multiline string
+        try:
+            keyword, remainder, data = tokens
+        except ValueError:
+            keyword, remainder = tokens
+            data = None
+
+        self.statement = keyword + remainder
+
+        if hasattr(data, 'table'):
+            self.table = data
 
     def __repr__(self):
         return 'Statement<%s>' % self.statement
@@ -72,11 +86,13 @@ class Block(object):
         return self
 
 
-class TaggedBlock(object):
+class TaggedBlock(Block):
     """
     Tagged blocks contain type-specific child content as well as tags
     """
     def __init__(self, tokens):
+        super(TaggedBlock, self).__init__(tokens)
+
         self.tags = tokens[:-1]
         self.name = tokens[-1]
 
@@ -109,11 +125,19 @@ TAG = Suppress('@') + Word(printables) + EOL
 TAG.setParseAction(Tag)
 
 """
+A table
+"""
+TABLE_ROW = Suppress('|') + OneOrMore(CharsNotIn('|\n') + Suppress('|')) + EOL
+TABLE_ROW.setParseAction(lambda tokens: [v.strip() for v in tokens])
+TABLE = Group(OneOrMore(Group(TABLE_ROW)))('table')
+
+"""
 Statement
 """
 STATEMENT = \
     (Keyword('Given') | Keyword('When') | Keyword('Then') | Keyword('And')) + \
-    restOfLine
+    restOfLine + \
+    Optional(TABLE)
 STATEMENT.setParseAction(Statement)
 
 """
@@ -171,7 +195,11 @@ Feature: an example feature
     Background:
         Given I have badgers in the database
         And I am a penguin
+        And this step has a table
+            | badger           | stoat |
+            | smells like teen | stoat |
 ''')
     print
     for token in tokens:
         print token
+        print token.statements
