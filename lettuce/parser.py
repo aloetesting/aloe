@@ -7,6 +7,7 @@ from pyparsing import (Keyword,
                        lineEnd,
                        printables,
                        restOfLine,
+                       stringEnd,
                        Suppress,
                        unicodeString,
                        White,
@@ -35,11 +36,16 @@ class Block(object):
     Blocks contain type-specific child content as well as tags
     """
     def __init__(self, tokens):
-        self.name = tokens[1]
+        self.tags = tokens[:-1]
+        self.name = tokens[-1]
+
+        assert all(isinstance(tag, Tag) for tag in self.tags)
 
     def __repr__(self):
-        return '{klass}<{tag}>'.format(klass=self.__class__.__name__,
-                                       tag=self.name)
+        return '{klass}<{tag}>'.format(
+            klass=self.__class__.__name__,
+            tag=','.join([self.name] +
+                         [' @%s' % tag.tag for tag in self.tags]))
 
 
 class Feature(Block):
@@ -56,8 +62,8 @@ TAG.setParseAction(Tag)
 Feature: description
 """
 FEATURE_DEFN = lineStart + \
-    Keyword('Feature') + Suppress(':') + \
-    Suppress(White()) + \
+    ZeroOrMore(TAG) + \
+    Suppress(Keyword('Feature') + ':' + White()) + \
     restOfLine
 FEATURE_DEFN.setParseAction(Feature)
 
@@ -65,13 +71,16 @@ FEATURE_DEFN.setParseAction(Feature)
 Complete feature file definition
 """
 FEATURE = \
-    ZeroOrMore(TAG) + \
-    FEATURE_DEFN
+    FEATURE_DEFN + \
+    stringEnd
 
 
 if __name__ == '__main__':
     print FEATURE.parseString('''
 Feature: an example feature
+
+    A short definition
+    That is really not very interesting
 ''')
 
     tokens = FEATURE.parseString('''
@@ -79,5 +88,6 @@ Feature: an example feature
 @stoat
 Feature: an example feature
 ''')
+    print
     for token in tokens:
-        print token, type(token)
+        print token
