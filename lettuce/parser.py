@@ -5,13 +5,13 @@ A Gherkin parser written using pyparsing
 from pyparsing import (CharsNotIn,
                        Group,
                        Keyword,
-                       lineStart,
                        lineEnd,
                        OneOrMore,
                        Optional,
                        printables,
                        QuotedString,
                        restOfLine,
+                       SkipTo,
                        stringEnd,
                        Suppress,
                        White,
@@ -145,6 +145,9 @@ TABLE_ROW = Suppress('|') + OneOrMore(CharsNotIn('|\n') + Suppress('|')) + EOL
 TABLE_ROW.setParseAction(lambda tokens: [v.strip() for v in tokens])
 TABLE = Group(OneOrMore(Group(TABLE_ROW)))('table')
 
+"""
+Multiline string
+"""
 MULTILINE = QuotedString('"""', multiline=True)
 
 """
@@ -177,13 +180,13 @@ FEATURE_DEFN = \
     restOfLine
 FEATURE_DEFN.setParseAction(Feature)
 
-DESCRIPTION = restOfLine
 
 """
 Complete feature file definition
 """
 FEATURE = \
     FEATURE_DEFN + \
+    Suppress(SkipTo(BACKGROUND)) + \
     Optional(BACKGROUND) + \
     stringEnd
 
