@@ -17,10 +17,7 @@
 from sure import expect
 from sure.old import that
 from lettuce import step
-from lettuce.core import Scenario
-from lettuce.core import Feature
-from lettuce.core import Background
-from lettuce.core import HashList
+from lettuce.parser import Feature
 from lettuce.exceptions import LettuceSyntaxError
 from nose.tools import assert_equals
 

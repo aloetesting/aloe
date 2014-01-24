@@ -139,7 +139,19 @@ class Scenario(TaggedBlock):
 
 
 class Feature(TaggedBlock):
-    pass
+    @classmethod
+    def add_blocks(cls, tokens):
+        """
+        Add the background and other blocks to the feature
+        """
+
+        token = tokens[0]
+
+        self = token.node
+        self.background = token.background
+        self.scenarios = token.scenarios
+
+        return self
 
 
 """
@@ -190,11 +202,12 @@ BACKGROUND.setParseAction(Background.add_statements)
 """
 Scenario: description
 """
-SCENARIO_DEFN = \
-    Group(ZeroOrMore(TAG))('tags') + \
-    Suppress((Keyword('Scenario') | Keyword('Scenario Outline')) +
-             ':' + White()) + \
+SCENARIO_DEFN = Group(
+    Group(ZeroOrMore(TAG))('tags') +
+    Suppress((Keyword('Scenario') + Optional(Keyword('Outline'))) +
+             ':' + White()) +
     restOfLine('name')
+)
 SCENARIO_DEFN.setParseAction(Scenario)
 
 SCENARIO = Group(
@@ -207,28 +220,41 @@ SCENARIO.setParseAction(Scenario.add_statements)
 """
 Feature: description
 """
-FEATURE_DEFN = \
-    Group(ZeroOrMore(TAG))('tags') + \
-    Suppress(Keyword('Feature') + ':' + White()) + \
+FEATURE_DEFN = Group(
+    Group(ZeroOrMore(TAG))('tags') +
+    Suppress(Keyword('Feature') + ':' + White()) +
     restOfLine('name')
+)
 FEATURE_DEFN.setParseAction(Feature)
 
 
 """
 Complete feature file definition
 """
-FEATURE = \
-    FEATURE_DEFN + \
-    Suppress(SkipTo(BACKGROUND)) + \
-    Optional(BACKGROUND) + \
-    OneOrMore(SCENARIO) + \
-    stringEnd
+FEATURE = Group(
+    FEATURE_DEFN('node') +
+    Group(SkipTo(BACKGROUND))('description') +
+    Optional(BACKGROUND('background')) +
+    Group(OneOrMore(SCENARIO))('scenarios') +
+    stringEnd)
+FEATURE.setParseAction(Feature.add_blocks)
+
+
+def from_string(cls, string):
+    """
+    Parse a Feature object from a string
+    """
+
+    tokens = FEATURE.parseString(string)
+    return tokens[0]
+
+Feature.from_string = classmethod(from_string)
 
 
 if __name__ == '__main__':
     from pyparsing import ParseException
     try:
-        print FEATURE.parseString('''
+        feature = Feature.from_string('''
 Feature: an example feature
 
     A short definition
@@ -241,12 +267,22 @@ Feature: an example feature
         Given something
         When I do something
         Then I can observe it
+
+    Scenario Outline: this is a scenario outline
+        Given step
+        Then stop
+
+        Examples:
+            | farm   | town  |
+            | possum | hippo |
 ''')
     except ParseException as e:
         print e
 
+    assert feature.name == 'an example feature'
+
     try:
-        tokens = FEATURE.parseString('''
+        feature = Feature.from_string('''
 @badger
 @stoat
 Feature: an example feature
@@ -273,10 +309,19 @@ Feature: an example feature
             | badger | stoat |
             | 1      | 2     |
 ''')
-        print
-        for token in tokens:
-            print token
-            print token.statements
+
+        assert isinstance(feature, Feature)
+        assert feature.name == 'an example feature'
+
+        assert len(feature.background.statements) == 4
+
+        scenarios = feature.scenarios
+        assert len(scenarios) == 3
+        assert [scenario.name for scenario in scenarios] == \
+               ['empty', 'not empty', 'has examples']
+        assert [len(scenario.statements) for scenario in scenarios] == \
+               [0, 1, 0]
+
     except ParseException as e:
         print e.line
         print e
