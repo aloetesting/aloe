@@ -537,63 +537,63 @@ def test_scenarios_parsed_by_feature_has_feature():
     for scenario in feature.scenarios:
         assert_equals(scenario.feature, feature)
 
-def test_feature_max_length_on_scenario():
-    "The max length of a feature considering when the scenario is longer than " \
-    "the remaining things"
-
-    feature = Feature.from_string(FEATURE1)
-    assert_equals(feature.max_length, 76)
-
-def test_feature_max_length_on_feature_description():
-    "The max length of a feature considering when one of the description lines " \
-    "of the feature is longer than the remaining things"
-
-    feature = Feature.from_string(FEATURE2)
-    assert_equals(feature.max_length, 47)
-
-def test_feature_max_length_on_feature_name():
-    "The max length of a feature considering when the name of the feature " \
-    "is longer than the remaining things"
-
-    feature = Feature.from_string(FEATURE3)
-    assert_equals(feature.max_length, 78)
-
-def test_feature_max_length_on_step_sentence():
-    "The max length of a feature considering when the some of the step sentences " \
-    "is longer than the remaining things"
-
-    feature = Feature.from_string(FEATURE4)
-    assert_equals(feature.max_length, 55)
-
-def test_feature_max_length_on_step_with_table():
-    "The max length of a feature considering when the table of some of the steps " \
-    "is longer than the remaining things"
-
-    feature = Feature.from_string(FEATURE5)
-    assert_equals(feature.max_length, 83)
-
-def test_feature_max_length_on_step_with_table_keys():
-    "The max length of a feature considering when the table keys of some of the " \
-    "steps are longer than the remaining things"
-
-    feature = Feature.from_string(FEATURE7)
-    assert_equals(feature.max_length, 74)
-
-def test_feature_max_length_on_scenario_outline():
-    "The max length of a feature considering when the table of some of the  " \
-    "scenario oulines is longer than the remaining things"
-
-    feature = Feature.from_string(FEATURE6)
-    assert_equals(feature.max_length, 79)
-
-def test_feature_max_length_on_scenario_outline_keys():
-    "The max length of a feature considering when the table keys of the  " \
-    "scenario oulines are longer than the remaining things"
-
-    feature1 = Feature.from_string(FEATURE8)
-    feature2 = Feature.from_string(FEATURE9)
-    assert_equals(feature1.max_length, 68)
-    assert_equals(feature2.max_length, 68)
+# def test_feature_max_length_on_scenario():
+#     "The max length of a feature considering when the scenario is longer than " \
+#     "the remaining things"
+#
+#     feature = Feature.from_string(FEATURE1)
+#     assert_equals(feature.max_length, 76)
+#
+# def test_feature_max_length_on_feature_description():
+#     "The max length of a feature considering when one of the description lines " \
+#     "of the feature is longer than the remaining things"
+#
+#     feature = Feature.from_string(FEATURE2)
+#     assert_equals(feature.max_length, 47)
+#
+# def test_feature_max_length_on_feature_name():
+#     "The max length of a feature considering when the name of the feature " \
+#     "is longer than the remaining things"
+#
+#     feature = Feature.from_string(FEATURE3)
+#     assert_equals(feature.max_length, 78)
+#
+# def test_feature_max_length_on_step_sentence():
+#     "The max length of a feature considering when the some of the step sentences " \
+#     "is longer than the remaining things"
+#
+#     feature = Feature.from_string(FEATURE4)
+#     assert_equals(feature.max_length, 55)
+#
+# def test_feature_max_length_on_step_with_table():
+#     "The max length of a feature considering when the table of some of the steps " \
+#     "is longer than the remaining things"
+#
+#     feature = Feature.from_string(FEATURE5)
+#     assert_equals(feature.max_length, 83)
+#
+# def test_feature_max_length_on_step_with_table_keys():
+#     "The max length of a feature considering when the table keys of some of the " \
+#     "steps are longer than the remaining things"
+#
+#     feature = Feature.from_string(FEATURE7)
+#     assert_equals(feature.max_length, 74)
+#
+# def test_feature_max_length_on_scenario_outline():
+#     "The max length of a feature considering when the table of some of the  " \
+#     "scenario oulines is longer than the remaining things"
+#
+#     feature = Feature.from_string(FEATURE6)
+#     assert_equals(feature.max_length, 79)
+#
+# def test_feature_max_length_on_scenario_outline_keys():
+#     "The max length of a feature considering when the table keys of the  " \
+#     "scenario oulines are longer than the remaining things"
+#
+#     feature1 = Feature.from_string(FEATURE8)
+#     feature2 = Feature.from_string(FEATURE9)
+#     assert_equals(feature1.max_length, 68)
+#     assert_equals(feature2.max_length, 68)
 
 
 def test_description_on_long_named_feature():
@@ -621,7 +621,7 @@ def test_comments():
     "It should ignore lines that start with #, despite white spaces"
     feature = Feature.from_string(FEATURE10)
 
-    assert_equals(feature.max_length, 55)
+    # assert_equals(feature.max_length, 55)
 
 
 def test_single_scenario_single_scenario():
@@ -681,20 +681,20 @@ def test_single_scenario_many_scenarios():
     last_scenario = feature.scenarios[3]
     assert that(last_scenario.tags).equals([])
 
-    result = feature.run()
-    print
-    print
-    for sr in result.scenario_results:
-        for failed in sr.steps_failed:
-            print "+" * 10
-            print
-            print failed.why.cause
-            print
-            print "+" * 10
+    # result = feature.run()
+    # print
+    # print
+    # for sr in result.scenario_results:
+    #     for failed in sr.steps_failed:
+    #         print "+" * 10
+    #         print
+    #         print failed.why.cause
+    #         print
+    #         print "+" * 10
 
-    print
-    print
-    assert result.passed
+    # print
+    # print
+    # assert result.passed
 
 
 def test_scenarios_with_extra_whitespace():
