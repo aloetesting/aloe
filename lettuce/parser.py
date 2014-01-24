@@ -108,8 +108,10 @@ class TaggedBlock(Block):
     def __init__(self, tokens):
         super(TaggedBlock, self).__init__(tokens)
 
-        self.tags = tokens[:-1]
-        self.name = tokens[-1]
+        token = tokens[0]
+
+        self.tags = token.tags
+        self.name = token.name
 
         assert all(isinstance(tag, Tag) for tag in self.tags)
 
@@ -189,10 +191,10 @@ BACKGROUND.setParseAction(Background.add_statements)
 Scenario: description
 """
 SCENARIO_DEFN = \
-    ZeroOrMore(TAG) + \
+    Group(ZeroOrMore(TAG))('tags') + \
     Suppress((Keyword('Scenario') | Keyword('Scenario Outline')) +
              ':' + White()) + \
-    restOfLine
+    restOfLine('name')
 SCENARIO_DEFN.setParseAction(Scenario)
 
 SCENARIO = Group(
@@ -206,9 +208,9 @@ SCENARIO.setParseAction(Scenario.add_statements)
 Feature: description
 """
 FEATURE_DEFN = \
-    ZeroOrMore(TAG) + \
+    Group(ZeroOrMore(TAG))('tags') + \
     Suppress(Keyword('Feature') + ':' + White()) + \
-    restOfLine
+    restOfLine('name')
 FEATURE_DEFN.setParseAction(Feature)
 
 
