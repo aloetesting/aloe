@@ -10,6 +10,7 @@ from pyparsing import (CharsNotIn,
                        Optional,
                        ParseException,
                        printables,
+                       pythonStyleComment,
                        QuotedString,
                        restOfLine,
                        SkipTo,
@@ -269,6 +270,7 @@ FEATURE = Group(
     Optional(BACKGROUND('background')) +
     Group(OneOrMore(SCENARIO))('scenarios') +
     stringEnd)
+FEATURE.ignore(pythonStyleComment)
 FEATURE.setParseAction(Feature.add_blocks)
 
 
