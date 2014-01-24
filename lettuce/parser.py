@@ -8,6 +8,7 @@ from pyparsing import (CharsNotIn,
                        lineEnd,
                        OneOrMore,
                        Optional,
+                       ParseException,
                        printables,
                        QuotedString,
                        restOfLine,
@@ -53,7 +54,7 @@ class Statement(object):
         self.multiline = None
 
         if hasattr(data, 'table'):
-            self.table = data
+            self.table = map(list, data)
         else:
             self.multiline = data
 
@@ -69,6 +70,22 @@ class Statement(object):
 
         return r
 
+    @property
+    def keys(self):
+        """
+        Return the first row of a table if this statement contains one
+        """
+        return tuple(self.table[0])
+
+    @property
+    def hashes(self):
+        keys = self.keys
+
+        return [
+            dict(zip(keys, row))
+            for row in self.table[1:]
+        ]
+
 
 class Block(object):
     """
@@ -80,10 +97,6 @@ class Block(object):
     def __init__(self, tokens):
         self.statements = []
 
-    def __repr__(self):
-        return '{klass}<{n} statements>'.format(klass=self.__class__.__name__,
-                                                n=len(self.statements))
-
     @classmethod
     def add_statements(cls, tokens):
         """
@@ -93,10 +106,10 @@ class Block(object):
         token = tokens[0]
 
         self = token.node
-        self.statements = token.statements
+        self.steps = list(token.statements)
 
         assert all(isinstance(statement, Statement)
-                   for statement in self.statements)
+                   for statement in self.steps)
 
         return self
 
@@ -116,10 +129,9 @@ class TaggedBlock(Block):
         assert all(isinstance(tag, Tag) for tag in self.tags)
 
     def __repr__(self):
-        return '{klass}<{tag}>'.format(
+        return '<{klass}: "{name}">'.format(
             klass=self.__class__.__name__,
-            tag=','.join([self.name] +
-                         [' @%s' % tag.tag for tag in self.tags]))
+            name=self.name)
 
 
 class Background(Block):
@@ -149,7 +161,7 @@ class Feature(TaggedBlock):
 
         self = token.node
         self.background = token.background
-        self.scenarios = token.scenarios
+        self.scenarios = list(token.scenarios)
 
         return self
 
@@ -233,7 +245,7 @@ Complete feature file definition
 """
 FEATURE = Group(
     FEATURE_DEFN('node') +
-    Group(SkipTo(BACKGROUND))('description') +
+    Group(SkipTo(BACKGROUND | SCENARIO))('description') +
     Optional(BACKGROUND('background')) +
     Group(OneOrMore(SCENARIO))('scenarios') +
     stringEnd)
@@ -245,83 +257,16 @@ def from_string(cls, string):
     Parse a Feature object from a string
     """
 
-    tokens = FEATURE.parseString(string)
-    return tokens[0]
+    try:
+        tokens = FEATURE.parseString(string)
+        return tokens[0]
+    except ParseException as e:
+        print "Syntax Error, line", e.lineno
+        print e.line
+        print " " * (e.column - 1) + "^"
+
+        print e.parserElement
+        print e.pstr
+        raise
 
 Feature.from_string = classmethod(from_string)
-
-
-if __name__ == '__main__':
-    from pyparsing import ParseException
-    try:
-        feature = Feature.from_string('''
-Feature: an example feature
-
-    A short definition
-    That is really not very interesting
-
-    Background:
-        Given something
-
-    Scenario: this is a scenario
-        Given something
-        When I do something
-        Then I can observe it
-
-    Scenario Outline: this is a scenario outline
-        Given step
-        Then stop
-
-        Examples:
-            | farm   | town  |
-            | possum | hippo |
-''')
-    except ParseException as e:
-        print e
-
-    assert feature.name == 'an example feature'
-
-    try:
-        feature = Feature.from_string('''
-@badger
-@stoat
-Feature: an example feature
-
-    Background:
-        Given I have badgers in the database
-        And I am a penguin
-        And this step has a table
-            | badger           | stoat |
-            | smells like teen | stoat |
-        And this step has a multiline string
-        """
-        Something in here
-        """
-
-    @tagged
-    Scenario: empty
-
-    Scenario: not empty
-        Then success
-
-    Scenario: has examples
-        Examples:
-            | badger | stoat |
-            | 1      | 2     |
-''')
-
-        assert isinstance(feature, Feature)
-        assert feature.name == 'an example feature'
-
-        assert len(feature.background.statements) == 4
-
-        scenarios = feature.scenarios
-        assert len(scenarios) == 3
-        assert [scenario.name for scenario in scenarios] == \
-               ['empty', 'not empty', 'has examples']
-        assert [len(scenario.statements) for scenario in scenarios] == \
-               [0, 1, 0]
-
-    except ParseException as e:
-        print e.line
-        print e

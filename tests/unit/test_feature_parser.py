@@ -17,7 +17,7 @@
 from sure import expect
 from sure.old import that
 from lettuce import step
-from lettuce.parser import Feature
+from lettuce.parser import Feature, Scenario
 from lettuce.exceptions import LettuceSyntaxError
 from nose.tools import assert_equals
 
