@@ -90,12 +90,13 @@ class Block(object):
         Consume the statements to add to this block
         """
 
-        self = tokens.pop(0)
+        token = tokens[0]
 
-        assert isinstance(self, cls)
-        assert all(isinstance(token, Statement) for token in tokens)
+        self = token.node
+        self.statements = token.statements
 
-        self.statements = tokens
+        assert all(isinstance(statement, Statement)
+                   for statement in self.statements)
 
         return self
 
@@ -124,7 +125,15 @@ class Background(Block):
 
 
 class Scenario(TaggedBlock):
-    pass
+    @classmethod
+    def add_statements(cls, tokens):
+        token = tokens[0]
+
+        self = super(Scenario, cls).add_statements(tokens)
+
+        self.examples = token.examples
+
+        return self
 
 
 class Feature(TaggedBlock):
@@ -170,9 +179,10 @@ BACKGROUND_DEFN = \
     Suppress(Keyword('Background') + ':' + EOL)
 BACKGROUND_DEFN.setParseAction(Background)
 
-BACKGROUND = \
-    BACKGROUND_DEFN + \
-    ZeroOrMore(STATEMENT)
+BACKGROUND = Group(
+    BACKGROUND_DEFN('node') +
+    Group(ZeroOrMore(STATEMENT))('statements')
+)
 BACKGROUND.setParseAction(Background.add_statements)
 
 """
@@ -185,9 +195,11 @@ SCENARIO_DEFN = \
     restOfLine
 SCENARIO_DEFN.setParseAction(Scenario)
 
-SCENARIO = \
-    SCENARIO_DEFN + \
-    ZeroOrMore(STATEMENT)
+SCENARIO = Group(
+    SCENARIO_DEFN('node') +
+    Group(ZeroOrMore(STATEMENT))('statements') +
+    Optional(Suppress(Keyword('Examples') + ':') + EOL + TABLE('examples'))
+)
 SCENARIO.setParseAction(Scenario.add_statements)
 
 """
@@ -231,7 +243,8 @@ Feature: an example feature
     except ParseException as e:
         print e
 
-    tokens = FEATURE.parseString('''
+    try:
+        tokens = FEATURE.parseString('''
 @badger
 @stoat
 Feature: an example feature
@@ -252,8 +265,16 @@ Feature: an example feature
 
     Scenario: not empty
         Then success
+
+    Scenario: has examples
+        Examples:
+            | badger | stoat |
+            | 1      | 2     |
 ''')
-    print
-    for token in tokens:
-        print token
-        print token.statements
+        print
+        for token in tokens:
+            print token
+            print token.statements
+    except ParseException as e:
+        print e.line
+        print e
