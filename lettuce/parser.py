@@ -10,6 +10,7 @@ from pyparsing import (CharsNotIn,
                        OneOrMore,
                        Optional,
                        printables,
+                       QuotedString,
                        restOfLine,
                        stringEnd,
                        Suppress,
@@ -48,12 +49,25 @@ class Statement(object):
             data = None
 
         self.statement = keyword + remainder
+        self.table = None
+        self.multiline = None
 
         if hasattr(data, 'table'):
             self.table = data
+        else:
+            self.multiline = data
 
     def __repr__(self):
-        return 'Statement<%s>' % self.statement
+        r = 'Statement'
+
+        if self.table:
+            r += '+Table'
+        elif self.multiline:
+            r += '+Multiline'
+
+        r += '<%s>' % self.statement
+
+        return r
 
 
 class Block(object):
@@ -131,13 +145,15 @@ TABLE_ROW = Suppress('|') + OneOrMore(CharsNotIn('|\n') + Suppress('|')) + EOL
 TABLE_ROW.setParseAction(lambda tokens: [v.strip() for v in tokens])
 TABLE = Group(OneOrMore(Group(TABLE_ROW)))('table')
 
+MULTILINE = QuotedString('"""', multiline=True)
+
 """
 Statement
 """
 STATEMENT = \
     (Keyword('Given') | Keyword('When') | Keyword('Then') | Keyword('And')) + \
     restOfLine + \
-    Optional(TABLE)
+    Optional(TABLE | MULTILINE)
 STATEMENT.setParseAction(Statement)
 
 """
@@ -198,6 +214,10 @@ Feature: an example feature
         And this step has a table
             | badger           | stoat |
             | smells like teen | stoat |
+        And this step has a multiline string
+        """
+        Something in here
+        """
 ''')
     print
     for token in tokens:
