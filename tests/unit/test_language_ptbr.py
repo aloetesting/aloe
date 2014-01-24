@@ -82,87 +82,87 @@ def test_language_portuguese():
     assert_equals(lang.examples, u'Exemplos|Cenários')
     assert_equals(lang.scenario_outline, u'Esquema do Cenário|Esquema do Cenario')
 
-def test_scenario_ptbr_from_string():
-    'Language: PT-BR -> Scenario.from_string'
-    ptbr = Language('pt-br')
-    scenario = Scenario.from_string(SCENARIO, language=ptbr)
-
-    assert_equals(
-        scenario.name,
-        u'Consolidar o banco de dados de cursos universitários em arquivo texto'
-    )
-    assert_equals(
-        scenario.steps[0].hashes,
-        [
-            {'Nome': u'Ciência da Computação', u'Duração': '5 anos'},
-            {'Nome': u'Nutrição', u'Duração': '4 anos'},
-        ]
-    )
-
-def test_scenario_outline1_ptbr_from_string():
-    'Language: PT-BR -> Scenario.from_string, with scenario outline, first case'
-    ptbr = Language('pt-br')
-    scenario = Scenario.from_string(SCENARIO_OUTLINE1, language=ptbr)
-
-    assert_equals(
-        scenario.name,
-        'Cadastrar um aluno no banco de dados'
-    )
-    assert_equals(
-        scenario.outlines,
-        [
-            {'nome': u'Gabriel', u'idade': '22'},
-            {'nome': u'João', u'idade': '30'},
-        ]
-    )
-
-def test_scenario_outline2_ptbr_from_string():
-    'Language: PT-BR -> Scenario.from_string, with scenario outline, second case'
-    ptbr = Language('pt-br')
-    scenario = Scenario.from_string(SCENARIO_OUTLINE2, language=ptbr)
-
-    assert_equals(
-        scenario.name,
-        'Cadastrar um aluno no banco de dados'
-    )
-    assert_equals(
-        scenario.outlines,
-        [
-            {'nome': u'Gabriel', u'idade': '99'},
-            {'nome': u'João', u'idade': '100'},
-        ]
-    )
-
-def test_feature_ptbr_from_string():
-    'Language: PT-BR -> Feature.from_string'
-    ptbr = Language('pt-br')
-    feature = Feature.from_string(FEATURE, language=ptbr)
-
-    assert_equals(
-        feature.name,
-        u'Pesquisar alunos com matrícula vencida'
-    )
-
-    assert_equals(
-        feature.description,
-        u"Como gerente financeiro\n"
-        u"Eu quero pesquisar alunos com matrícula vencida\n"
-        u"Para propor um financiamento"
-    )
-
-    (scenario, ) = feature.scenarios
-
-    assert_equals(
-        scenario.name,
-        'Pesquisar por nome do curso'
-    )
-
-    assert_equals(
-        scenario.steps[-1].hashes,
-        [
-            {'nome': u'João', u'valor devido': 'R$ 512,66'},
-            {'nome': u'Maria', u'valor devido': 'R$ 998,41'},
-            {'nome': u'Ana', u'valor devido': 'R$ 231,00'},
-        ]
-    )
-
+# def test_scenario_ptbr_from_string():
+#     'Language: PT-BR -> Scenario.from_string'
+#     ptbr = Language('pt-br')
+#     scenario = Scenario.from_string(SCENARIO, language=ptbr)
+#
+#     assert_equals(
+#         scenario.name,
+#         u'Consolidar o banco de dados de cursos universitários em arquivo texto'
+#     )
+#     assert_equals(
+#         scenario.steps[0].hashes,
+#         [
+#             {'Nome': u'Ciência da Computação', u'Duração': '5 anos'},
+#             {'Nome': u'Nutrição', u'Duração': '4 anos'},
+#         ]
+#     )
+#
+# def test_scenario_outline1_ptbr_from_string():
+#     'Language: PT-BR -> Scenario.from_string, with scenario outline, first case'
+#     ptbr = Language('pt-br')
+#     scenario = Scenario.from_string(SCENARIO_OUTLINE1, language=ptbr)
+#
+#     assert_equals(
+#         scenario.name,
+#         'Cadastrar um aluno no banco de dados'
+#     )
+#     assert_equals(
+#         scenario.outlines,
+#         [
+#             {'nome': u'Gabriel', u'idade': '22'},
+#             {'nome': u'João', u'idade': '30'},
+#         ]
+#     )
+#
+# def test_scenario_outline2_ptbr_from_string():
+#     'Language: PT-BR -> Scenario.from_string, with scenario outline, second case'
+#     ptbr = Language('pt-br')
+#     scenario = Scenario.from_string(SCENARIO_OUTLINE2, language=ptbr)
+#
+#     assert_equals(
+#         scenario.name,
+#         'Cadastrar um aluno no banco de dados'
+#     )
+#     assert_equals(
+#         scenario.outlines,
+#         [
+#             {'nome': u'Gabriel', u'idade': '99'},
+#             {'nome': u'João', u'idade': '100'},
+#         ]
+#     )
+#
+# def test_feature_ptbr_from_string():
+#     'Language: PT-BR -> Feature.from_string'
+#     ptbr = Language('pt-br')
+#     feature = Feature.from_string(FEATURE, language=ptbr)
+#
+#     assert_equals(
+#         feature.name,
+#         u'Pesquisar alunos com matrícula vencida'
+#     )
+#
+#     assert_equals(
+#         feature.description,
+#         u"Como gerente financeiro\n"
+#         u"Eu quero pesquisar alunos com matrícula vencida\n"
+#         u"Para propor um financiamento"
+#     )
+#
+#     (scenario, ) = feature.scenarios
+#
+#     assert_equals(
+#         scenario.name,
+#         'Pesquisar por nome do curso'
+#     )
+#
+#     assert_equals(
+#         scenario.steps[-1].hashes,
+#         [
+#             {'nome': u'João', u'valor devido': 'R$ 512,66'},
+#             {'nome': u'Maria', u'valor devido': 'R$ 998,41'},
+#             {'nome': u'Ana', u'valor devido': 'R$ 231,00'},
+#         ]
+#     )
+#
