@@ -123,6 +123,10 @@ class Background(Block):
     pass
 
 
+class Scenario(TaggedBlock):
+    pass
+
+
 class Feature(TaggedBlock):
     pass
 
@@ -172,6 +176,21 @@ BACKGROUND = \
 BACKGROUND.setParseAction(Background.add_statements)
 
 """
+Scenario: description
+"""
+SCENARIO_DEFN = \
+    ZeroOrMore(TAG) + \
+    Suppress((Keyword('Scenario') | Keyword('Scenario Outline')) +
+             ':' + White()) + \
+    restOfLine
+SCENARIO_DEFN.setParseAction(Scenario)
+
+SCENARIO = \
+    SCENARIO_DEFN + \
+    ZeroOrMore(STATEMENT)
+SCENARIO.setParseAction(Scenario.add_statements)
+
+"""
 Feature: description
 """
 FEATURE_DEFN = \
@@ -188,6 +207,7 @@ FEATURE = \
     FEATURE_DEFN + \
     Suppress(SkipTo(BACKGROUND)) + \
     Optional(BACKGROUND) + \
+    OneOrMore(SCENARIO) + \
     stringEnd
 
 
@@ -202,6 +222,11 @@ Feature: an example feature
 
     Background:
         Given something
+
+    Scenario: this is a scenario
+        Given something
+        When I do something
+        Then I can observe it
 ''')
     except ParseException as e:
         print e
@@ -221,6 +246,12 @@ Feature: an example feature
         """
         Something in here
         """
+
+    @tagged
+    Scenario: empty
+
+    Scenario: not empty
+        Then success
 ''')
     print
     for token in tokens:
