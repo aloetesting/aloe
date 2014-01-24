@@ -202,8 +202,7 @@ STATEMENT_KEYWORD = \
     Keyword('Given') | \
     Keyword('When') | \
     Keyword('Then') | \
-    Keyword('And') | \
-    '*'
+    Keyword('And')
 
 
 STATEMENT = \

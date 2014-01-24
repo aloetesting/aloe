@@ -56,10 +56,10 @@ Feature: Division
       Cashiers must be able to calculate a fraction
 
       Scenario: Regular numbers
-            * I have entered 3 into the calculator
-            * I have entered 2 into the calculator
-            * I press divide
-            * the result should be 1.5 on the screen
+            Given I have entered 3 into the calculator
+            And I have entered 2 into the calculator
+            When I press divide
+            Then the result should be 1.5 on the screen
 """
 
 FEATURE3 = """
@@ -67,7 +67,7 @@ Feature: A long line as feature name will define the max length of the feature
   In order to describe my features
   I want to add description on them
   Scenario: Regular numbers
-    Nothing to do
+    Given nothing to do
 """
 
 FEATURE4 = """
@@ -524,10 +524,10 @@ def test_can_parse_feature_description():
 
     step1, step2, step3, step4 = feature.scenarios[0].steps
 
-    assert_equals(step1.sentence, '* I have entered 3 into the calculator')
-    assert_equals(step2.sentence, '* I have entered 2 into the calculator')
-    assert_equals(step3.sentence, '* I press divide')
-    assert_equals(step4.sentence, '* the result should be 1.5 on the screen')
+    assert_equals(step1.sentence, 'Given I have entered 3 into the calculator')
+    assert_equals(step2.sentence, 'And I have entered 2 into the calculator')
+    assert_equals(step3.sentence, 'When I press divide')
+    assert_equals(step4.sentence, 'Then the result should be 1.5 on the screen')
 
 def test_scenarios_parsed_by_feature_has_feature():
     "Scenarios parsed by features has feature"
