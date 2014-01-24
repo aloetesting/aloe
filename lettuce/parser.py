@@ -49,7 +49,7 @@ class Statement(object):
             keyword, remainder = tokens
             data = None
 
-        self.statement = keyword + remainder
+        self.sentence = keyword + remainder
         self.table = None
         self.multiline = None
 
@@ -160,8 +160,16 @@ class Feature(TaggedBlock):
         token = tokens[0]
 
         self = token.node
+        self.description = '\n'.join(line.strip()
+                                     for line
+                                     in token.description[0].split('\n'))\
+            .strip()
         self.background = token.background
         self.scenarios = list(token.scenarios)
+
+        # add the back references
+        for scenario in self.scenarios:
+            scenario.feature = self
 
         return self
 
@@ -192,11 +200,23 @@ MULTILINE = QuotedString('"""', multiline=True)
 """
 Statement
 """
+BLOCK_DESC = Suppress('*') + restOfLine
+
+STATEMENT_KEYWORD = \
+    Keyword('Given') | \
+    Keyword('When') | \
+    Keyword('Then') | \
+    Keyword('And') | \
+    '*'
+
+
 STATEMENT = \
-    (Keyword('Given') | Keyword('When') | Keyword('Then') | Keyword('And')) + \
+    STATEMENT_KEYWORD + \
     restOfLine + \
     Optional(TABLE | MULTILINE)
 STATEMENT.setParseAction(Statement)
+
+STATEMENTS = Group(ZeroOrMore(STATEMENT))
 
 """
 Background:
@@ -207,7 +227,7 @@ BACKGROUND_DEFN.setParseAction(Background)
 
 BACKGROUND = Group(
     BACKGROUND_DEFN('node') +
-    Group(ZeroOrMore(STATEMENT))('statements')
+    STATEMENTS('statements')
 )
 BACKGROUND.setParseAction(Background.add_statements)
 
@@ -224,7 +244,7 @@ SCENARIO_DEFN.setParseAction(Scenario)
 
 SCENARIO = Group(
     SCENARIO_DEFN('node') +
-    Group(ZeroOrMore(STATEMENT))('statements') +
+    STATEMENTS('statements') +
     Optional(Suppress(Keyword('Examples') + ':') + EOL + TABLE('examples'))
 )
 SCENARIO.setParseAction(Scenario.add_statements)
