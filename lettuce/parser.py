@@ -21,20 +21,6 @@ from pyparsing import (CharsNotIn,
                        ZeroOrMore)
 
 
-class Tag(object):
-    """
-    A tag
-
-    @tag
-    """
-    def __init__(self, tokens):
-        self.tag = tokens[0]
-
-    def __repr__(self):
-        return '{klass}<{tag}>'.format(klass=self.__class__.__name__,
-                                       tag=self.tag)
-
-
 class Statement(object):
     """
     A statement
@@ -124,15 +110,17 @@ class TaggedBlock(Block):
 
         token = tokens[0]
 
-        self.tags = token.tags
+        self._tags = list(token.tags)
         self.name = token.name
-
-        assert all(isinstance(tag, Tag) for tag in self.tags)
 
     def __repr__(self):
         return '<{klass}: "{name}">'.format(
             klass=self.__class__.__name__,
             name=self.name)
+
+    @property
+    def tags(self):
+        return self._tags
 
 
 class Background(Block):
@@ -150,6 +138,10 @@ class Scenario(TaggedBlock):
 
         return self
 
+    @property
+    def tags(self):
+        return self._tags + self.feature.tags
+
 
 class Feature(TaggedBlock):
     @classmethod
@@ -165,10 +157,14 @@ class Feature(TaggedBlock):
                                      for line
                                      in token.description[0].split('\n'))\
             .strip()
-        self.background = token.background
+        self.background = token.background \
+            if isinstance(token.background, Background) else None
         self.scenarios = list(token.scenarios)
 
         # add the back references
+        if self.background:
+            self.background.feature = self
+
         for scenario in self.scenarios:
             scenario.feature = self
 
@@ -183,8 +179,7 @@ EOL = Suppress(lineEnd)
 """
 @tag
 """
-TAG = Suppress('@') + Word(printables) + EOL
-TAG.setParseAction(Tag)
+TAG = Suppress('@') + Word(printables)
 
 """
 A table
