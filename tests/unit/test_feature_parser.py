@@ -759,7 +759,7 @@ def test_background_parsing_with_mmf():
     step1, step2 = feature.background.steps
     step1.sentence.should.equal(
         'Given I have the following movies in my database:')
-    step1.hashes.should.equal(HashList(step1, [
+    step1.hashes.should.equal([
         {
             u'Available': u'6',
             u'Rating': u'4 stars',
@@ -772,14 +772,14 @@ def test_background_parsing_with_mmf():
             u'Name': u'Iron Man 2',
             u'New': u'yes',
         },
-    ]))
+    ])
 
     step2.sentence.should.equal(
         'And the following clients:')
-    step2.hashes.should.equal(HashList(step2, [
+    step2.hashes.should.equal([
         {u'Name': u'John Doe'},
         {u'Name': u'Foo Bar'},
-    ]))
+    ])
 
 
 def test_background_parsing_without_mmf():
@@ -793,7 +793,7 @@ def test_background_parsing_without_mmf():
     step1, step2 = feature.background.steps
     step1.sentence.should.equal(
         'Given I have the following movies in my database:')
-    step1.hashes.should.equal(HashList(step1, [
+    step1.hashes.should.equal([
         {
             u'Available': u'6',
             u'Rating': u'4 stars',
@@ -806,14 +806,14 @@ def test_background_parsing_without_mmf():
             u'Name': u'Iron Man 2',
             u'New': u'yes',
         },
-    ]))
+    ])
 
     step2.sentence.should.equal(
         'And the following clients:')
-    step2.hashes.should.equal(HashList(step2, [
+    step2.hashes.should.equal([
         {u'Name': u'John Doe'},
         {u'Name': u'Foo Bar'},
-    ]))
+    ])
 
 
 def test_syntax_error_for_scenarios_with_no_name():
