@@ -3,9 +3,11 @@ A Gherkin parser written using pyparsing
 """
 
 from pyparsing import (CharsNotIn,
+                       col,
                        Group,
                        Keyword,
                        lineEnd,
+                       lineno,
                        OneOrMore,
                        Optional,
                        ParseException,
@@ -16,9 +18,10 @@ from pyparsing import (CharsNotIn,
                        SkipTo,
                        stringEnd,
                        Suppress,
-                       White,
                        Word,
                        ZeroOrMore)
+
+from lettuce.exceptions import LettuceSyntaxError
 
 
 class Statement(object):
@@ -26,7 +29,7 @@ class Statement(object):
     A statement
     """
 
-    def __init__(self, tokens):
+    def __init__(self, s, loc, tokens):
 
         # statements are made up of a statement sentence + optional data
         # the optional data can either be a table or a multiline string
@@ -105,13 +108,21 @@ class TaggedBlock(Block):
     """
     Tagged blocks contain type-specific child content as well as tags
     """
-    def __init__(self, tokens):
+    def __init__(self, s, loc, tokens):
         super(TaggedBlock, self).__init__(tokens)
 
         token = tokens[0]
 
         self._tags = list(token.tags)
-        self.name = token.name
+        self.name = token.name.strip()
+
+        if self.name == '':
+            raise LettuceSyntaxError(
+                None,
+                "{line}:{col} {klass} must have a name".format(
+                    line=lineno(loc, s),
+                    col=col(loc, s),
+                    klass=self.__class__.__name__))
 
     def __repr__(self):
         return '<{klass}: "{name}">'.format(
@@ -232,7 +243,7 @@ Scenario: description
 SCENARIO_DEFN = Group(
     Group(ZeroOrMore(TAG))('tags') +
     Suppress((Keyword('Scenario') + Optional(Keyword('Outline'))) +
-             ':' + White()) +
+             ':') +
     restOfLine('name')
 )
 SCENARIO_DEFN.setParseAction(Scenario)
@@ -249,7 +260,7 @@ Feature: description
 """
 FEATURE_DEFN = Group(
     Group(ZeroOrMore(TAG))('tags') +
-    Suppress(Keyword('Feature') + ':' + White()) +
+    Suppress(Keyword('Feature') + ':') +
     restOfLine('name')
 )
 FEATURE_DEFN.setParseAction(Feature)

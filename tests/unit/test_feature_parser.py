@@ -821,9 +821,8 @@ def test_syntax_error_for_scenarios_with_no_name():
      "scenarios will cause a syntax error")
     expect(Feature.from_string).when.called_with(FEATURE20).to.throw(
         LettuceSyntaxError,
-        ('In the feature "My scenarios have no name", '
-         'scenarios must have a name, make sure to declare '
-         'a scenario like this: `Scenario: name of your scenario`')
+        ('Syntax error at: None\n'
+         '3:5 Scenario must have a name')
     )
 
 
