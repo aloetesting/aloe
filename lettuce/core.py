@@ -105,10 +105,10 @@ class Language(object):
         return '<Language "%s">' % self.code
 
     def __getattr__(self, attr):
-        for pattern in [REP.first_of, REP.last_of]:
-            if pattern.match(attr):
-                name = pattern.sub(u'', attr)
-                return unicode(getattr(self, name, u'').split(u"|")[0])
+        # for pattern in [REP.first_of, REP.last_of]:
+        #     if pattern.match(attr):
+        #         name = pattern.sub(u'', attr)
+        #         return unicode(getattr(self, name, u'').split(u"|")[0])
 
         return super(Language, self).__getattribute__(attr)
 
@@ -118,16 +118,41 @@ class Language(object):
 
     @classmethod
     def guess_from_string(cls, string):
-        match = re.search(REP.language, string)
-        if match:
-            instance = cls(match.group(1))
-        else:
+        # match = re.search(REP.language, string)
+        # if match:
+        #     instance = cls(match.group(1))
+        # else:
+        if True:
             instance = cls()
 
         return instance
 
 
-class Step(parser.Statement):
+class StepDefinition(object):
+    """A step definition is a wrapper for user-defined callbacks. It
+    gets a few metadata from file, such as filename and line number"""
+    def __init__(self, step, function):
+        self.function = function
+        self.file = fs.relpath(function.func_code.co_filename)
+        self.line = function.func_code.co_firstlineno + 1
+        self.step = step
+
+    def __call__(self, *args, **kw):
+        """Method that actually wrapps the call to step definition
+        callback. Sends step object as first argument
+        """
+        try:
+            ret = self.function(self.step, *args, **kw)
+            self.step.passed = True
+        except Exception, e:
+            self.step.failed = True
+            self.step.why = ReasonToFail(self.step, e)
+            raise
+
+        return ret
+
+
+class Step(parser.Step):
     """ Object that represents each step on feature files."""
     has_definition = False
     indentation = 4
@@ -419,79 +444,6 @@ class Scenario(object):
     indentation = 2
     table_indentation = indentation + 2
 
-    # def __init__(self, name, remaining_lines, keys, outlines,
-    #              with_file=None,
-    #              original_string=None,
-    #              language=None,
-    #              tags=None):
-
-    #     self.feature = None
-    #     if not language:
-    #         language = language()
-
-    #     self.name = name
-    #     self.language = language
-    #     self.tags = tags
-    #     self.remaining_lines = remaining_lines
-    #     self.steps = self._parse_remaining_lines(remaining_lines,
-    #                                              with_file,
-    #                                              original_string)
-    #     self.keys = keys
-    #     self.outlines = outlines
-    #     self.with_file = with_file
-    #     self.original_string = original_string
-
-    #     if with_file and original_string:
-    #         scenario_definition = ScenarioDescription(self, with_file,
-    #                                                   original_string,
-    #                                                   language)
-    #         self._set_definition(scenario_definition)
-
-    #     self.solved_steps = list(self._resolve_steps(
-    #         self.steps, self.outlines, with_file, original_string))
-    #     self._add_myself_to_steps()
-
-    # @property
-    # def max_length(self):
-    #     if self.outlines:
-    #         prefix = self.language.first_of_scenario_outline + ":"
-    #     else:
-    #         prefix = self.language.first_of_scenario + ":"
-
-    #     max_length = strings.column_width(
-    #         u"%s %s" % (prefix, self.name)) + self.indentation
-
-    #     for step in self.steps:
-    #         if step.max_length > max_length:
-    #             max_length = step.max_length
-
-    #     for outline in self.outlines:
-    #         key_size = self._calc_key_length(outline)
-    #         if key_size > max_length:
-    #             max_length = key_size
-
-    #         value_size = self._calc_value_length(outline)
-    #         if value_size > max_length:
-    #             max_length = value_size
-
-    #     return max_length
-
-    # def _calc_list_length(self, lst):
-    #     length = self.table_indentation + 2
-    #     for item in lst:
-    #         length += len(item) + 2
-
-    #     if len(lst) > 1:
-    #         length += 2
-
-    #     return length
-
-    # def _calc_key_length(self, data):
-    #     return self._calc_list_length(data.keys())
-
-    # def _calc_value_length(self, data):
-    #     return self._calc_list_length(data.values())
-
     def __unicode__(self):
         return u'<Scenario: "%s">' % self.name
 
@@ -651,17 +603,6 @@ class Scenario(object):
 class Background(parser.Background):
     indentation = 2
 
-    # def __init__(self, lines, feature,
-    #              with_file=None,
-    #              original_string=None,
-    #              language=None):
-    #     self.steps = map(self.add_self_to_step, Step.many_from_lines(
-    #         lines, with_file, original_string))
-
-    #     self.feature = feature
-    #     self.original_string = original_string
-    #     self.language = language
-
     def run(self, ignore_case):
         call_hook('before_each', 'background', self)
         results = []
@@ -698,59 +639,6 @@ class Background(parser.Background):
 
 class Feature(parser.Feature):
     """ Object that represents a feature."""
-
-    # def __init__(self, name, remaining_lines, with_file, original_string,
-    #              language=None):
-
-    #     if not language:
-    #         language = language()
-
-    #     self.name = name
-    #     self.language = language
-    #     self.original_string = original_string
-
-    #     (self.background,
-    #      self.scenarios,
-    #      self.description) = self._parse_remaining_lines(
-    #         remaining_lines,
-    #         original_string,
-    #         with_file)
-
-    #     if with_file:
-    #         feature_definition = FeatureDescription(self,
-    #                                                 with_file,
-    #                                                 original_string,
-    #                                                 language)
-    #         self._set_definition(feature_definition)
-
-    #     if original_string and '@' in self.original_string:
-    #         self.tags = self._find_tags_in(original_string)
-    #     else:
-    #         self.tags = None
-
-    #     self._add_myself_to_scenarios()
-
-    # @property
-    # def max_length(self):
-    #     max_length = strings.column_width(u"%s: %s" % (
-    #         self.language.first_of_feature, self.name))
-
-    #     if max_length == 0:
-    #         # in case feature has two keywords
-    #         max_length = strings.column_width(u"%s: %s" % (
-    #             self.language.last_of_feature, self.name))
-
-    #     for line in self.description.splitlines():
-    #         length = strings.column_width(line.strip()) + Scenario.indentation
-    #         if length > max_length:
-    #             max_length = length
-
-    #     for scenario in self.scenarios:
-    #         if scenario.max_length > max_length:
-    #             max_length = scenario.max_length
-
-    #     return max_length
-
 
     def get_head(self):
         return u"%s: %s" % (self.language.first_of_feature, self.name)

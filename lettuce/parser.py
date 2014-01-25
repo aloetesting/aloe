@@ -19,6 +19,9 @@
 A Gherkin parser written using pyparsing
 """
 
+from copy import copy
+from textwrap import dedent
+
 from pyparsing import (CharsNotIn,
                        col,
                        Group,
@@ -41,7 +44,7 @@ from pyparsing import (CharsNotIn,
 from lettuce.exceptions import LettuceSyntaxError
 
 
-class Statement(object):
+class Step(object):
     """
     A statement
     """
@@ -63,10 +66,10 @@ class Statement(object):
         if hasattr(data, 'table'):
             self.table = map(list, data)
         else:
-            self.multiline = data
+            self.multiline = dedent(str(data)).strip()
 
     def __repr__(self):
-        r = 'Statement'
+        r = 'Step'
 
         if self.table:
             r += '+Table'
@@ -93,6 +96,27 @@ class Statement(object):
             for row in self.table[1:]
         ]
 
+    def resolve_substitutions(self, outline):
+        """
+        Creates a copy of the step with any <variables> resolved
+        """
+
+        self = copy(self)
+
+        for key, value in outline.items():
+            key = '<{key}>'.format(key=key)
+            self.sentence = self.sentence.replace(key, value)
+
+            if self.multiline:
+                self.multiline = self.multiline.replace(key, value)
+
+            if self.table:
+                for i, row in enumerate(self.table):
+                    for j, value in enumerate(row):
+                        self.table[i][j] = value.replace(key, value)
+
+        return self
+
 
 class Block(object):
     """
@@ -115,7 +139,11 @@ class Block(object):
         self = token.node
         self.steps = list(token.statements)
 
-        assert all(isinstance(statement, Statement)
+        # add a backreference
+        for step in self.steps:
+            setattr(step, self.__class__.__name__.lower(), self)
+
+        assert all(isinstance(statement, Step)
                    for statement in self.steps)
 
         return self
@@ -166,13 +194,42 @@ class Scenario(TaggedBlock):
 
         self = super(Scenario, cls).add_statements(tokens)
 
-        self.examples = token.examples
+        try:
+            # create hashes from the table
+            outlines = map(list, token.examples)
+            keys = outlines[0]
+            self.outlines = [
+                dict(zip(keys, row))
+                for row in outlines[1:]
+            ]
+        except IndexError:
+            self.outlines = None
 
         return self
 
     @property
     def tags(self):
         return self._tags + self.feature.tags
+
+    @property
+    def solved_steps(self):
+        """
+        Return a list of the steps, with any outline substitutions applied
+        """
+
+        if not self.outlines:
+            return self.steps
+
+        if hasattr(self, '_solved_steps'):
+            return self._solved_steps
+
+        steps = [step.resolve_substitutions(outline)
+                 for outline in self.outlines
+                 for step in self.steps]
+
+        self._solved_steps = steps
+
+        return steps
 
 
 class Feature(TaggedBlock):
@@ -226,7 +283,7 @@ Multiline string
 MULTILINE = QuotedString('"""', multiline=True)
 
 """
-Statement
+Step
 """
 BLOCK_DESC = Suppress('*') + restOfLine
 
@@ -241,7 +298,7 @@ STATEMENT = \
     STATEMENT_KEYWORD + \
     restOfLine + \
     Optional(TABLE | MULTILINE)
-STATEMENT.setParseAction(Statement)
+STATEMENT.setParseAction(Step)
 
 STATEMENTS = Group(ZeroOrMore(STATEMENT))
 

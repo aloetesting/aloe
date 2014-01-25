@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from sure import expect
-from lettuce.core import Step
-from lettuce.core import Scenario
-from lettuce.core import Feature
+from lettuce.parser import Step, Scenario, Feature
 from lettuce.exceptions import LettuceSyntaxError
 
 from nose.tools import assert_equals
@@ -70,7 +68,7 @@ Scenario Outline: Parsing HTML
         """
         <div><v></div>
         """
-    I should see "outline value"
+    Then I should see "outline value"
 
 Examples:
     | v             |
@@ -216,10 +214,20 @@ Scenario: Tweeting
 """
 
 
+def parse_scenario(scenario):
+    feature_str = """
+    Feature: test scenario
+    """ + scenario
+
+    feature = Feature.from_string(feature_str)
+
+    return feature.scenarios[0]
+
+
 def test_scenario_has_name():
     "It should extract the name of the scenario"
 
-    scenario = Scenario.from_string(SCENARIO1)
+    scenario = parse_scenario(SCENARIO1)
 
     assert isinstance(scenario, Scenario)
 
@@ -230,7 +238,7 @@ def test_scenario_has_name():
 
 def test_scenario_has_repr():
     "Scenario implements __repr__ nicely"
-    scenario = Scenario.from_string(SCENARIO1)
+    scenario = parse_scenario(SCENARIO1)
     assert_equals(
         repr(scenario),
         '<Scenario: "Adding some students to my university database">'
@@ -239,7 +247,7 @@ def test_scenario_has_repr():
 def test_scenario_has_steps():
     "A scenario object should have a list of steps"
 
-    scenario = Scenario.from_string(SCENARIO1)
+    scenario = parse_scenario(SCENARIO1)
 
     assert_equals(type(scenario.steps), list)
     assert_equals(len(scenario.steps), 4, "It should have 4 steps")
@@ -266,7 +274,7 @@ def test_scenario_has_steps():
 
 def test_scenario_may_own_outlines():
     "A scenario may own outlines"
-    scenario = Scenario.from_string(OUTLINED_SCENARIO)
+    scenario = parse_scenario(OUTLINED_SCENARIO)
 
     assert_equals(len(scenario.steps), 4)
     expected_sentences = [
@@ -292,13 +300,13 @@ def test_scenario_may_own_outlines():
 
 def test_steps_parsed_by_scenarios_has_scenarios():
     "Steps parsed by scenarios has scenarios"
-    scenario = Scenario.from_string(SCENARIO1)
+    scenario = parse_scenario(SCENARIO1)
     for step in scenario.steps:
         assert_equals(step.scenario, scenario)
 
 def test_scenario_sentences_can_be_solved():
     "A scenario with outlines may solve its sentences"
-    scenario = Scenario.from_string(OUTLINED_SCENARIO)
+    scenario = parse_scenario(OUTLINED_SCENARIO)
 
     assert_equals(len(scenario.solved_steps), 12)
     expected_sentences = [
@@ -334,7 +342,7 @@ def test_scenario_tables_are_solved_against_outlines():
             []
         ]
 
-    scenario = Scenario.from_string(OUTLINED_SCENARIO_WITH_SUBSTITUTIONS_IN_TABLE)
+    scenario = parse_scenario(OUTLINED_SCENARIO_WITH_SUBSTITUTIONS_IN_TABLE)
     for step, expected_hashes in zip(scenario.solved_steps, expected_hashes_per_step):
         assert_equals(type(step), Step)
         assert_equals(step.hashes, expected_hashes)
@@ -343,15 +351,15 @@ def test_scenario_tables_are_solved_against_outlines():
     "Outline substitution should apply to multiline strings within a scenario"
     expected_multiline = '<div>outline value</div>'
 
-    scenario = Scenario.from_string(OUTLINED_SCENARIO_WITH_SUBSTITUTIONS_IN_MULTILINE)
+    scenario = parse_scenario(OUTLINED_SCENARIO_WITH_SUBSTITUTIONS_IN_MULTILINE)
     step = scenario.solved_steps[0]
-    
+
     assert_equals(type(step), Step)
     assert_equals(step.multiline, expected_multiline)
 
 def test_solved_steps_also_have_scenario_as_attribute():
     "Steps solved in scenario outlines also have scenario as attribute"
-    scenario = Scenario.from_string(OUTLINED_SCENARIO)
+    scenario = parse_scenario(OUTLINED_SCENARIO)
     for step in scenario.solved_steps:
         assert_equals(step.scenario, scenario)
 
@@ -440,11 +448,11 @@ def test_full_featured_feature():
 def test_scenario_with_table_and_no_step_fails():
     "A step table imediately after the scenario line, without step line fails"
 
-    assert_raises(LettuceSyntaxError, Scenario.from_string, SCENARIO_FAILED)
+    assert_raises(LettuceSyntaxError, parse_scenario, SCENARIO_FAILED)
 
 def test_scenario_ignore_commented_lines_from_examples():
     "Comments on scenario example should be ignored"
-    scenario = Scenario.from_string(OUTLINED_SCENARIO_WITH_COMMENTS_ON_EXAMPLES)
+    scenario = parse_scenario(OUTLINED_SCENARIO_WITH_COMMENTS_ON_EXAMPLES)
 
     assert_equals(
         scenario.outlines,
@@ -456,7 +464,7 @@ def test_scenario_ignore_commented_lines_from_examples():
 
 def test_scenario_aggregate_all_examples_blocks():
     "All scenario's examples block should be translated to outlines"
-    scenario = Scenario.from_string(OUTLINED_SCENARIO_WITH_MORE_THAN_ONE_EXAMPLES_BLOCK)
+    scenario = parse_scenario(OUTLINED_SCENARIO_WITH_MORE_THAN_ONE_EXAMPLES_BLOCK)
 
     assert_equals(
         scenario.outlines,
@@ -472,7 +480,7 @@ def test_scenario_aggregate_all_examples_blocks():
 
 def test_commented_scenarios():
     "A scenario string that contains lines starting with '#' will be commented"
-    scenario = Scenario.from_string(COMMENTED_SCENARIO)
+    scenario = parse_scenario(COMMENTED_SCENARIO)
     assert_equals(scenario.name, u'Adding some students to my university database')
     assert_equals(len(scenario.steps), 4)
 
@@ -482,7 +490,7 @@ def test_scenario_matches_tags():
     ("A scenario with tags should respond with True when "
      ".matches_tags() is called with a valid list of tags")
 
-    scenario = Scenario.from_string(
+    scenario = parse_scenario(
         SCENARIO1,
         original_string=SCENARIO1.strip(),
         tags=['onetag', 'another-one'])
@@ -496,7 +504,7 @@ def test_scenario_matches_tags_fuzzywuzzy():
     ("When Scenario#matches_tags is called with a member starting with ~ "
      "it will consider a fuzzywuzzy match")
 
-    scenario = Scenario.from_string(
+    scenario = parse_scenario(
         SCENARIO1,
         original_string=SCENARIO1.strip(),
         tags=['anothertag', 'another-tag'])
@@ -508,7 +516,7 @@ def test_scenario_matches_tags_excluding():
     ("When Scenario#matches_tags is called with a member starting with - "
      "it will exclude that tag from the matching")
 
-    scenario = Scenario.from_string(
+    scenario = parse_scenario(
         SCENARIO1,
         original_string=SCENARIO1.strip(),
         tags=['anothertag', 'another-tag'])
@@ -521,7 +529,7 @@ def test_scenario_matches_tags_excluding_when_scenario_has_no_tags():
     ("When Scenario#matches_tags is called for a scenario "
      "that has no tags and the given match is a exclusionary tag")
 
-    scenario = Scenario.from_string(
+    scenario = parse_scenario(
         SCENARIO1,
         original_string=(SCENARIO1.strip()))
 
@@ -532,7 +540,7 @@ def test_scenario_matches_tags_excluding_fuzzywuzzy():
     ("When Scenario#matches_tags is called with a member starting with -~ "
      "it will exclude that tag from that fuzzywuzzy match")
 
-    scenario = Scenario.from_string(
+    scenario = parse_scenario(
         SCENARIO1,
         original_string=('@anothertag\n@another-tag\n' + SCENARIO1.strip()))
 
@@ -542,7 +550,7 @@ def test_scenario_matches_tags_excluding_fuzzywuzzy():
 def test_scenario_show_tags_in_its_representation():
     ("Scenario#represented should show its tags")
 
-    scenario = Scenario.from_string(
+    scenario = parse_scenario(
         SCENARIO1,
         original_string=SCENARIO1.strip(),
         tags=['slow', 'firefox', 'chrome'])
@@ -555,7 +563,7 @@ def test_scenario_show_tags_in_its_representation():
 def test_scenario_with_inline_comments():
     ("Scenarios can have steps with inline comments")
 
-    scenario = Scenario.from_string(INLINE_COMMENTS)
+    scenario = parse_scenario(INLINE_COMMENTS)
 
     step1, step2 = scenario.steps
 
@@ -567,7 +575,7 @@ def test_scenario_with_hash_within_double_quotes():
     ("Scenarios have hashes within double quotes and yet don't "
      "consider them as comments")
 
-    scenario = Scenario.from_string(
+    scenario = parse_scenario(
         INLINE_COMMENTS_IGNORED_WITHIN_DOUBLE_QUOTES)
 
     step1, step2 = scenario.steps
@@ -580,7 +588,7 @@ def test_scenario_with_hash_within_single_quotes():
     ("Scenarios have hashes within single quotes and yet don't "
      "consider them as comments")
 
-    scenario = Scenario.from_string(
+    scenario = parse_scenario(
         INLINE_COMMENTS_IGNORED_WITHIN_SINGLE_QUOTES)
 
     step1, step2 = scenario.steps
