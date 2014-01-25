@@ -76,7 +76,7 @@ class Step(object):
         elif self.multiline:
             r += '+Multiline'
 
-        r += '<%s>' % self.statement
+        r += '<%s>' % self.sentence
 
         return r
 
@@ -89,6 +89,10 @@ class Step(object):
 
     @property
     def hashes(self):
+        """
+        Return the table attached to the step as a list of hashes, where the
+        first row is the column headings
+        """
         keys = self.keys
 
         return [
@@ -105,6 +109,7 @@ class Step(object):
 
         for key, value in outline.items():
             key = '<{key}>'.format(key=key)
+
             self.sentence = self.sentence.replace(key, value)
 
             if self.multiline:
@@ -189,21 +194,26 @@ class Background(Block):
 
 class Scenario(TaggedBlock):
     @classmethod
-    def add_statements(cls, tokens):
+    def add_statements(cls, s, loc, tokens):
         token = tokens[0]
 
         self = super(Scenario, cls).add_statements(tokens)
 
-        try:
-            # create hashes from the table
-            outlines = map(list, token.examples)
+        # Build a list of outline hashes
+        # A single scenario can have multiple example blocks, the returned
+        # token is a list of TABLE tokens
+        self.outlines = []
+
+        for outline in token.outlines:
+            outlines = map(list, outline)
+
+            # the first row of the table is the column headings
             keys = outlines[0]
-            self.outlines = [
+
+            self.outlines += [
                 dict(zip(keys, row))
                 for row in outlines[1:]
             ]
-        except IndexError:
-            self.outlines = None
 
         return self
 
@@ -230,6 +240,20 @@ class Scenario(TaggedBlock):
         self._solved_steps = steps
 
         return steps
+
+    @property
+    def evaluated(self):
+        """
+        Yield the outline and steps
+
+        FIXME: why do we have both this and solved steps?
+        """
+
+        for outline in self.outlines:
+            steps = [step.resolve_substitutions(outline)
+                     for step in self.steps]
+
+            yield (outline, steps)
 
 
 class Feature(TaggedBlock):
@@ -275,7 +299,7 @@ A table
 """
 TABLE_ROW = Suppress('|') + OneOrMore(CharsNotIn('|\n') + Suppress('|')) + EOL
 TABLE_ROW.setParseAction(lambda tokens: [v.strip() for v in tokens])
-TABLE = Group(OneOrMore(Group(TABLE_ROW)))('table')
+TABLE = Group(OneOrMore(Group(TABLE_ROW)))
 
 """
 Multiline string
@@ -297,7 +321,7 @@ STATEMENT_KEYWORD = \
 STATEMENT = \
     STATEMENT_KEYWORD + \
     restOfLine + \
-    Optional(TABLE | MULTILINE)
+    Optional(TABLE('table') | MULTILINE('multiline'))
 STATEMENT.setParseAction(Step)
 
 STATEMENTS = Group(ZeroOrMore(STATEMENT))
@@ -329,7 +353,9 @@ SCENARIO_DEFN.setParseAction(Scenario)
 SCENARIO = Group(
     SCENARIO_DEFN('node') +
     STATEMENTS('statements') +
-    Optional(Suppress(Keyword('Examples') + ':') + EOL + TABLE('examples'))
+    Group(ZeroOrMore(
+        Suppress(Keyword('Examples') + ':') + EOL + TABLE
+    ))('outlines')
 )
 SCENARIO.setParseAction(Scenario.add_statements)
 
@@ -366,12 +392,13 @@ def from_string(cls, string):
         tokens = FEATURE.parseString(string)
         return tokens[0]
     except ParseException as e:
-        print "Syntax Error, line", e.lineno
-        print e.line
-        print " " * (e.column - 1) + "^"
-
-        print e.parserElement
-        print e.pstr
-        raise
+        raise LettuceSyntaxError(
+            None,
+            "{lineno}:{col} Syntax Error: {msg}\n{line}{space}^".format(
+                msg=e.msg,
+                lineno=e.lineno,
+                col=e.col,
+                line=e.line,
+                space=' ' * (e.col - 1)))
 
 Feature.from_string = classmethod(from_string)
