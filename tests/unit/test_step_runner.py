@@ -102,7 +102,7 @@ Feature: When using behave_as, the new steps have the same scenario
     Given I have a step which calls the "access the scenario" step with behave_as
 """
 
-FEATURE10 = """ 
+FEATURE10 = """
 @tag
 Feature: Many scenarios
 

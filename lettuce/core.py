@@ -22,12 +22,10 @@ import codecs
 import unicodedata
 
 from copy import deepcopy
-from fuzzywuzzy import fuzz
 from itertools import chain
 from random import shuffle
 
-from lettuce import parser
-from lettuce import strings, languages
+from lettuce import parser, strings, languages
 from lettuce.fs import FileSystem
 from lettuce.registry import STEP_REGISTRY, call_hook
 from lettuce.exceptions import (ReasonToFail,
@@ -169,18 +167,6 @@ class Step(parser.Step):
     columns = None
     matrix = None
 
-    # def __init__(self, sentence, remaining_lines, line=None, filename=None):
-    #     self.sentence = sentence
-    #     self.original_sentence = sentence
-    #     self._remaining_lines = remaining_lines
-    #     keys, hashes, self.multiline, columns, nukeys = self._parse_remaining_lines(remaining_lines)
-    #     self.keys = tuple(keys)
-    #     self.non_unique_keys = nukeys
-    #     self.hashes = HashList(self, hashes)
-    #     self.columns = columns
-    #     self.described_at = StepDescription(line, filename)
-    #     self.proposed_method_name, self.proposed_sentence = self.propose_definition()
-
     def propose_definition(self):
         sentence = unicode(self.original_sentence)
         method_name = sentence
@@ -207,32 +193,6 @@ class Step(parser.Step):
             attribute_names and (", %s" % ", ".join(attribute_names)) or "")
 
         return method_name, sentence
-
-    def solve_and_clone(self, data, display_step):
-        sentence = self.sentence
-        multiline = self.multiline
-        hashes = self.hashes[:]  # deep copy
-        for k, v in data.items():
-
-            def evaluate(stuff):
-                return stuff.replace(u'<%s>' % unicode(k), unicode(v))
-
-            def evaluate_hash_value(hash_row):
-                new_row = {}
-                for rkey, rvalue in hash_row.items():
-                    new_row[rkey] = evaluate(rvalue)
-                return new_row
-
-            sentence = evaluate(sentence)
-            multiline = evaluate(multiline)
-            hashes = map(evaluate_hash_value, hashes)
-
-        new = deepcopy(self)
-        new.sentence = sentence
-        new.multiline = multiline
-        new.hashes = hashes
-        new.display = display_step
-        return new
 
     def _calc_list_length(self, lst):
         length = self.table_indentation + 2
@@ -379,7 +339,8 @@ class Step(parser.Step):
                 failfast=False,
                 display_steps=True,
                 reasons_to_fail=None):
-        """Runs each step in the given list of steps.
+        """
+        Runs each step in the given list of steps.
 
         Returns a tuple of five lists:
             - The full set of steps executed
@@ -397,8 +358,9 @@ class Step(parser.Step):
             reasons_to_fail = []
 
         for step in steps:
+            # cast steps to the core steps class (hacky)
             if outline:
-                step = step.solve_and_clone(outline, display_steps)
+                step = step.resolve_substitutions(outline)
 
             try:
                 step.pre_run(ignore_case, with_outline=outline)
@@ -432,90 +394,37 @@ class Step(parser.Step):
         return (all_steps, steps_passed, steps_failed, steps_undefined)
 
 
-class Scenario(object):
+class Scenario(parser.Scenario):
     """ Object that represents each scenario on feature files."""
     described_at = None
     indentation = 2
     table_indentation = indentation + 2
 
-    def __unicode__(self):
-        return u'<Scenario: "%s">' % self.name
-
-    def __repr__(self):
-        return unicode(self).encode('utf-8')
-
-    def matches_tags(self, tags):
-        if tags is None:
-            return True
-
-        has_exclusionary_tags = any([t.startswith('-') for t in tags])
-
-        if not self.tags and not has_exclusionary_tags:
-            return False
-
-        matched = []
-
-        if isinstance(self.tags, list):
-            for tag in self.tags:
-                if tag in tags:
-                    return True
-        else:
-            self.tags = []
-
-        for tag in tags:
-            exclude = tag.startswith('-')
-            if exclude:
-                tag = tag[1:]
-
-            fuzzable = tag.startswith('~')
-            if fuzzable:
-                tag = tag[1:]
-
-            result = tag in self.tags
-            if fuzzable:
-                fuzzed = []
-                for internal_tag in self.tags:
-                    ratio = fuzz.ratio(tag, internal_tag)
-                    if exclude:
-                        fuzzed.append(ratio <= 80)
-                    else:
-                        fuzzed.append(ratio > 80)
-
-                result = any(fuzzed)
-            elif exclude:
-                result = tag not in self.tags
-
-            matched.append(result)
-
-        return all(matched)
-
     @property
-    def evaluated(self):
-        for outline_idx, outline in enumerate(self.outlines):
-            steps = []
-            for step in self.steps:
-                new_step = step.solve_and_clone(outline, display_step=(outline_idx == 0))
-                new_step.original_sentence = step.sentence
-                new_step.scenario = self
-                steps.append(new_step)
+    def background(self):
+        """
+        The background for this scenario
+        """
 
-            yield (outline, steps)
+        return self.feature.background
 
     @property
     def ran(self):
-        return all([step.ran for step in self.steps])
+        return all(step.ran for step in self.steps)
 
     @property
     def passed(self):
-        return self.ran and all([step.passed for step in self.steps])
+        return self.ran and all(step.passed for step in self.steps)
 
     @property
     def failed(self):
-        return any([step.failed for step in self.steps])
+        return any(step.failed for step in self.steps)
 
     def run(self, ignore_case, failfast=False):
-        """Runs a scenario, running each of its steps. Also call
-        before_each and after_each callbacks for steps and scenario"""
+        """
+        Runs a scenario, running each of its steps. Also call
+        before_each and after_each callbacks for steps and scenario
+        """
 
         results = []
         call_hook('before_each', 'scenario', self)
@@ -554,11 +463,6 @@ class Scenario(object):
 
         call_hook('after_each', 'scenario', self)
         return results
-
-    def _resolve_steps(self, steps, outlines, with_file, original_string):
-        for outline_idx, outline in enumerate(outlines):
-            for step in steps:
-                yield step.solve_and_clone(outline, display_step=(outline_idx == 0))
 
     def represented(self):
         make_prefix = lambda x: u"%s%s: " % (u' ' * self.indentation, x)
@@ -634,6 +538,29 @@ class Background(parser.Background):
 class Feature(parser.Feature):
     """ Object that represents a feature."""
 
+    @classmethod
+    def from_string(cls, string):
+        """
+        Parse a feature from a string
+
+        Hackily cast the classes from the parser class to the core class
+        """
+
+        self = parser.Feature.from_string(string)
+        # cast to the core class (hacky)
+        self.__class__ = cls
+
+        if self.background:
+            self.background.__class__ = Background
+
+        for scenario in self.scenarios:
+            scenario.__class__ = Scenario
+
+            for step in scenario.steps:
+                step.__class__ = Step
+
+        return self
+
     def get_head(self):
         return u"%s: %s" % (self.language.first_of_feature, self.name)
 
@@ -643,36 +570,35 @@ class Feature(parser.Feature):
             random=False,
             failfast=False):
 
-        scenarios_ran = []
+        tags = tags or []
+
+        if scenarios:
+            scenarios = [self.scenarios[i-1] for i in scenarios
+                         if isinstance(scenario, int)]
+        else:
+            scenarios = self.scenarios
+
+        scenarios = [scenario for scenario in scenarios
+                     if scenario.matches_tags(tags)]
+
+        # If no scenarios in this feature will run,
+        # but don't run the feature hooks.
+        if not scenarios:
+            return FeatureResult(self)
 
         if random:
-            shuffle(self.scenarios)
-
-        scenario_nums_to_run = None
-        if isinstance(scenarios, (tuple, list)):
-            if all(map(lambda x: isinstance(x, int), scenarios)):
-                scenario_nums_to_run = scenarios
-
-        def should_run_scenario(num, scenario):
-            return scenario.matches_tags(tags) and \
-                   (scenario_nums_to_run is None or num in scenario_nums_to_run)
-
-        scenarios_to_run = [scenario for num, scenario in enumerate(self.scenarios, start=1)
-                                     if should_run_scenario(num, scenario)]
-        # If no scenarios in this feature will run, don't run the feature hooks.
-        if not scenarios_to_run:
-            return FeatureResult(self)
+            shuffle(scenarios)
 
         call_hook('before_each', 'feature', self)
         try:
-            for scenario in scenarios_to_run:
-                scenarios_ran.extend(scenario.run(ignore_case, failfast=failfast))
-        except:
+            scenarios_ran = [scenario.run(ignore_case, failfast=failfast)
+                             for scenario in scenarios]
+        finally:
             call_hook('after_each', 'feature', self)
-            raise
-        else:
-            call_hook('after_each', 'feature', self)
-            return FeatureResult(self, *scenarios_ran)
+
+        # FIXME: do I need to chain the results?
+
+        return FeatureResult(self, *scenarios_ran)
 
 
 class FeatureResult(object):
