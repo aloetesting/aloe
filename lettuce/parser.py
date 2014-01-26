@@ -41,6 +41,8 @@ from pyparsing import (CharsNotIn,
                        Word,
                        ZeroOrMore)
 
+from fuzzywuzzy import fuzz
+
 from lettuce.exceptions import LettuceSyntaxError
 
 
@@ -186,6 +188,48 @@ class TaggedBlock(Block):
     @property
     def tags(self):
         return self._tags
+
+    def matches_tags(self, tags):
+        """
+        Return true of the TaggedBlock contains all of the tags specified
+        by tags AND does not contain any of the excluded tags AND
+        matches any 'fuzzy' tags
+        """
+
+        our_tags = set(self.tags)
+
+        fuzzy_required_tags = set(tag[1:] for tag in tags
+                                  if tag.startswith('~'))
+        fuzzy_unwanted_tags = set(tag[2:] for tag in tags
+                                  if tag.startswith('-~'))
+        unwanted_tags = set(tag[1:] for tag in tags
+                            if tag.startswith('-'))
+        required_tags = set(tag for tag in tags
+                            if not tag.startswith('-')
+                            and not tag.startswith('~'))
+
+        # the required tags should be a subset of our tags
+        # the unwanted tags should be a disjoint set (i.e. intersection is {})
+        if not required_tags <= our_tags or \
+           not unwanted_tags.isdisjoint(our_tags):
+            # if either case isn't true, don't even attempt the fuzzy matching
+            return False
+
+        # apply fuzzy matches
+        #
+        # all required fuzzy tags must have an 80% match to at least
+        # one of our tags
+        fuzzy_matches = \
+            all(any(fuzz.ratio(tag, our_tag) > 80 for our_tag in our_tags)
+                for tag in fuzzy_required_tags)
+
+        # unwanted fuzzy tags must have a <= 80% match to all of our tags
+        fuzzy_unwanted = \
+            all(fuzz.ratio(tag, our_tag) <= 80
+                for tag in fuzzy_unwanted_tags
+                for our_tag in our_tags)
+
+        return fuzzy_matches and fuzzy_unwanted
 
 
 class Background(Block):

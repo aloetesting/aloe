@@ -214,10 +214,16 @@ Scenario: Tweeting
 """
 
 
-def parse_scenario(scenario):
+def parse_scenario(scenario,
+                   tags=None):
     feature_str = """
     Feature: test scenario
-    """ + scenario
+    """
+
+    if tags:
+        feature_str += ' '.join('@%s' % tag for tag in tags)
+
+    feature_str += scenario
 
     feature = Feature.from_string(feature_str)
 
@@ -492,7 +498,6 @@ def test_scenario_matches_tags():
 
     scenario = parse_scenario(
         SCENARIO1,
-        original_string=SCENARIO1.strip(),
         tags=['onetag', 'another-one'])
 
     expect(scenario.tags).to.equal(['onetag', 'another-one'])
@@ -506,7 +511,6 @@ def test_scenario_matches_tags_fuzzywuzzy():
 
     scenario = parse_scenario(
         SCENARIO1,
-        original_string=SCENARIO1.strip(),
         tags=['anothertag', 'another-tag'])
 
     assert scenario.matches_tags(['~another'])
@@ -518,7 +522,6 @@ def test_scenario_matches_tags_excluding():
 
     scenario = parse_scenario(
         SCENARIO1,
-        original_string=SCENARIO1.strip(),
         tags=['anothertag', 'another-tag'])
 
     assert not scenario.matches_tags(['-anothertag'])
@@ -529,9 +532,7 @@ def test_scenario_matches_tags_excluding_when_scenario_has_no_tags():
     ("When Scenario#matches_tags is called for a scenario "
      "that has no tags and the given match is a exclusionary tag")
 
-    scenario = parse_scenario(
-        SCENARIO1,
-        original_string=(SCENARIO1.strip()))
+    scenario = parse_scenario(SCENARIO1)
 
     assert scenario.matches_tags(['-nope', '-neither'])
 
@@ -540,9 +541,8 @@ def test_scenario_matches_tags_excluding_fuzzywuzzy():
     ("When Scenario#matches_tags is called with a member starting with -~ "
      "it will exclude that tag from that fuzzywuzzy match")
 
-    scenario = parse_scenario(
-        SCENARIO1,
-        original_string=('@anothertag\n@another-tag\n' + SCENARIO1.strip()))
+    scenario = parse_scenario(SCENARIO1,
+                              tags=['anothertag', 'another-tag'])
 
     assert not scenario.matches_tags(['-~anothertag'])
 
@@ -552,7 +552,6 @@ def test_scenario_show_tags_in_its_representation():
 
     scenario = parse_scenario(
         SCENARIO1,
-        original_string=SCENARIO1.strip(),
         tags=['slow', 'firefox', 'chrome'])
 
     expect(scenario.represented()).to.equal(
