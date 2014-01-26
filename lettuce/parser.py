@@ -285,6 +285,10 @@ class Scenario(TaggedBlock):
                  for outline in self.outlines
                  for step in self.steps]
 
+        # set a backref to the scenario
+        for step in steps:
+            step.scenario = self
+
         self._solved_steps = steps
 
         return steps
@@ -300,6 +304,10 @@ class Scenario(TaggedBlock):
         for outline in self.outlines:
             steps = [step.resolve_substitutions(outline)
                      for step in self.steps]
+
+            # set a backref to the scenario
+            for step in steps:
+                step.scenario = self
 
             yield (outline, steps)
 
