@@ -19,7 +19,7 @@
 A Gherkin parser written using pyparsing
 """
 
-from copy import copy
+from copy import deepcopy
 from textwrap import dedent
 
 from pyparsing import (CharsNotIn,
@@ -27,17 +27,21 @@ from pyparsing import (CharsNotIn,
                        Group,
                        Keyword,
                        lineEnd,
+                       lineStart,
                        lineno,
                        OneOrMore,
                        Optional,
                        ParseException,
+                       ParserElement,
                        printables,
                        pythonStyleComment,
-                       QuotedString,
+                       QuotedString,  # function
+                       quotedString,  # token
                        restOfLine,
                        SkipTo,
                        stringEnd,
                        Suppress,
+                       White,
                        Word,
                        ZeroOrMore)
 
@@ -55,20 +59,13 @@ class Step(object):
 
         # statements are made up of a statement sentence + optional data
         # the optional data can either be a table or a multiline string
-        try:
-            keyword, remainder, data = tokens
-        except ValueError:
-            keyword, remainder = tokens
-            data = None
+        token = tokens[0]
 
-        self.sentence = keyword + remainder
-        self.table = None
-        self.multiline = None
-
-        if hasattr(data, 'table'):
-            self.table = map(list, data)
-        else:
-            self.multiline = dedent(str(data)).strip()
+        self.sentence = ' '.join(token.sentence)
+        self.table = map(list, token.table) \
+            if token.table else None
+        self.multiline = dedent(str(token.multiline)).strip() \
+            if token.multiline else None
 
     def __repr__(self):
         r = 'Step'
@@ -87,7 +84,10 @@ class Step(object):
         """
         Return the first row of a table if this statement contains one
         """
-        return tuple(self.table[0])
+        if self.table:
+            return tuple(self.table[0])
+        else:
+            return []
 
     @property
     def hashes(self):
@@ -95,6 +95,10 @@ class Step(object):
         Return the table attached to the step as a list of hashes, where the
         first row is the column headings
         """
+
+        if not self.table:
+            return []
+
         keys = self.keys
 
         return [
@@ -107,7 +111,7 @@ class Step(object):
         Creates a copy of the step with any <variables> resolved
         """
 
-        self = copy(self)
+        self = deepcopy(self)
 
         for key, value in outline.items():
             key = '<{key}>'.format(key=key)
@@ -119,8 +123,8 @@ class Step(object):
 
             if self.table:
                 for i, row in enumerate(self.table):
-                    for j, value in enumerate(row):
-                        self.table[i][j] = value.replace(key, value)
+                    for j, cell in enumerate(row):
+                        self.table[i][j] = cell.replace(key, value)
 
         return self
 
@@ -351,21 +355,34 @@ Multiline string
 MULTILINE = QuotedString('"""', multiline=True)
 
 """
-Step
-"""
-BLOCK_DESC = Suppress('*') + restOfLine
+A Step
 
+Steps begin with a keyword such as Given, When, Then or And
+They can contain an optional inline comment, although it's possible to
+encapsulate it in a string. Finally they can contain a table or a multiline
+'Python' string.
+
+<variables> are not parsed as part of the grammar as it's not easy to
+distinguish between a variable and XML. Instead scenarios will replace
+instances in the steps based on the outline keys.
+"""
 STATEMENT_KEYWORD = \
     Keyword('Given') | \
     Keyword('When') | \
     Keyword('Then') | \
     Keyword('And')
 
+STATEMENT_SENTENCE = Group(
+    STATEMENT_KEYWORD +
+    OneOrMore(Word(printables).setWhitespaceChars(' \t') |
+              quotedString.setWhitespaceChars(' \t')) +
+    EOL
+)
 
-STATEMENT = \
-    STATEMENT_KEYWORD + \
-    restOfLine + \
+STATEMENT = Group(
+    STATEMENT_SENTENCE('sentence') +
     Optional(TABLE('table') | MULTILINE('multiline'))
+)
 STATEMENT.setParseAction(Step)
 
 STATEMENTS = Group(ZeroOrMore(STATEMENT))
@@ -438,7 +455,7 @@ def from_string(cls, string):
     except ParseException as e:
         raise LettuceSyntaxError(
             None,
-            "{lineno}:{col} Syntax Error: {msg}\n{line}{space}^".format(
+            "{lineno}:{col} Syntax Error: {msg}\n{line}\n{space}^".format(
                 msg=e.msg,
                 lineno=e.lineno,
                 col=e.col,
