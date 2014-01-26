@@ -289,12 +289,6 @@ class Step(parser.Step):
         lines = strings.json_to_string(self.columns, self.non_unique_keys).splitlines()
         return u"\n".join([(u" " * self.table_indentation) + line for line in lines]) + "\n"
 
-    def __unicode__(self):
-        return u'<Step: "%s">' % self.sentence
-
-    def __repr__(self):
-        return unicode(self).encode('utf-8')
-
     def _get_match(self, ignore_case):
         matched, func = None, lambda: None
 

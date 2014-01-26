@@ -67,17 +67,11 @@ class Step(object):
         self.multiline = dedent(str(token.multiline)).strip() \
             if token.multiline else None
 
+    def __unicode__(self):
+        return u'<Step: "%s">' % self.sentence
+
     def __repr__(self):
-        r = 'Step'
-
-        if self.table:
-            r += '+Table'
-        elif self.multiline:
-            r += '+Multiline'
-
-        r += '<%s>' % self.sentence
-
-        return r
+        return unicode(self).encode('utf-8')
 
     @property
     def keys(self):
