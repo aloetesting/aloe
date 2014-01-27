@@ -29,6 +29,7 @@ from lettuce import parser, strings, languages
 from lettuce.fs import FileSystem
 from lettuce.registry import STEP_REGISTRY, call_hook
 from lettuce.exceptions import (ReasonToFail,
+                                FailFast,
                                 NoDefinitionFound,
                                 LettuceSyntaxError)
 
@@ -142,7 +143,7 @@ class StepDefinition(object):
         try:
             ret = self.function(self.step, *args, **kw)
             self.step.passed = True
-        except Exception, e:
+        except AssertionError as e:
             self.step.failed = True
             self.step.why = ReasonToFail(self.step, e)
             raise
@@ -332,67 +333,6 @@ class Step(parser.Step):
         self.passed = True
         return True
 
-    @staticmethod
-    def run_all(steps, outline=None,
-                run_callbacks=False,
-                ignore_case=True,
-                failfast=False,
-                display_steps=True,
-                reasons_to_fail=None):
-        """
-        Runs each step in the given list of steps.
-
-        Returns a tuple of five lists:
-            - The full set of steps executed
-            - The steps that passed
-            - The steps that failed
-            - The steps that were undefined
-            - The reason for each failing step (indices matching per above)
-
-        """
-        all_steps = []
-        steps_passed = []
-        steps_failed = []
-        steps_undefined = []
-        if reasons_to_fail is None:
-            reasons_to_fail = []
-
-        for step in steps:
-            # cast steps to the core steps class (hacky)
-            if outline:
-                step = step.resolve_substitutions(outline)
-
-            try:
-                step.pre_run(ignore_case, with_outline=outline)
-
-                if run_callbacks:
-                    call_hook('before_each', 'step', step)
-
-                call_hook('before_output', 'step', step)
-
-                if not steps_failed and not steps_undefined:
-                    step.run(ignore_case)
-                    steps_passed.append(step)
-
-            except NoDefinitionFound, e:
-                steps_undefined.append(e.step)
-
-            except Exception, e:
-                steps_failed.append(step)
-                reasons_to_fail.append(step.why)
-                if failfast:
-                    raise
-
-            finally:
-                all_steps.append(step)
-
-                call_hook('after_output', 'step', step)
-
-                if run_callbacks:
-                    call_hook('after_each', 'step', step)
-
-        return (all_steps, steps_passed, steps_failed, steps_undefined)
-
 
 class Scenario(parser.Scenario):
     """ Object that represents each scenario on feature files."""
@@ -408,6 +348,7 @@ class Scenario(parser.Scenario):
 
         return self.feature.background
 
+    # FIXME -- these don't handle the concept of outlines at all
     @property
     def ran(self):
         return all(step.ran for step in self.steps)
@@ -424,45 +365,76 @@ class Scenario(parser.Scenario):
         """
         Runs a scenario, running each of its steps. Also call
         before_each and after_each callbacks for steps and scenario
+
+        The return value is not the results, but whether or not to keep
+        running the tests. The results can be found at self.resultes
         """
 
-        results = []
-        call_hook('before_each', 'scenario', self)
+        # FIXME: is there an before/after outline hook?
+        self.results = []
 
-        def run_scenario(almost_self, order=-1, outline=None, run_callbacks=False):
+        if self.outlines:
+            generator = self.evaluated
+        else:
+            generator = ((None, self.steps),)
+
+        for outline, steps in generator:
+            call_hook('before_each', 'scenario', self)
+
             try:
                 if self.background:
                     self.background.run(ignore_case)
 
-                reasons_to_fail = []
-                all_steps, steps_passed, steps_failed, steps_undefined = Step.run_all(self.steps, outline, run_callbacks, ignore_case, failfast=failfast, display_steps=(order < 1), reasons_to_fail=reasons_to_fail)
-            except:
-                call_hook('after_each', 'scenario', self)
-                raise
+                # pre-run the steps so we have their definitions set
+                for step in steps:
+                    try:
+                        step.pre_run(ignore_case, with_outline=outline)
+                    except NoDefinitionFound:
+                        pass
+
+                # run the steps for real
+                for step in steps:
+                    try:
+                        call_hook('before_each', 'step', step)
+                        call_hook('before_output', 'step', step)
+
+                        step.run(ignore_case)
+
+                    except (NoDefinitionFound, AssertionError) as e:
+                        # we expect steps to assert or not be found
+                        if failfast:
+                            raise FailFast()
+
+                        break
+
+                    finally:
+                        call_hook('after_output', 'step', step)
+                        call_hook('after_each', 'step', step)
+
+            except FailFast:
+                return False
+
             finally:
+                call_hook('after_each', 'scenario', self)
+
                 if outline:
                     call_hook('outline', 'scenario', self, order, outline,
                             reasons_to_fail)
 
-            skip = lambda x: x not in steps_passed and x not in steps_undefined and x not in steps_failed
-            steps_skipped = filter(skip, all_steps)
+                steps_passed = [step for step in steps if step.passed]
+                steps_failed = [step for step in steps if step.failed]
+                steps_undefined = [step for step in steps
+                                   if not step.has_definition]
+                steps_skipped = [step for step in steps
+                                 if step.has_definition and not step.ran]
 
-            return ScenarioResult(
-                self,
-                steps_passed,
-                steps_failed,
-                steps_skipped,
-                steps_undefined
-            )
+                self.results.append(ScenarioResult(self,
+                                                   steps_passed,
+                                                   steps_failed,
+                                                   steps_skipped,
+                                                   steps_undefined))
 
-        if self.outlines:
-            for index, outline in enumerate(self.outlines):
-                results.append(run_scenario(self, index, outline, run_callbacks=True))
-        else:
-            results.append(run_scenario(self, run_callbacks=True))
-
-        call_hook('after_each', 'scenario', self)
-        return results
+        return True
 
     def represented(self):
         make_prefix = lambda x: u"%s%s: " % (u' ' * self.indentation, x)
@@ -574,7 +546,7 @@ class Feature(parser.Feature):
 
         if scenarios:
             scenarios = [self.scenarios[i-1] for i in scenarios
-                         if isinstance(scenario, int)]
+                         if isinstance(i, int)]
         else:
             scenarios = self.scenarios
 
@@ -589,16 +561,22 @@ class Feature(parser.Feature):
         if random:
             shuffle(scenarios)
 
-        call_hook('before_each', 'feature', self)
+        results = []
+
         try:
-            scenarios_ran = [scenario.run(ignore_case, failfast=failfast)
-                             for scenario in scenarios]
+            call_hook('before_each', 'feature', self)
+
+            for scenario in scenarios:
+                proceed = scenario.run(ignore_case, failfast=failfast)
+                results += scenario.results
+
+                if not proceed:
+                    break
+
         finally:
             call_hook('after_each', 'feature', self)
 
-        # FIXME: do I need to chain the results?
-
-        return FeatureResult(self, *scenarios_ran)
+        return FeatureResult(self, *results)
 
 
 class FeatureResult(object):

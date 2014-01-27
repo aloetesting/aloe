@@ -60,3 +60,10 @@ class LettuceSyntaxError(SyntaxError):
 class StepLoadingError(Exception):
     """Raised when a step cannot be loaded."""
     pass
+
+
+class FailFast(Exception):
+    """
+    Raised to fail step processing fast
+    """
+    pass
