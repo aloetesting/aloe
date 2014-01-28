@@ -206,9 +206,10 @@ class TaggedBlock(Block):
                             if not tag.startswith('-')
                             and not tag.startswith('~'))
 
-        # the required tags should be a subset of our tags
+        # at least one of the required tags should appear in ours tags (i.e.
+        # the intersection is not {})
         # the unwanted tags should be a disjoint set (i.e. intersection is {})
-        if not required_tags <= our_tags or \
+        if (required_tags and required_tags.isdisjoint(our_tags)) or \
            not unwanted_tags.isdisjoint(our_tags):
             # if either case isn't true, don't even attempt the fuzzy matching
             return False
