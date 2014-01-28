@@ -27,12 +27,10 @@ from pyparsing import (CharsNotIn,
                        Group,
                        Keyword,
                        lineEnd,
-                       lineStart,
                        lineno,
                        OneOrMore,
                        Optional,
                        ParseException,
-                       ParserElement,
                        printables,
                        pythonStyleComment,
                        QuotedString,  # function
@@ -41,7 +39,6 @@ from pyparsing import (CharsNotIn,
                        SkipTo,
                        stringEnd,
                        Suppress,
-                       White,
                        Word,
                        ZeroOrMore)
 
@@ -447,14 +444,16 @@ FEATURE.ignore(pythonStyleComment)
 FEATURE.setParseAction(Feature.add_blocks)
 
 
-def from_string(cls, string):
+def _parse(token, string):
     """
-    Parse a Feature object from a string
+    Attempt to parse a token stream from a string or raise a SyntaxError
+
+    FIXME: make this a string or a file
     """
 
     try:
-        tokens = FEATURE.parseString(string)
-        return tokens[0]
+        tokens = token.parseString(string)
+        return tokens
     except ParseException as e:
         raise LettuceSyntaxError(
             None,
@@ -465,4 +464,32 @@ def from_string(cls, string):
                 line=e.line,
                 space=' ' * (e.col - 1)))
 
-Feature.from_string = classmethod(from_string)
+
+def from_string(token):
+    """
+    Factory returning a from_string parser for a given token
+    """
+
+    def inner(cls, string):
+        """
+        Parse an object from a string.
+        """
+        return _parse(token, string)[0]
+
+    return classmethod(inner)
+
+Feature.from_string = from_string(FEATURE)
+
+
+def parse_statements(cls, string):
+    """
+    Parse a number of statements
+
+    This is used by step.behave_as
+    """
+
+    tokens = _parse(STATEMENTS, string)
+
+    return list(tokens[0])
+
+Step.parse_steps_from_string = classmethod(parse_statements)

@@ -18,11 +18,8 @@
 
 
 import re
-import codecs
 import unicodedata
 
-from copy import deepcopy
-from itertools import chain
 from random import shuffle
 
 from lettuce import parser, strings, languages
@@ -30,8 +27,7 @@ from lettuce.fs import FileSystem
 from lettuce.registry import STEP_REGISTRY, call_hook
 from lettuce.exceptions import (ReasonToFail,
                                 FailFast,
-                                NoDefinitionFound,
-                                LettuceSyntaxError)
+                                NoDefinitionFound)
 
 fs = FileSystem()
 
@@ -250,7 +246,7 @@ class Step(parser.Step):
         lines = strings.json_to_string(self.columns, self.non_unique_keys).splitlines()
         return u"\n".join([(u" " * self.table_indentation) + line for line in lines]) + "\n"
 
-    def _get_match(self, ignore_case):
+    def _get_match(self, ignore_case=True):
         matched, func = None, lambda: None
 
         for regex, func in STEP_REGISTRY.items():
@@ -260,7 +256,7 @@ class Step(parser.Step):
 
         return matched, StepDefinition(self, func)
 
-    def pre_run(self, ignore_case, with_outline=None):
+    def pre_run(self, ignore_case=True, with_outline=None):
         matched, step_definition = self._get_match(ignore_case)
         self.related_outline = with_outline
 
@@ -274,16 +270,17 @@ class Step(parser.Step):
         return matched, step_definition
 
     def given(self, string):
-        return self.behave_as(string)
+        return self.behave_as("Given " + string)
 
     def when(self, string):
-        return self.behave_as(string)
+        return self.behave_as("When " + string)
 
     def then(self, string):
-        return self.behave_as(string)
+        return self.behave_as("Then " + string)
 
     def behave_as(self, string):
-        """ Parses and runs steps given in string form.
+        """
+        Parses and run a step given in string form.
 
         In your step definitions, you can use this to run one step from another.
 
@@ -298,29 +295,21 @@ class Step(parser.Step):
 
         This will raise the error of the first failing step (thus halting
         execution of the step) if a subordinate step fails.
-
         """
-        lines = string.split('\n')
-        steps = self.many_from_lines(lines)
 
-        if hasattr(self, 'scenario'):
-            for step in steps:
-                step.scenario = self.scenario
+        steps = self.parse_steps_from_string(string)
 
-        (_, _, steps_failed, steps_undefined) = self.run_all(steps)
-        if not steps_failed and not steps_undefined:
-            self.passed = True
-            self.failed = False
-            return self.passed
-        self.passed = False
-        self.failed = True
-        assert not steps_failed, steps_failed[0].why.exception
-        assert not steps_undefined, "Undefined step: %s" % steps_undefined[0].sentence
+        for step in steps:
+            step.__class__ = self.__class__
+            step.scenario = self.scenario
+            step.run()
 
-    def run(self, ignore_case):
+        # FIXME: how do we bubble up the information?
+
+    def run(self, ignore_case=True):
         """Runs a step, trying to resolve it on available step
         definitions"""
-        matched, step_definition = self.pre_run(ignore_case)
+        matched, step_definition = self.pre_run(ignore_case=ignore_case)
         self.ran = True
         kw = matched.groupdict()
 
@@ -361,7 +350,7 @@ class Scenario(parser.Scenario):
     def failed(self):
         return any(step.failed for step in self.steps)
 
-    def run(self, ignore_case, failfast=False):
+    def run(self, ignore_case=True, failfast=False):
         """
         Runs a scenario, running each of its steps. Also call
         before_each and after_each callbacks for steps and scenario
@@ -383,12 +372,13 @@ class Scenario(parser.Scenario):
 
             try:
                 if self.background:
-                    self.background.run(ignore_case)
+                    self.background.run(ignore_case=ignore_case)
 
                 # pre-run the steps so we have their definitions set
                 for step in steps:
                     try:
-                        step.pre_run(ignore_case, with_outline=outline)
+                        step.pre_run(ignore_case=ignore_case,
+                                     with_outline=outline)
                     except NoDefinitionFound:
                         pass
 
@@ -398,7 +388,7 @@ class Scenario(parser.Scenario):
                         call_hook('before_each', 'step', step)
                         call_hook('before_output', 'step', step)
 
-                        step.run(ignore_case)
+                        step.run(ignore_case=ignore_case)
 
                     except (NoDefinitionFound, AssertionError) as e:
                         # we expect steps to assert or not be found
@@ -473,15 +463,15 @@ class Scenario(parser.Scenario):
 class Background(parser.Background):
     indentation = 2
 
-    def run(self, ignore_case):
+    def run(self, ignore_case=True):
         call_hook('before_each', 'background', self)
         results = []
 
         for step in self.steps:
-            matched, step_definition = step.pre_run(ignore_case)
+            matched, step_definition = step.pre_run(ignore_case=ignore_case)
             call_hook('before_each', 'step', step)
             try:
-                results.append(step.run(ignore_case))
+                results.append(step.run(ignore_case=ignore_case))
             except Exception, e:
                 print e
                 pass
@@ -567,7 +557,8 @@ class Feature(parser.Feature):
             call_hook('before_each', 'feature', self)
 
             for scenario in scenarios:
-                proceed = scenario.run(ignore_case, failfast=failfast)
+                proceed = scenario.run(ignore_case=ignore_case,
+                                       failfast=failfast)
                 results += scenario.results
 
                 if not proceed:

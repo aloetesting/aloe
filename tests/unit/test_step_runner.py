@@ -14,14 +14,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from lettuce import step
-from lettuce import after
-from lettuce import core
-from lettuce import registry
-from lettuce.core import Step
-from lettuce.core import Feature
-from lettuce.exceptions import StepLoadingError
+
+from inspect import currentframe
+
+from lettuce import step, after, core, registry
+from lettuce.core import Step, Feature
+from lettuce.exceptions import StepLoadingError, NoDefinitionFound
+
 from nose.tools import *
+
 
 FEATURE1 = """
 Feature: Count steps ran
@@ -112,6 +113,23 @@ Feature: Many scenarios
   Scenario: 2nd one
     Given I have a defined step
 """
+
+FEATURE11 = """
+Feature: test step runs subordinate step with given
+  Scenario: A complex scenario
+    Given I do many complex things
+"""
+
+
+def parse_steps(steps):
+    feature = """
+    Feature: a feature
+    Scenario: a scenario
+    """
+
+    feature += steps
+
+    return Feature.from_string(feature)
 
 
 def step_runner_environ():
@@ -229,16 +247,25 @@ def test_doesnt_ignore_case():
 def test_steps_are_aware_of_its_definitions():
     "Steps are aware of its definitions line numbers and file names"
 
-    f = Feature.from_string(FEATURE1)
-    feature_result = f.run()
-    scenario_result = feature_result.scenario_results[0]
+    line = currentframe().f_lineno  # get line number
+    @step(r'a defined step')
+    def a_step(step):
+        pass
 
-    for step in scenario_result.steps_passed:
-        assert step.has_definition
+    feature = Feature.from_string("""
+    Feature: can locate a step
+        Scenario: determine a step's location
+            Given a defined step
+    """)
+
+    scenario_result = feature.run().scenario_results[0]
+
+    for step_ in scenario_result.steps_passed:
+        assert step_.has_definition
 
     step1 = scenario_result.steps_passed[0]
 
-    assert_equals(step1.defined_at.line, 124)
+    assert_equals(step1.defined_at.line, line + 2)
     assert_equals(step1.defined_at.file, core.fs.relpath(__file__.rstrip("c")))
 
 @with_setup(step_runner_environ)
@@ -329,6 +356,7 @@ def test_feature_can_run_only_specified_scenarios_in_tags():
         scenarios_ran.append(scenario.name)
 
     result = feature.run(tags=['first', 'third'])
+
     assert result.scenario_results
 
     assert_equals(scenarios_ran, ['1st one', '3rd one'])
@@ -351,17 +379,18 @@ def test_scenarios_inherit_feature_tags():
     assert_equals(scenarios_ran, ['1st one', '2nd one'])
 
 
-@with_setup(step_runner_environ)
-def test_count_raised_exceptions_as_failing_steps():
-    "When a step definition raises an exception, it is marked as a failed step. "
-
-    try:
-        f = Feature.from_string(FEATURE8)
-        feature_result = f.run()
-        scenario_result = feature_result.scenario_results[0]
-        assert_equals(len(scenario_result.steps_failed), 1)
-    finally:
-        registry.clear()
+# FIXME: do we want all exceptions or just assertion?
+# @with_setup(step_runner_environ)
+# def test_count_raised_exceptions_as_failing_steps():
+#     "When a step definition raises an exception, it is marked as a failed step. "
+#
+#     try:
+#         f = Feature.from_string(FEATURE8)
+#         feature_result = f.run()
+#         scenario_result = feature_result.scenario_results[0]
+#         assert_equals(len(scenario_result.steps_failed), 1)
+#     finally:
+#         registry.clear()
 
 def test_step_runs_subordinate_step_with_given():
     global simple_thing_ran
@@ -375,8 +404,9 @@ def test_step_runs_subordinate_step_with_given():
     def complex_things(step):
         step.given('I do something simple')
 
-    runnable_step = Step.from_string('Given I do many complex things')
-    runnable_step.run(True)
+    feature = Feature.from_string(FEATURE11)
+
+    feature.run()
     assert(simple_thing_ran)
 
     del simple_thing_ran
@@ -393,8 +423,8 @@ def test_step_runs_subordinate_step_with_then():
     def complex_things(step):
         step.then('I do something simple')
 
-    runnable_step = Step.from_string('Then I do many complex things')
-    runnable_step.run(True)
+    feature = parse_steps('Then I do many complex things')
+    feature.run()
     assert(simple_thing_ran)
 
     del simple_thing_ran
@@ -411,14 +441,17 @@ def test_step_runs_subordinate_step_with_when():
     def complex_things(step):
         step.when('I do something simple')
 
-    runnable_step = Step.from_string('When I do many complex things')
-    runnable_step.run(True)
+    feature = parse_steps('When I do many complex things')
+    feature.run()
     assert(simple_thing_ran)
 
     del simple_thing_ran
 
 def test_multiple_subordinate_steps_are_run():
-    'When a step definition calls two subordinate step definitions (that do not fail), both should run.'
+    """
+    When a step definition calls two subordinate step definitions (that do
+    not fail), both should run.
+    """
 
     @step('I run two subordinate steps')
     def two_subordinate_steps(step):
@@ -442,8 +475,8 @@ def test_multiple_subordinate_steps_are_run():
         global second_ran
         second_ran = True
 
-    runnable_step = Step.from_string('Given I run two subordinate steps')
-    runnable_step.run(True)
+    feature = parse_steps('Given I run two subordinate steps')
+    feature.run()
     assert_equals((first_ran, second_ran), (True, True))
 
     del first_ran
@@ -451,52 +484,81 @@ def test_multiple_subordinate_steps_are_run():
 
 @with_setup(step_runner_environ)
 def test_successful_behave_as_step_passes():
-    'When a step definition calls another (successful) step definition with behave_as, that step should be a success.'
-    runnable_step = Step.from_string('Given I have a step which calls the "define a step" step with behave_as')
-    runnable_step.run(True)
-    assert runnable_step.passed
+    """
+    When a step definition calls another (successful) step definition with
+    behave_as, that step should be a success.
+    """
+
+    feature = parse_steps('Given I have a step which calls the "define a step"'
+                          ' step with behave_as')
+    feature.run()
+    assert feature.scenarios[0].steps[0].passed
 
 @with_setup(step_runner_environ)
 def test_successful_behave_as_step_doesnt_fail():
-    'When a step definition calls another (successful) step definition with behave_as, that step should not be marked a failure.'
-    runnable_step = Step.from_string('Given I have a step which calls the "define a step" step with behave_as')
-    runnable_step.run(True)
-    assert_false(runnable_step.failed)
+    """
+    When a step definition calls another (successful) step definition with
+    behave_as, that step should not be marked a failure.
+    """
+
+    feature = parse_steps('Given I have a step which calls the "define a '
+                          'step" step with behave_as')
+    feature.run()
+    assert_false(feature.scenarios[0].steps[0].failed)
 
 @with_setup(step_runner_environ)
 def test_failing_behave_as_step_doesnt_pass():
-    'When a step definition calls another (failing) step definition with behave_as, that step should not be marked as success.'
-    runnable_step = Step.from_string('Given I have a step which calls the "other step fails" step with behave_as')
-    try:
-        runnable_step.run(True)
-    except:
-        pass
+    """
+    When a step definition calls another (failing) step definition with
+    behave_as, that step should not be marked as success.
+    """
 
-    assert_false(runnable_step.passed)
+    feature = parse_steps('Given I have a step which calls the "other step '
+                          'fails" step with behave_as')
+    feature.run()
+
+    assert_false(feature.scenarios[0].steps[0].passed)
 
 @with_setup(step_runner_environ)
 def test_failing_behave_as_step_fails():
-    'When a step definition calls another (failing) step definition with behave_as, that step should be marked a failure.'
-    runnable_step = Step.from_string('Given I have a step which calls the "other step fails" step with behave_as')
-    try:
-        runnable_step.run(True)
-    except:
-        pass
+    """
+    When a step definition calls another (failing) step definition with
+    behave_as, that step should be marked a failure.
+    """
 
-    assert runnable_step.failed
+    feature = parse_steps('Given I have a step which calls the "other step '
+                          'fails" step with behave_as')
+
+    feature.run()
+
+    assert feature.scenarios[0].steps[0].failed
 
 @with_setup(step_runner_environ)
 def test_undefined_behave_as_step_doesnt_pass():
-    'When a step definition calls an undefined step definition with behave_as, that step should not be marked as success.'
-    runnable_step = Step.from_string('Given I have a step which calls the "undefined step" step with behave_as')
-    assert_raises(AssertionError, runnable_step.run, True)
+    """
+    When a step definition calls an undefined step definition with behave_as,
+    that step should not be marked as success.
+    """
+
+    feature = parse_steps('Given I have a step which calls the "undefined '
+                          'step" step with behave_as')
+    runnable_step = feature.scenarios[0].steps[0]
+
+    assert_raises(NoDefinitionFound, runnable_step.run, True)
     assert_false(runnable_step.passed)
 
 @with_setup(step_runner_environ)
 def test_undefined_behave_as_step_fails():
-    'When a step definition calls an undefined step definition with behave_as, that step should be marked a failure.'
-    runnable_step = Step.from_string('Given I have a step which calls the "undefined step" step with behave_as')
-    assert_raises(AssertionError, runnable_step.run, True)
+    """
+    When a step definition calls an undefined step definition with behave_as,
+    that step should be marked a failure.
+    """
+
+    feature = parse_steps('Given I have a step which calls the "undefined '
+                          'step" step with behave_as')
+    runnable_step = feature.scenarios[0].steps[0]
+
+    assert_raises(NoDefinitionFound, runnable_step.run, True)
     assert runnable_step.failed
 
 @with_setup(step_runner_environ)
