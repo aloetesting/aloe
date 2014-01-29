@@ -32,54 +32,6 @@ from lettuce.exceptions import (ReasonToFail,
 fs = FileSystem()
 
 
-# class REP(object):
-#     "RegEx Pattern"
-#     first_of = re.compile(ur'^first_of_')
-#     last_of = re.compile(ur'^last_of_')
-#     language = re.compile(u"language:[ ]*([^\s]+)")
-#     within_double_quotes = re.compile(r'("[^"]+")')
-#     within_single_quotes = re.compile(r"('[^']+')")
-#     only_whitespace = re.compile('^\s*$')
-#     last_tag_extraction_regex = re.compile(ur'(?:\s|^)[@](\S+)\s*$')
-#     first_tag_extraction_regex = re.compile(ur'^\s*[@](\S+)(?:\s|$)')
-#     tag_strip_regex = re.compile(ur'(?:(?:^\s*|\s+)[@]\S+\s*)+$', re.DOTALL)
-#     comment_strip1 = re.compile(ur'(^[^\'"]*)[#]([^\'"]*)$')
-#     comment_strip2 = re.compile(ur'(^[^\'"]+)[#](.*)$')
-
-
-# class HashList(list):
-#     __base_msg = 'The step "%s" have no table defined, so ' \
-#         'that you can\'t use step.hashes.%s'
-#
-#     def __init__(self, step, *args, **kw):
-#         self.step = step
-#         super(HashList, self).__init__(*args, **kw)
-#
-#     def values_under(self, key):
-#         msg = 'The step "%s" have no table column with the key "%s". ' \
-#             'Could you check your step definition for that ? ' \
-#             'Maybe there is a typo :)'
-#
-#         try:
-#             return [h[key] for h in self]
-#         except KeyError:
-#             raise AssertionError(msg % (self.step.sentence, key))
-#
-#     @property
-#     def first(self):
-#         if len(self) > 0:
-#             return self[0]
-#
-#         raise AssertionError(self.__base_msg % (self.step.sentence, 'first'))
-#
-#     @property
-#     def last(self):
-#         if len(self) > 0:
-#             return self[-1]
-#
-#         raise AssertionError(self.__base_msg % (self.step.sentence, 'last'))
-
-
 class Language(object):
     code = 'en'
     name = 'English'
@@ -124,8 +76,11 @@ class Language(object):
 
 
 class StepDefinition(object):
-    """A step definition is a wrapper for user-defined callbacks. It
-    gets a few metadata from file, such as filename and line number"""
+    """
+    A step definition is a wrapper for user-defined callbacks. It
+    gets a few metadata from file, such as filename and line number
+    """
+
     def __init__(self, step, function):
         self.function = function
         self.file = fs.relpath(function.func_code.co_filename)
@@ -133,7 +88,8 @@ class StepDefinition(object):
         self.step = step
 
     def __call__(self, *args, **kw):
-        """Method that actually wrapps the call to step definition
+        """
+        Method that actually wrapps the call to step definition
         callback. Sends step object as first argument
         """
         try:
@@ -154,10 +110,11 @@ class StepDefinition(object):
 
 
 class Step(parser.Step):
-    """ Object that represents each step on feature files."""
+    """
+    Object that represents each step on feature files.
+    """
+
     has_definition = False
-    indentation = 4
-    table_indentation = indentation + 2
     defined_at = None
     why = None
     ran = False
@@ -165,49 +122,10 @@ class Step(parser.Step):
     failed = None
     related_outline = None
     scenario = None
-    background = None
-    display = True
-    columns = None
-    matrix = None
-
-    @property
-    def max_length(self):
-        max_length_sentence = strings.column_width(self.sentence) + \
-            self.indentation
-        max_length_original = strings.column_width(self.original_sentence) + \
-            self.indentation
-
-        max_length = max([max_length_original, max_length_sentence])
-        for data in self.hashes:
-            key_size = self._calc_key_length(data)
-            if key_size > max_length:
-                max_length = key_size
-
-            value_size = self._calc_value_length(data)
-            if value_size > max_length:
-                max_length = value_size
-
-        return max_length
 
     @property
     def parent(self):
         return self.scenario or self.background
-
-    def represent_string(self, string):
-        head = ' ' * self.indentation + string
-        where = self.described_at
-
-        if self.defined_at:
-            where = self.defined_at
-        return strings.rfill(head, self.parent.feature.max_length + 1, append=u'# %s:%d\n' % (where.file, where.line))
-
-    def represent_hashes(self):
-        lines = strings.dicts_to_string(self.hashes, self.keys).splitlines()
-        return u"\n".join([(u" " * self.table_indentation) + line for line in lines]) + "\n"
-
-    def represent_columns(self):
-        lines = strings.json_to_string(self.columns, self.non_unique_keys).splitlines()
-        return u"\n".join([(u" " * self.table_indentation) + line for line in lines]) + "\n"
 
     def _get_match(self, ignore_case=True):
         matched, func = None, lambda: None
@@ -286,8 +204,6 @@ class Step(parser.Step):
 class Scenario(parser.Scenario):
     """ Object that represents each scenario on feature files."""
     described_at = None
-    indentation = 2
-    table_indentation = indentation + 2
 
     @property
     def background(self):
@@ -386,42 +302,8 @@ class Scenario(parser.Scenario):
 
         return True
 
-    def represented(self):
-        make_prefix = lambda x: u"%s%s: " % (u' ' * self.indentation, x)
-        if self.outlines:
-            prefix = make_prefix(self.language.first_of_scenario_outline)
-        else:
-            prefix = make_prefix(self.language.first_of_scenario)
-
-        head_parts = []
-        if self.tags:
-            tags = ['@%s' % t for t in self.tags]
-            head_parts.append(u' ' * self.indentation)
-            head_parts.append(' '.join(tags) + '\n')
-
-        head_parts.append(prefix + self.name)
-
-        head = ''.join(head_parts)
-        appendix = ''
-        if self.described_at:
-            fmt = (self.described_at.file, self.described_at.line)
-            appendix = u'# %s:%d\n' % fmt
-
-        max_length = self.max_length
-        if self.feature:
-            max_length = self.feature.max_length
-
-        return strings.rfill(
-            head, max_length + 1,
-            append=appendix)
-
-    def represent_examples(self):
-        lines = strings.dicts_to_string(self.outlines, self.keys).splitlines()
-        return "\n".join([(u" " * self.table_indentation) + line for line in lines]) + '\n'
-
 
 class Background(parser.Background):
-    indentation = 2
 
     def run(self, ignore_case=True):
         call_hook('before_each', 'background', self)
@@ -430,35 +312,23 @@ class Background(parser.Background):
         for step in self.steps:
             matched, step_definition = step.pre_run(ignore_case=ignore_case)
             call_hook('before_each', 'step', step)
-            try:
-                results.append(step.run(ignore_case=ignore_case))
-            except Exception, e:
-                print e
-                pass
+
+            results.append(step.run(ignore_case=ignore_case))
 
             call_hook('after_each', 'step', step)
 
         call_hook('after_each', 'background', self, results)
+
         return results
 
     def __repr__(self):
         return '<Background for feature: {0}>'.format(self.feature.name)
 
-    @property
-    def max_length(self):
-        max_length = 0
-        for step in self.steps:
-            if step.max_length > max_length:
-                max_length = step.max_length
-
-        return max_length
-
-    def represented(self):
-        return ((' ' * self.indentation) + 'Background:')
-
 
 class Feature(parser.Feature):
-    """ Object that represents a feature."""
+    """
+    Object that represents a feature.
+    """
 
     @classmethod
     def from_string(cls, string):
@@ -482,9 +352,6 @@ class Feature(parser.Feature):
                 step.__class__ = Step
 
         return self
-
-    def get_head(self):
-        return u"%s: %s" % (self.language.first_of_feature, self.name)
 
     def run(self, scenarios=None,
             ignore_case=True,

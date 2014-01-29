@@ -262,35 +262,9 @@ class Scenario(TaggedBlock):
         return self._tags + self.feature.tags
 
     @property
-    def solved_steps(self):
-        """
-        Return a list of the steps, with any outline substitutions applied
-        """
-
-        if not self.outlines:
-            return self.steps
-
-        if hasattr(self, '_solved_steps'):
-            return self._solved_steps
-
-        steps = [step.resolve_substitutions(outline)
-                 for outline in self.outlines
-                 for step in self.steps]
-
-        # set a backref to the scenario
-        for step in steps:
-            step.scenario = self
-
-        self._solved_steps = steps
-
-        return steps
-
-    @property
     def evaluated(self):
         """
         Yield the outline and steps
-
-        FIXME: why do we have both this and solved steps?
         """
 
         for outline in self.outlines:
@@ -302,6 +276,19 @@ class Scenario(TaggedBlock):
                 step.scenario = self
 
             yield (outline, steps)
+
+    @property
+    def solved_steps(self):
+        """
+        DO NOT USE: Used only in the tests.
+        """
+
+        all_steps = []
+
+        for _, steps in self.evaluated:
+            all_steps += steps
+
+        return all_steps
 
 
 class Feature(TaggedBlock):
