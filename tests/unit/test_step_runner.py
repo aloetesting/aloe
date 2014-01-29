@@ -99,8 +99,8 @@ Feature: Count step definitions with exceptions as failing steps
 
 FEATURE9 = """
 Feature: When using behave_as, the new steps have the same scenario
-  Scenario: The Original Scenario
-    Given I have a step which calls the "access the scenario" step with behave_as
+ Scenario: The Original Scenario
+  Given I have a step which calls the "access the scenario" step with behave_as
 """
 
 FEATURE10 = """
@@ -156,17 +156,22 @@ def step_runner_environ():
 
     @step('I have a step which calls the "(.*)" step with behave_as')
     def runs_some_other_step_with_behave_as(step, something_else):
-        step.behave_as("When %(i_do_something_else)s" % {'i_do_something_else': something_else})
+        step.behave_as("When %(i_do_something_else)s" % {
+            'i_do_something_else': something_else
+        })
 
 
 def step_runner_cleanup():
     from lettuce import registry
     registry.clear()
 
+
 @with_setup(step_runner_environ)
 def test_can_count_steps_and_its_states():
-    "The scenario result has the steps passed, failed and skipped steps. " \
-    "And total steps as well."
+    """
+    The scenario result has the steps passed, failed and skipped steps.
+    And total steps as well.
+    """
 
     f = Feature.from_string(FEATURE1)
     feature_result = f.run()
@@ -177,6 +182,7 @@ def test_can_count_steps_and_its_states():
     assert_equals(len(scenario_result.steps_undefined), 1)
     assert_equals(len(scenario_result.steps_skipped), 1)
     assert_equals(scenario_result.total_steps, 4)
+
 
 @with_setup(step_runner_environ)
 def test_can_point_undefined_steps():
@@ -195,6 +201,7 @@ def test_can_point_undefined_steps():
     assert_equals(undefined1.sentence, 'Then this one has no definition')
     assert_equals(undefined2.sentence, 'And this one also')
 
+
 @with_setup(step_runner_environ)
 def test_can_figure_out_why_has_failed():
     "It can figure out why the test has failed"
@@ -210,6 +217,7 @@ def test_can_figure_out_why_has_failed():
     assert 'AssertionError: It should fail' in failed_step.why.traceback
     assert_equals(type(failed_step.why.exception), AssertionError)
 
+
 @with_setup(step_runner_environ)
 def test_skipped_steps_can_be_retrieved_as_steps():
     "Skipped steps can be retrieved as steps"
@@ -219,6 +227,7 @@ def test_skipped_steps_can_be_retrieved_as_steps():
     scenario_result = feature_result.scenario_results[0]
     for step in scenario_result.steps_skipped:
         assert_equals(type(step), Step)
+
 
 @with_setup(step_runner_environ)
 def test_ignore_case_on_step_definitions():
@@ -230,6 +239,7 @@ def test_ignore_case_on_step_definitions():
     assert_equals(len(scenario_result.steps_passed), 3)
     assert_equals(scenario_result.total_steps, 3)
     assert all([s.has_definition for s in scenario_result.scenario.steps])
+
 
 @with_setup(step_runner_environ)
 def test_doesnt_ignore_case():
@@ -243,11 +253,13 @@ def test_doesnt_ignore_case():
     assert_equals(scenario_result.total_steps, 3)
     assert not all([s.has_definition for s in scenario_result.scenario.steps])
 
+
 @with_setup(step_runner_environ)
 def test_steps_are_aware_of_its_definitions():
     "Steps are aware of its definitions line numbers and file names"
 
     line = currentframe().f_lineno  # get line number
+
     @step(r'a defined step')
     def a_step(step):
         pass
@@ -265,8 +277,9 @@ def test_steps_are_aware_of_its_definitions():
 
     step1 = scenario_result.steps_passed[0]
 
-    assert_equals(step1.defined_at.line, line + 2)
+    assert_equals(step1.defined_at.line, line + 3)
     assert_equals(step1.defined_at.file, core.fs.relpath(__file__.rstrip("c")))
+
 
 @with_setup(step_runner_environ)
 def test_steps_that_match_groups_takes_them_as_parameters():
@@ -282,6 +295,7 @@ def test_steps_that_match_groups_takes_them_as_parameters():
     assert_equals(len(scenario_result.steps_passed), 1)
     assert_equals(scenario_result.total_steps, 1)
 
+
 @with_setup(step_runner_environ)
 def test_steps_that_match_named_groups_takes_them_as_parameters():
     "Steps that match named groups takes them as parameters"
@@ -296,9 +310,13 @@ def test_steps_that_match_named_groups_takes_them_as_parameters():
     assert_equals(len(scenario_result.steps_passed), 1)
     assert_equals(scenario_result.total_steps, 1)
 
+
 @with_setup(step_runner_environ)
 def test_steps_that_match_groups_and_named_groups_takes_just_named_as_params():
-    "Steps that match groups and named groups takes just the named as parameters"
+    """
+    Steps that match groups and named groups takes just the named as parameters
+    """
+
     @step(r'(he|she) gets a (?P<what>\w+)')
     def given_action_named(step, what):
         assert_equals(what, 'caipirinha')
@@ -308,6 +326,7 @@ def test_steps_that_match_groups_and_named_groups_takes_just_named_as_params():
     scenario_result = feature_result.scenario_results[0]
     assert_equals(len(scenario_result.steps_passed), 1)
     assert_equals(scenario_result.total_steps, 1)
+
 
 @with_setup(step_runner_environ)
 def test_step_definitions_takes_the_step_object_as_first_argument():
@@ -329,6 +348,7 @@ def test_step_definitions_takes_the_step_object_as_first_argument():
     assert_equals(len(scenario_result.steps_passed), 1)
     assert_equals(scenario_result.total_steps, 1)
 
+
 @with_setup(step_runner_environ)
 def test_feature_can_run_only_specified_scenarios():
     "Features can run only specified scenarios, by index + 1"
@@ -336,6 +356,7 @@ def test_feature_can_run_only_specified_scenarios():
     feature = Feature.from_string(FEATURE7)
 
     scenarios_ran = []
+
     @after.each_scenario
     def just_register(scenario):
         scenarios_ran.append(scenario.name)
@@ -382,7 +403,9 @@ def test_scenarios_inherit_feature_tags():
 # FIXME: do we want all exceptions or just assertion?
 # @with_setup(step_runner_environ)
 # def test_count_raised_exceptions_as_failing_steps():
-#     "When a step definition raises an exception, it is marked as a failed step. "
+#     """
+#     When a step definition raises an exception, it is marked as a failed step
+#     """
 #
 #     try:
 #         f = Feature.from_string(FEATURE8)
@@ -392,9 +415,11 @@ def test_scenarios_inherit_feature_tags():
 #     finally:
 #         registry.clear()
 
+
 def test_step_runs_subordinate_step_with_given():
     global simple_thing_ran
     simple_thing_ran = False
+
     @step('I do something simple')
     def simple_thing(step):
         global simple_thing_ran
@@ -411,9 +436,11 @@ def test_step_runs_subordinate_step_with_given():
 
     del simple_thing_ran
 
+
 def test_step_runs_subordinate_step_with_then():
     global simple_thing_ran
     simple_thing_ran = False
+
     @step('I do something simple')
     def simple_thing(step):
         global simple_thing_ran
@@ -429,9 +456,11 @@ def test_step_runs_subordinate_step_with_then():
 
     del simple_thing_ran
 
+
 def test_step_runs_subordinate_step_with_when():
     global simple_thing_ran
     simple_thing_ran = False
+
     @step('I do something simple')
     def simple_thing(step):
         global simple_thing_ran
@@ -446,6 +475,7 @@ def test_step_runs_subordinate_step_with_when():
     assert(simple_thing_ran)
 
     del simple_thing_ran
+
 
 def test_multiple_subordinate_steps_are_run():
     """
@@ -482,6 +512,7 @@ def test_multiple_subordinate_steps_are_run():
     del first_ran
     del second_ran
 
+
 @with_setup(step_runner_environ)
 def test_successful_behave_as_step_passes():
     """
@@ -493,6 +524,7 @@ def test_successful_behave_as_step_passes():
                           ' step with behave_as')
     feature.run()
     assert feature.scenarios[0].steps[0].passed
+
 
 @with_setup(step_runner_environ)
 def test_successful_behave_as_step_doesnt_fail():
@@ -506,6 +538,7 @@ def test_successful_behave_as_step_doesnt_fail():
     feature.run()
     assert_false(feature.scenarios[0].steps[0].failed)
 
+
 @with_setup(step_runner_environ)
 def test_failing_behave_as_step_doesnt_pass():
     """
@@ -518,6 +551,7 @@ def test_failing_behave_as_step_doesnt_pass():
     feature.run()
 
     assert_false(feature.scenarios[0].steps[0].passed)
+
 
 @with_setup(step_runner_environ)
 def test_failing_behave_as_step_fails():
@@ -533,6 +567,7 @@ def test_failing_behave_as_step_fails():
 
     assert feature.scenarios[0].steps[0].failed
 
+
 @with_setup(step_runner_environ)
 def test_undefined_behave_as_step_doesnt_pass():
     """
@@ -546,6 +581,7 @@ def test_undefined_behave_as_step_doesnt_pass():
 
     assert_raises(NoDefinitionFound, runnable_step.run, True)
     assert_false(runnable_step.passed)
+
 
 @with_setup(step_runner_environ)
 def test_undefined_behave_as_step_fails():
@@ -561,15 +597,26 @@ def test_undefined_behave_as_step_fails():
     assert_raises(NoDefinitionFound, runnable_step.run, True)
     assert runnable_step.failed
 
+
 @with_setup(step_runner_environ)
 def test_failing_behave_as_step_raises_assertion():
-    'When a step definition calls another (failing) step definition with behave_as, that step should be marked a failure.'
-    runnable_step = Step.from_string('Given I have a step which calls the "other step fails" step with behave_as')
-    assert_raises(AssertionError, runnable_step.run, True)
+    """
+    When a step definition calls another (failing) step definition with
+    behave_as, that step should be marked a failure.
+    """
+
+    feature = parse_steps('Given I have a step which calls the "other step '
+                          'fails" step with behave_as')
+    assert_raises(AssertionError, feature.scenarios[0].steps[0].run)
+
 
 @with_setup(step_runner_environ)
 def test_behave_as_step_can_access_the_scenario():
-    'When a step definition calls another step definition with behave_as, the step called using behave_as should have access to the current scenario'
+    """
+    When a step definition calls another step definition with behave_as,
+    the step called using behave_as should have access to the current scenario
+    """
+
     @step('[^"]access the scenario')
     def access_the_scenario(step):
         assert_equal(step.scenario.name, 'The Original Scenario')
@@ -577,9 +624,11 @@ def test_behave_as_step_can_access_the_scenario():
     try:
         f = Feature.from_string(FEATURE9)
         feature_result = f.run()
-        assert feature_result.passed, 'The scenario passed to the behave_as step did not match'
+        assert feature_result.passed, 'The scenario passed to the behave_as '
+        'step did not match'
     finally:
         registry.clear()
+
 
 @with_setup(step_runner_environ, step_runner_cleanup)
 def test_invalid_regex_raise_an_error():

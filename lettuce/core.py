@@ -142,9 +142,15 @@ class StepDefinition(object):
         except (AssertionError, NoDefinitionFound) as e:
             self.step.failed = True
             self.step.why = ReasonToFail(self.step, e)
-            raise
+            raise e
 
         return ret
+
+    def __repr__(self):
+        return '<StepDefinition: {func} {file}:{line}>'.format(
+            func=self.function.__name__,
+            file=self.file,
+            line=self.line)
 
 
 class Step(parser.Step):

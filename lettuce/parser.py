@@ -444,15 +444,15 @@ FEATURE.ignore(pythonStyleComment)
 FEATURE.setParseAction(Feature.add_blocks)
 
 
-def _parse(token, string):
+def _parse(token, string, method='parseString'):
     """
     Attempt to parse a token stream from a string or raise a SyntaxError
-
-    FIXME: make this a string or a file
     """
 
+    method = getattr(token, method)
+
     try:
-        tokens = token.parseString(string)
+        tokens = method(string)
         return tokens
     except ParseException as e:
         raise LettuceSyntaxError(
@@ -479,6 +479,16 @@ def from_string(token):
     return classmethod(inner)
 
 Feature.from_string = from_string(FEATURE)
+
+
+def from_file(cls, filename):
+    """
+    Parse a file or filename
+    """
+
+    return _parse(FEATURE, filename, method='parseFile')[0]
+
+Feature.from_file = classmethod(from_file)
 
 
 def parse_statements(cls, string):
