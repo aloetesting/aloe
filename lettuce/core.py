@@ -164,49 +164,6 @@ class Step(parser.Step):
     columns = None
     matrix = None
 
-    def propose_definition(self):
-        sentence = unicode(self.original_sentence)
-        method_name = sentence
-
-        groups = [
-            ('"', REP.within_double_quotes, r'"([^"]*)"'),
-            ("'", REP.within_single_quotes, r"\'([^\']*)\'"),
-        ]
-
-        attribute_names = []
-        for char, group, template in groups:
-            match_groups = group.search(self.original_sentence)
-            if match_groups:
-                for index, match in enumerate(group.findall(sentence)):
-                    sentence = sentence.replace(match, template)
-                    group_name = u"group%d" % (index + 1)
-                    method_name = method_name.replace(match, group_name)
-                    attribute_names.append(group_name)
-
-        method_name = unicodedata.normalize('NFKD', method_name) \
-                      .encode('ascii', 'ignore')
-        method_name = '%s(step%s)' % (
-            "_".join(re.findall("\w+", method_name)).lower(),
-            attribute_names and (", %s" % ", ".join(attribute_names)) or "")
-
-        return method_name, sentence
-
-    def _calc_list_length(self, lst):
-        length = self.table_indentation + 2
-        for item in lst:
-            length += strings.column_width(item) + 2
-
-        if len(lst) > 1:
-            length += 1
-
-        return length
-
-    def _calc_key_length(self, data):
-        return self._calc_list_length(data.keys())
-
-    def _calc_value_length(self, data):
-        return self._calc_list_length(data.values())
-
     @property
     def max_length(self):
         max_length_sentence = strings.column_width(self.sentence) + \
