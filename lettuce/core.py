@@ -139,7 +139,7 @@ class StepDefinition(object):
         try:
             ret = self.function(self.step, *args, **kw)
             self.step.passed = True
-        except AssertionError as e:
+        except (AssertionError, NoDefinitionFound) as e:
             self.step.failed = True
             self.step.why = ReasonToFail(self.step, e)
             raise
@@ -261,8 +261,6 @@ class Step(parser.Step):
             step.scenario = self.scenario
             step.run()
 
-        # FIXME: how do we bubble up the information?
-
     def run(self, ignore_case=True):
         """Runs a step, trying to resolve it on available step
         definitions"""
@@ -276,7 +274,6 @@ class Step(parser.Step):
             groups = matched.groups()
             step_definition(*groups)
 
-        self.passed = True
         return True
 
 
