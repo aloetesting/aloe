@@ -76,7 +76,7 @@ Fonctionnalité: Faire plusieur choses en même temps
     En tant que fainéant
     J'utilise les plans de scénario
 
-    Plan de Scénario: Ajouter 2 nombres
+    Plan du Scénario: Ajouter 2 nombres
         Soit <input_1> entré dans la calculatrice
         Et <input_2> entré dans la calculatrice
         Quand je presse <bouton>
@@ -114,9 +114,9 @@ def test_language_french():
     assert_equals(lang.code, u'fr')
     assert_equals(lang.name, u'French')
     assert_equals(lang.native, u'Français')
-    # assert_equals(lang.FEATURE, u'Fonctionnalité|Fonction')
+    assert_equals(lang.FEATURE, u'Fonctionnalité')
     assert_equals(lang.SCENARIO, u'Scénario')
-    # assert_equals(lang.EXAMPLES, u'Exemples|Scénarios')
+    assert_equals(lang.EXAMPLES, u'Exemples')
 
 # def test_scenario_fr_from_string():
 #     'Language: FR -> Scenario.from_string'
@@ -187,40 +187,41 @@ def test_language_french():
 #             {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
 #         ]
 #     )
-#
-# def test_feature_fr_from_string():
-#     'Language: FR -> Feature.from_string'
-#     lang = Language('fr')
-#
-#     feature = Feature.from_string(OUTLINED_FEATURE, language=lang)
-#
-#     assert_equals(
-#         feature.name,
-#         u'Faire plusieur choses en même temps'
-#     )
-#
-#     assert_equals(
-#         feature.description,
-#         u"De façon à automatiser les tests\n"
-#         u"En tant que fainéant\n"
-#         u"J'utilise les plans de scénario"
-#     )
-#
-#     (scenario, ) = feature.scenarios
-#
-#     assert_equals(
-#         scenario.name,
-#         'Ajouter 2 nombres'
-#     )
-#
-#     assert_equals(
-#         scenario.outlines,
-#         [
-#             {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
-#             {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
-#             {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
-#         ]
-#     )
+
+def test_feature_fr_from_string():
+    'Language: FR -> Feature.from_string'
+    lang = Language('fr')
+
+    feature = Feature.from_string(OUTLINED_FEATURE, language=lang)
+
+    assert_equals(
+        feature.name,
+        u'Faire plusieur choses en même temps'
+    )
+
+    assert_equals(
+        feature.description,
+        u"De façon à automatiser les tests\n"
+        u"En tant que fainéant\n"
+        u"J'utilise les plans de scénario"
+    )
+
+    (scenario, ) = feature.scenarios
+
+    assert_equals(
+        scenario.name,
+        'Ajouter 2 nombres'
+    )
+
+    assert_equals(
+        scenario.outlines,
+        [
+            {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
+            {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
+            {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
+        ]
+    )
+
 # def test_feature_fr_from_string2():
 #     'Language: FR -> Feature.from_string, alternate name'
 #     lang = Language('fr')

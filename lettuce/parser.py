@@ -319,129 +319,141 @@ class Feature(TaggedBlock):
         return self
 
 
-# FIXME -- determine the right language
-lang = languages.English()
-
-
-"""
-End of Line
-"""
-EOL = Suppress(lineEnd)
-
-"""
-@tag
-"""
-TAG = Suppress('@') + Word(printables)
-
-"""
-A table
-"""
-TABLE_ROW = Suppress('|') + OneOrMore(CharsNotIn('|\n') + Suppress('|')) + EOL
-TABLE_ROW.setParseAction(lambda tokens: [v.strip() for v in tokens])
-TABLE = Group(OneOrMore(Group(TABLE_ROW)))
-
-"""
-Multiline string
-"""
-MULTILINE = QuotedString('"""', multiline=True)
-
-"""
-A Step
-
-Steps begin with a keyword such as Given, When, Then or And
-They can contain an optional inline comment, although it's possible to
-encapsulate it in a string. Finally they can contain a table or a multiline
-'Python' string.
-
-<variables> are not parsed as part of the grammar as it's not easy to
-distinguish between a variable and XML. Instead scenarios will replace
-instances in the steps based on the outline keys.
-"""
-STATEMENT_SENTENCE = Group(
-    lang.STATEMENT +  # Given, When, Then, And
-    OneOrMore(Word(printables).setWhitespaceChars(' \t') |
-              quotedString.setWhitespaceChars(' \t')) +
-    EOL
-)
-
-STATEMENT = Group(
-    STATEMENT_SENTENCE('sentence') +
-    Optional(TABLE('table') | MULTILINE('multiline'))
-)
-STATEMENT.setParseAction(Step)
-
-STATEMENTS = Group(ZeroOrMore(STATEMENT))
-
-"""
-Background:
-"""
-BACKGROUND_DEFN = \
-    Suppress(lang.BACKGROUND + ':' + EOL)
-BACKGROUND_DEFN.setParseAction(Background)
-
-BACKGROUND = Group(
-    BACKGROUND_DEFN('node') +
-    STATEMENTS('statements')
-)
-BACKGROUND.setParseAction(Background.add_statements)
-
-"""
-Scenario: description
-"""
-SCENARIO_DEFN = Group(
-    Group(ZeroOrMore(TAG))('tags') +
-    Suppress(lang.SCENARIO + ':') +
-    restOfLine('name')
-)
-SCENARIO_DEFN.setParseAction(Scenario)
-
-SCENARIO = Group(
-    SCENARIO_DEFN('node') +
-    STATEMENTS('statements') +
-    Group(ZeroOrMore(
-        Suppress(lang.EXAMPLES + ':') + EOL + TABLE
-    ))('outlines')
-)
-SCENARIO.setParseAction(Scenario.add_statements)
-
-"""
-Feature: description
-"""
-FEATURE_DEFN = Group(
-    Group(ZeroOrMore(TAG))('tags') +
-    Suppress(lang.FEATURE + ':') +
-    restOfLine('name')
-)
-FEATURE_DEFN.setParseAction(Feature)
-
-
-"""
-Complete feature file definition
-"""
-FEATURE = Group(
-    FEATURE_DEFN('node') +
-    Group(SkipTo(BACKGROUND | SCENARIO))('description') +
-    Optional(BACKGROUND('background')) +
-    Group(OneOrMore(SCENARIO))('scenarios') +
-    stringEnd)
-FEATURE.ignore(pythonStyleComment)
-FEATURE.setParseAction(Feature.add_blocks)
-
-
-def _parse(token, string, method='parseString'):
+def parse(string=None, filename=None, token=None, lang=None):
     """
     Attempt to parse a token stream from a string or raise a SyntaxError
+
+    This function includes the parser grammar.
     """
 
-    method = getattr(token, method)
+    if not lang:
+        lang = languages.English()
+
+    #
+    # End of Line
+    #
+    EOL = Suppress(lineEnd)
+
+    #
+    # @tag
+    #
+    TAG = Suppress('@') + Word(printables)
+
+    #
+    # A table
+    #
+    TABLE_ROW = Suppress('|') + OneOrMore(CharsNotIn('|\n') +
+                                          Suppress('|')) + EOL
+    TABLE_ROW.setParseAction(lambda tokens: [v.strip() for v in tokens])
+    TABLE = Group(OneOrMore(Group(TABLE_ROW)))
+
+    #
+    # Multiline string
+    #
+    MULTILINE = QuotedString('"""', multiline=True)
+
+    # A Step
+    #
+    # Steps begin with a keyword such as Given, When, Then or And They can
+    # contain an optional inline comment, although it's possible to encapsulate
+    # it in a string. Finally they can contain a table or a multiline 'Python'
+    # string.
+    #
+    # <variables> are not parsed as part of the grammar as it's not easy to
+    # distinguish between a variable and XML. Instead scenarios will replace
+    # instances in the steps based on the outline keys.
+    #
+    STATEMENT_SENTENCE = Group(
+        lang.STATEMENT +  # Given, When, Then, And
+        OneOrMore(Word(printables).setWhitespaceChars(' \t') |
+                  quotedString.setWhitespaceChars(' \t')) +
+        EOL
+    )
+
+    STATEMENT = Group(
+        STATEMENT_SENTENCE('sentence') +
+        Optional(TABLE('table') | MULTILINE('multiline'))
+    )
+    STATEMENT.setParseAction(Step)
+
+    STATEMENTS = Group(ZeroOrMore(STATEMENT))
+
+    #
+    # Background:
+    #
+    BACKGROUND_DEFN = \
+        Suppress(lang.BACKGROUND + ':' + EOL)
+    BACKGROUND_DEFN.setParseAction(Background)
+
+    BACKGROUND = Group(
+        BACKGROUND_DEFN('node') +
+        STATEMENTS('statements')
+    )
+    BACKGROUND.setParseAction(Background.add_statements)
+
+    #
+    # Scenario: description
+    #
+    SCENARIO_DEFN = Group(
+        Group(ZeroOrMore(TAG))('tags') +
+        Suppress(lang.SCENARIO + ':') +
+        restOfLine('name')
+    )
+    SCENARIO_DEFN.setParseAction(Scenario)
+
+    SCENARIO = Group(
+        SCENARIO_DEFN('node') +
+        STATEMENTS('statements') +
+        Group(ZeroOrMore(
+            Suppress(lang.EXAMPLES + ':') + EOL + TABLE
+        ))('outlines')
+    )
+    SCENARIO.setParseAction(Scenario.add_statements)
+
+    #
+    # Feature: description
+    #
+    FEATURE_DEFN = Group(
+        Group(ZeroOrMore(TAG))('tags') +
+        Suppress(lang.FEATURE + ':') +
+        restOfLine('name')
+    )
+    FEATURE_DEFN.setParseAction(Feature)
+
+    #
+    # Complete feature file definition
+    #
+    FEATURE = Group(
+        FEATURE_DEFN('node') +
+        Group(SkipTo(BACKGROUND | SCENARIO))('description') +
+        Optional(BACKGROUND('background')) +
+        Group(OneOrMore(SCENARIO))('scenarios') +
+        stringEnd)
+    FEATURE.ignore(pythonStyleComment)
+    FEATURE.setParseAction(Feature.add_blocks)
+
+    #
+    # Try parsing the string
+    #
+
+    if not token:
+        token = FEATURE
+    else:
+        token = locals()[token]
 
     try:
-        tokens = method(string)
+        if string:
+            tokens = token.parseString(string)
+        elif filename:
+            tokens = token.parseFile(filename)
+        else:
+            raise RuntimeError("Must pass string or filename")
+
         return tokens
     except ParseException as e:
         raise LettuceSyntaxError(
-            None,
-            "{lineno}:{col} Syntax Error: {msg}\n{line}\n{space}^".format(
+            filename,
+            u"{lineno}:{col} Syntax Error: {msg}\n{line}\n{space}^".format(
                 msg=e.msg,
                 lineno=e.lineno,
                 col=e.col,
@@ -449,40 +461,34 @@ def _parse(token, string, method='parseString'):
                 space=' ' * (e.col - 1)))
 
 
-def from_string(token):
+def from_string(cls, string, language=None):
     """
     Factory returning a from_string parser for a given token
     """
 
-    def inner(cls, string):
-        """
-        Parse an object from a string.
-        """
-        return _parse(token, string)[0]
+    return parse(string=string, token='FEATURE', lang=language)[0]
 
-    return classmethod(inner)
-
-Feature.from_string = from_string(FEATURE)
+Feature.from_string = classmethod(from_string)
 
 
-def from_file(cls, filename):
+def from_file(cls, filename, language=None):
     """
     Parse a file or filename
     """
 
-    return _parse(FEATURE, filename, method='parseFile')[0]
+    return parse(filename=filename, token='FEATURE', lang=language)[0]
 
 Feature.from_file = classmethod(from_file)
 
 
-def parse_statements(cls, string):
+def parse_statements(cls, string, language=None):
     """
     Parse a number of statements
 
     This is used by step.behave_as
     """
 
-    tokens = _parse(STATEMENTS, string)
+    tokens = parse(string=string, token='STATEMENTS', lang=language)
 
     return list(tokens[0])
 

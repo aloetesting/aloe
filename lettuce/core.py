@@ -288,14 +288,14 @@ class Feature(parser.Feature):
     """
 
     @classmethod
-    def from_string(cls, string):
+    def from_string(cls, *args, **kwargs):
         """
         Parse a feature from a string
 
         Hackily cast the classes from the parser class to the core class
         """
 
-        self = parser.Feature.from_string(string)
+        self = parser.Feature.from_string(*args, **kwargs)
         # cast to the core class (hacky)
         self.__class__ = cls
 

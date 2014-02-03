@@ -54,7 +54,8 @@ class ReasonToFail(object):
 class LettuceSyntaxError(SyntaxError):
     def __init__(self, filename, string):
         self.filename = filename
-        self.msg = "Syntax error at: %s\n%s\n" % (filename, string)
+        self.msg = u"Syntax error at: {filename}\n{string}\n".format(
+            filename=filename, string=string).encode('ascii', 'ignore')
 
 
 class StepLoadingError(Exception):

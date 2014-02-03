@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import json
+import os.path
+
 from pyparsing import Keyword
 
 
@@ -55,196 +58,54 @@ class Language(object):
         return instance
 
     def __implement_me__(self):
-        raise NotImplemented
+        raise NotImplementedError("Language isn't complete")
 
     FEATURE = BACKGROUND = SCENARIOS = EXAMPLES = STATEMENT = \
         property(__implement_me__)
 
 
-class English(Language):
-    code = 'en'
-    native = 'English'
+# Load languages from JSON definitions
+i18n = os.path.join(os.path.dirname(__file__),
+                    'i18n.json')
+with open(i18n) as i18n:
+    i18n = json.load(i18n)
 
-    FEATURE = Keyword('Feature')
-    BACKGROUND = Keyword('Background')
-    SCENARIO = Keyword('Scenario Outline') | Keyword('Scenario')
-    EXAMPLES = Keyword('Examples') | Keyword('Scenarios')
-    STATEMENT = Keyword('Given') | Keyword('When') | \
-        Keyword('Then') | Keyword('And')
+    for lang, defn in i18n.iteritems():
+        name = defn['name']
 
+        def generate_keywords(*args):
+            """
+            Generator yields a list of keywords from the definitions specified
+            in the arguments
+            """
 
-class French(Language):
-    code = 'fr'
-    native = u'Français'
+            for string in args:
+                for keyword in defn[string].split('|'):
+                    if keyword == '*':
+                        continue
 
-    FEATURE = Keyword(u'Fonctionnalité') | Keyword(u'Fonction')
-    BACKGROUND = Keyword('Background') | Keyword('Contexte')
-    SCENARIO = Keyword(u'Scénario') | \
-        Keyword(u'Plan de Scénario') | \
-        Keyword(u'Plan du Scénario')
-    EXAMPLES = Keyword('Exemples') | Keyword(u'Scénarios')
+                    yield Keyword(keyword)
 
+        def build_keywords(*args):
+            """
+            Combine the keywords
+            """
 
-class Portuguese(Language):
-    code = 'pt-br'
-    native = u'Português'
+            i_ = generate_keywords(*args)
 
-    FEATURE = Keyword('Funcionalidade')
-    BACKGROUND = Keyword('Contexto') | Keyword(u'Considerações')
-    SCENARIO = Keyword(u'Cenário') | Keyword('Cenario') | \
-        Keyword(u'Esquema do Cenário') | Keyword('Esquema do Cenario')
-    EXAMPLES = Keyword('Exemplos') | Keyword(u'Cenários')
+            comb = next(i_)
 
+            for i_ in i_:
+                comb |= i_
 
-class Russian(Language):
-    code = 'ru'
-    native = u'Русский'
+            return comb
 
-    FEATURE = Keyword(u'Функционал')
-    BACKGROUND = Keyword(u'Background')
-    SCENARIO = Keyword(u'Сценарий') | Keyword(u'Структура сценария')
-    EXAMPLES = Keyword(u'Примеры') | Keyword(u'Сценарии')
-
-
-LANGUAGES = {
-    'pl': {
-        'examples': u'Przykład',
-        'feature': u'Właściwość',
-        'name': u'Polish',
-        'native': u'Polski',
-        'scenario': u'Scenariusz',
-        'scenario_outline': u'Zarys Scenariusza',
-        'scenario_separator': u'(Zarys Scenariusza|Scenariusz)',
-        'background': u'(?:Background)',
-    },
-    'ca': {
-        'examples': u'Exemples',
-        'feature': u'Funcionalitat',
-        'name': u'Catalan',
-        'native': u'Català',
-        'scenario': u'Escenari',
-        'scenario_outline': u"Esquema d'Escenari",
-        'scenario_separator': u"(Esquema d'Escenari|Escenari)",
-        'background': u'(?:Background)',
-    },
-    'es': {
-        'examples': u'Ejemplos',
-        'feature': u'Funcionalidad',
-        'name': u'Spanish',
-        'native': u'Español',
-        'scenario': u'Escenario',
-        'scenario_outline': u'Esquema de Escenario',
-        'scenario_separator': u'(Esquema de Escenario|Escenario)',
-        'background': u'(?:Contexto|Consideraciones)',
-    },
-    'hu': {
-        'examples': u'Példák',
-        'feature': u'Jellemző',
-        'name': u'Hungarian',
-        'native': u'Magyar',
-        'scenario': u'Forgatókönyv',
-        'scenario_outline': u'Forgatókönyv vázlat',
-        'scenario_separator': u'(Forgatókönyv|Forgatókönyv vázlat)',
-        'background': u'(?:Háttér)',
-    },
-    'de': {
-        'examples': u'Beispiele|Szenarios',
-        'feature': u'Funktionalität|Funktion',
-        'name': u'German',
-        'native': u'Deutsch',
-        'scenario': u'Szenario',
-        'scenario_outline': u'Szenario-Zusammenfassung|Zusammenfassung',
-        'scenario_separator': u'(Szenario-Zusammenfassung|Zusammenfassung)',
-        'background': u'(?:Background)',
-    },
-    'ja': {
-        'examples': u'例',
-        'feature': u'フィーチャ',
-        'name': u'Japanese',
-        'native': u'日本語',
-        'scenario': u'シナリオ',
-        'scenario_outline': u'シナリオアウトライン|シナリオテンプレート|テンプレ|シナリオテンプレ',
-        'scenario_separator': u'(シナリオ|シナリオアウトライン|シナリオテンプレート|テンプレ|シナリオテンプレ)',
-        'background': u'(?:Background)',
-    },
-    'tr': {
-        'examples': u'Örnekler',
-        'feature': u'Özellik',
-        'name': u'Turkish',
-        'native': u'Türkçe',
-        'scenario': u'Senaryo',
-        'scenario_outline': u'Senaryo taslağı|Senaryo Taslağı',
-        'scenario_separator': u'(Senaryo taslağı|Senaryo Taslağı|Senaryo)',
-        'background': u'(?:Background)',
-    },
-    'zh-CN': {
-        'examples': u'例如|场景集',
-        'feature': u'特性',
-        'name': u'Simplified Chinese',
-        'native': u'简体中文',
-        'scenario': u'场景',
-        'scenario_outline': u'场景模板',
-        'scenario_separator': u'(场景模板|场景)',
-        'background': u'(?:背景)',
-    },
-    'zh-TW': {
-        'examples': u'例如|場景集',
-        'feature': u'特性',
-        'name': u'Traditional Chinese',
-        'native': u'繁體中文',
-        'scenario': u'場景',
-        'scenario_outline': u'場景模板',
-        'scenario_separator': u'(場景模板|場景)',
-        'background': u'(?:背景)',
-    },
-    'uk': {
-        'examples': u'Приклади|Сценарії',
-        'feature': u'Функціонал',
-        'name': u'Ukrainian',
-        'native': u'Українська',
-        'scenario': u'Сценарій',
-        'scenario_outline': u'Структура сценарію',
-        'scenario_separator': u'(Структура сценарію|Сценарій)',
-        'background': u'(?:Background)',
-    },
-    'it': {
-        'examples': u'Esempi|Scenari|Scenarii',
-        'feature': u'Funzionalità|Funzione',
-        'name': u'Italian',
-        'native': u'Italiano',
-        'scenario': u'Scenario',
-        'scenario_outline': u'Schema di Scenario|Piano di Scenario',
-        'scenario_separator': u'(Schema di Scenario|Piano di Scenario|Scenario)',
-        'background': u'(?:Background)',
-    },
-    'no': {
-        'examples': u'Eksempler',
-        'feature': u'Egenskaper',
-        'name': u'Norwegian',
-        'native': u'Norsk',
-        'scenario': u'Situasjon',
-        'scenario_outline': u'Situasjon Oversikt',
-        'scenario_separator': u'(Situasjon Oversikt|Situasjon)',
-        'background': u'(?:Bakgrunn)',
-    },
-    'sv': {
-        'examples': u'Exempel|Scenarion',
-        'feature': u'Egenskaper',
-        'name': u'Swedish',
-        'native': u'Svenska',
-        'scenario': u'Scenario',
-        'scenario_outline': u'Scenarioöversikt',
-        'scenario_separator': u'(Scenarioöversikt|Scenario)',
-        'background': u'(?:Context)',
-    },
-    'cz': {
-        'examples': u'Příklady',
-        'feature': u'Požadavek',
-        'name': u'Czech',
-        'native': u'Čeština',
-        'scenario': u'Scénář|Požadavek',
-        'scenario_outline': u'Náčrt scénáře',
-        'scenario_separator': u'(Náčrt scénáře|Scénář)',
-        'background': u'(?:Background)',
-    },
-}
+        locals()[name] = type(str(name), (Language,), {
+            'code': lang,
+            'native': defn['native'].title(),
+            'FEATURE': build_keywords('feature'),
+            'BACKGROUND': build_keywords('background'),
+            'SCENARIO': build_keywords('scenario', 'scenario_outline'),
+            'EXAMPLES': build_keywords('examples'),
+            'STATEMENT': build_keywords('given', 'when', 'then', 'and', 'but'),
+        })
