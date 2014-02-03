@@ -15,28 +15,98 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from pyparsing import Keyword
+
+
+class Language(object):
+    """
+    The keywords for a language
+
+    Implement a language by subclassing the Language class and providing
+    the relevant keywords.
+    """
+
+    code = None
+
+    def __init__(self, code='en'):
+        for klass in Language.__subclasses__():
+            if klass.code == code:
+                self.__class__ = klass
+                return
+
+        raise RuntimeError("Unknown language '%s'" % code)
+
+    def __repr__(self):
+        return '<Language "%s">' % self.code
+
+    @property
+    def name(self):
+        return self.__class__.__name__
+
+    @classmethod
+    def guess_from_string(cls, string):
+        # match = re.search(REP.language, string)
+        # if match:
+        #     instance = cls(match.group(1))
+        # else:
+        if True:
+            instance = cls()
+
+        return instance
+
+    def __implement_me__(self):
+        raise NotImplemented
+
+    FEATURE = BACKGROUND = SCENARIOS = EXAMPLES = STATEMENT = \
+        property(__implement_me__)
+
+
+class English(Language):
+    code = 'en'
+    native = 'English'
+
+    FEATURE = Keyword('Feature')
+    BACKGROUND = Keyword('Background')
+    SCENARIO = Keyword('Scenario Outline') | Keyword('Scenario')
+    EXAMPLES = Keyword('Examples') | Keyword('Scenarios')
+    STATEMENT = Keyword('Given') | Keyword('When') | \
+        Keyword('Then') | Keyword('And')
+
+
+class French(Language):
+    code = 'fr'
+    native = u'Français'
+
+    FEATURE = Keyword(u'Fonctionnalité') | Keyword(u'Fonction')
+    BACKGROUND = Keyword('Background') | Keyword('Contexte')
+    SCENARIO = Keyword(u'Scénario') | \
+        Keyword(u'Plan de Scénario') | \
+        Keyword(u'Plan du Scénario')
+    EXAMPLES = Keyword('Exemples') | Keyword(u'Scénarios')
+
+
+class Portuguese(Language):
+    code = 'pt-br'
+    native = u'Português'
+
+    FEATURE = Keyword('Funcionalidade')
+    BACKGROUND = Keyword('Contexto') | Keyword(u'Considerações')
+    SCENARIO = Keyword(u'Cenário') | Keyword('Cenario') | \
+        Keyword(u'Esquema do Cenário') | Keyword('Esquema do Cenario')
+    EXAMPLES = Keyword('Exemplos') | Keyword(u'Cenários')
+
+
+class Russian(Language):
+    code = 'ru'
+    native = u'Русский'
+
+    FEATURE = Keyword(u'Функционал')
+    BACKGROUND = Keyword(u'Background')
+    SCENARIO = Keyword(u'Сценарий') | Keyword(u'Структура сценария')
+    EXAMPLES = Keyword(u'Примеры') | Keyword(u'Сценарии')
+
 
 LANGUAGES = {
-    'en': {
-        'examples': u'Examples|Scenarios',
-        'feature': u'Feature',
-        'name': u'English',
-        'native': u'English',
-        'scenario': u'Scenario',
-        'scenario_outline': u'Scenario Outline',
-        'scenario_separator': u'(Scenario Outline|Scenario)',
-        'background': u'(?:Background)',
-    },
-    'pt-br': {
-        'examples': u'Exemplos|Cenários',
-        'feature': u'Funcionalidade',
-        'name': u'Portuguese',
-        'native': u'Português',
-        'scenario': u'Cenário|Cenario',
-        'scenario_outline': u'Esquema do Cenário|Esquema do Cenario',
-        'scenario_separator': u'(Esquema do Cenário|Esquema do Cenario|Cenario|Cenário)',
-        'background': u'(?:Contexto|Considerações)',
-    },
     'pl': {
         'examples': u'Przykład',
         'feature': u'Właściwość',
@@ -76,16 +146,6 @@ LANGUAGES = {
         'scenario_outline': u'Forgatókönyv vázlat',
         'scenario_separator': u'(Forgatókönyv|Forgatókönyv vázlat)',
         'background': u'(?:Háttér)',
-    },
-    'fr': {
-        'examples': u'Exemples|Scénarios',
-        'feature': u'Fonctionnalité|Fonction',
-        'name': u'French',
-        'native': u'Français',
-        'scenario': u'Scénario',
-        'scenario_outline': u'Plan de Scénario|Plan du Scénario',
-        'scenario_separator': u'(Plan de Scénario|Plan du Scénario|Scénario)',
-        'background': u'(?:Background|Contexte)',
     },
     'de': {
         'examples': u'Beispiele|Szenarios',
@@ -137,16 +197,6 @@ LANGUAGES = {
         'scenario_separator': u'(場景模板|場景)',
         'background': u'(?:背景)',
     },
-    'ru': {
-        'examples': u'Примеры|Сценарии',
-        'feature': u'Функционал',
-        'name': u'Russian',
-        'native': u'Русский',
-        'scenario': u'Сценарий',
-        'scenario_outline': u'Структура сценария',
-        'scenario_separator': u'(Структура сценария|Сценарий)',
-        'background': u'(?:Background)',
-    },
     'uk': {
         'examples': u'Приклади|Сценарії',
         'feature': u'Функціонал',
@@ -197,5 +247,4 @@ LANGUAGES = {
         'scenario_separator': u'(Náčrt scénáře|Scénář)',
         'background': u'(?:Background)',
     },
-
 }

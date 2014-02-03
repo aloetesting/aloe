@@ -32,49 +32,6 @@ from lettuce.exceptions import (ReasonToFail,
 fs = FileSystem()
 
 
-class Language(object):
-    code = 'en'
-    name = 'English'
-    native = 'English'
-    feature = 'Feature'
-    scenario = 'Scenario'
-    examples = 'Examples|Scenarios'
-    scenario_outline = 'Scenario Outline'
-    scenario_separator = 'Scenario( Outline)?'
-    background = "Background"
-
-    def __init__(self, code=u'en'):
-        self.code = code
-        for attr, value in languages.LANGUAGES[code].items():
-            setattr(self, attr, unicode(value))
-
-    def __repr__(self):
-        return '<Language "%s">' % self.code
-
-    def __getattr__(self, attr):
-        # for pattern in [REP.first_of, REP.last_of]:
-        #     if pattern.match(attr):
-        #         name = pattern.sub(u'', attr)
-        #         return unicode(getattr(self, name, u'').split(u"|")[0])
-
-        return super(Language, self).__getattribute__(attr)
-
-    @property
-    def non_capturable_scenario_separator(self):
-        return re.sub(r'^[(]', '(?:', self.scenario_separator)
-
-    @classmethod
-    def guess_from_string(cls, string):
-        # match = re.search(REP.language, string)
-        # if match:
-        #     instance = cls(match.group(1))
-        # else:
-        if True:
-            instance = cls()
-
-        return instance
-
-
 class StepDefinition(object):
     """
     A step definition is a wrapper for user-defined callbacks. It

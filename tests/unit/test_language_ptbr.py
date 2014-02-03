@@ -14,8 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
 from nose.tools import assert_equals
-from lettuce.core import Language, Scenario, Feature
+
+from lettuce.core import Scenario, Feature
+from lettuce.languages import Language
 
 SCENARIO = u"""
 Cenário: Consolidar o banco de dados de cursos universitários em arquivo texto
@@ -77,10 +80,9 @@ def test_language_portuguese():
     assert_equals(lang.code, u'pt-br')
     assert_equals(lang.name, u'Portuguese')
     assert_equals(lang.native, u'Português')
-    assert_equals(lang.feature, u'Funcionalidade')
-    assert_equals(lang.scenario, u'Cenário|Cenario')
-    assert_equals(lang.examples, u'Exemplos|Cenários')
-    assert_equals(lang.scenario_outline, u'Esquema do Cenário|Esquema do Cenario')
+    assert_equals(lang.FEATURE, u'Funcionalidade')
+    # assert_equals(lang.SCENARIO, u'Cenário|Cenario')
+    # assert_equals(lang.EXAMPLES, u'Exemplos|Cenários')
 
 # def test_scenario_ptbr_from_string():
 #     'Language: PT-BR -> Scenario.from_string'

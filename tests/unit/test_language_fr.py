@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from nose.tools import assert_equals
-from lettuce.core import Language, Scenario, Feature
+from lettuce.core import Scenario, Feature
+from lettuce.languages import Language
 
 SCENARIO = u"""
 Scénario: Ajout de plusieurs cursus dans la base de mon université
@@ -113,11 +114,9 @@ def test_language_french():
     assert_equals(lang.code, u'fr')
     assert_equals(lang.name, u'French')
     assert_equals(lang.native, u'Français')
-    assert_equals(lang.feature, u'Fonctionnalité|Fonction')
-    assert_equals(lang.scenario, u'Scénario')
-    assert_equals(lang.examples, u'Exemples|Scénarios')
-    assert_equals(lang.scenario_outline, u'Plan de Scénario|Plan du Scénario')
-    assert_equals(lang.scenario_separator, u'(Plan de Scénario|Plan du Scénario|Scénario)')
+    # assert_equals(lang.FEATURE, u'Fonctionnalité|Fonction')
+    assert_equals(lang.SCENARIO, u'Scénario')
+    # assert_equals(lang.EXAMPLES, u'Exemples|Scénarios')
 
 # def test_scenario_fr_from_string():
 #     'Language: FR -> Scenario.from_string'

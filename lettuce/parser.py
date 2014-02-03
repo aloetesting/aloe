@@ -25,7 +25,6 @@ from textwrap import dedent
 from pyparsing import (CharsNotIn,
                        col,
                        Group,
-                       Keyword,
                        lineEnd,
                        lineno,
                        OneOrMore,
@@ -45,6 +44,7 @@ from pyparsing import (CharsNotIn,
 from fuzzywuzzy import fuzz
 
 from lettuce.exceptions import LettuceSyntaxError
+from lettuce import languages
 
 
 class Step(object):
@@ -319,6 +319,10 @@ class Feature(TaggedBlock):
         return self
 
 
+# FIXME -- determine the right language
+lang = languages.English()
+
+
 """
 End of Line
 """
@@ -353,14 +357,8 @@ encapsulate it in a string. Finally they can contain a table or a multiline
 distinguish between a variable and XML. Instead scenarios will replace
 instances in the steps based on the outline keys.
 """
-STATEMENT_KEYWORD = \
-    Keyword('Given') | \
-    Keyword('When') | \
-    Keyword('Then') | \
-    Keyword('And')
-
 STATEMENT_SENTENCE = Group(
-    STATEMENT_KEYWORD +
+    lang.STATEMENT +  # Given, When, Then, And
     OneOrMore(Word(printables).setWhitespaceChars(' \t') |
               quotedString.setWhitespaceChars(' \t')) +
     EOL
@@ -378,7 +376,7 @@ STATEMENTS = Group(ZeroOrMore(STATEMENT))
 Background:
 """
 BACKGROUND_DEFN = \
-    Suppress(Keyword('Background') + ':' + EOL)
+    Suppress(lang.BACKGROUND + ':' + EOL)
 BACKGROUND_DEFN.setParseAction(Background)
 
 BACKGROUND = Group(
@@ -392,8 +390,7 @@ Scenario: description
 """
 SCENARIO_DEFN = Group(
     Group(ZeroOrMore(TAG))('tags') +
-    Suppress((Keyword('Scenario') + Optional(Keyword('Outline'))) +
-             ':') +
+    Suppress(lang.SCENARIO + ':') +
     restOfLine('name')
 )
 SCENARIO_DEFN.setParseAction(Scenario)
@@ -402,7 +399,7 @@ SCENARIO = Group(
     SCENARIO_DEFN('node') +
     STATEMENTS('statements') +
     Group(ZeroOrMore(
-        Suppress(Keyword('Examples') + ':') + EOL + TABLE
+        Suppress(lang.EXAMPLES + ':') + EOL + TABLE
     ))('outlines')
 )
 SCENARIO.setParseAction(Scenario.add_statements)
@@ -412,7 +409,7 @@ Feature: description
 """
 FEATURE_DEFN = Group(
     Group(ZeroOrMore(TAG))('tags') +
-    Suppress(Keyword('Feature') + ':') +
+    Suppress(lang.FEATURE + ':') +
     restOfLine('name')
 )
 FEATURE_DEFN.setParseAction(Feature)

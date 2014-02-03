@@ -14,24 +14,21 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from pyparsing import Keyword
+
 from nose.tools import assert_equals
-from lettuce.core import Language
+
+from lettuce.languages import Language
+
 
 def test_language_is_english_by_default():
-    "Language class is english by default"
+    """Language class is english by default"""
+
     lang = Language()
 
     assert_equals(lang.code, 'en')
     assert_equals(lang.name, 'English')
     assert_equals(lang.native, 'English')
-    assert_equals(lang.feature, 'Feature')
-    assert_equals(lang.scenario, 'Scenario')
-    assert_equals(lang.examples, 'Examples|Scenarios')
-    assert_equals(lang.scenario_outline, 'Scenario Outline')
-
-# def test_language_has_first_of():
-#     "Language() can pick up first occurrece of a string"
-#     lang = Language()
-#
-#     assert_equals(lang.first_of_examples, 'Examples')
-
+    assert_equals(lang.FEATURE, 'Feature')
+    assert_equals(lang.SCENARIO, 'Scenario')
