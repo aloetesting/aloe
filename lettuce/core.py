@@ -94,9 +94,6 @@ class Step(parser.Step):
 
         return matched, StepDefinition(self, func)
 
-    def represented(self):
-        return ''
-
     def pre_run(self, ignore_case=True, with_outline=None):
         matched, step_definition = self._get_match(ignore_case)
         self.related_outline = with_outline
@@ -186,9 +183,6 @@ class Scenario(parser.Scenario):
     @property
     def failed(self):
         return any(step.failed for step in self.steps)
-
-    def represented(self):
-        return ''
 
     def run(self, ignore_case=True, failfast=False):
         """
@@ -357,9 +351,6 @@ class Feature(parser.Feature):
         self = cls._hack_class(self)
 
         return self
-
-    def represented(self):
-        return ''
 
     def run(self, scenarios=None,
             ignore_case=True,

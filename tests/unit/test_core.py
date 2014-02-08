@@ -14,10 +14,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from inspect import currentframe
+
 from lettuce import core
 from sure import expect
 from nose.tools import assert_equals
 from nose.tools import assert_not_equals
+
+from .test_step_parsing import parse_steps
+
 
 STEP_WITH_TABLE = u'''
 Given I have the following items in my shelf:
@@ -28,80 +34,22 @@ Given I have the following items in my shelf:
 '''
 
 
-
 def test_step_definition():
-    "Step definition takes a function and a step, keeps its definition " \
-    "relative path, and line + 1 (to consider the decorator)"
+    """
+    Step definition takes a function and a step, keeps its definition
+    relative path, and line + 1 (to consider the decorator)
+    """
 
+    line = currentframe().f_lineno
     def dumb():
         pass
 
     definition = core.StepDefinition("FOO BAR", dumb)
     assert_equals(definition.function, dumb)
     assert_equals(definition.file, core.fs.relpath(__file__).rstrip("c"))
-    assert_equals(definition.line, 37)
+    assert_equals(definition.line, line + 2)
 
 
-# def test_step_description():
-#     "Step description takes a line and filename, " \
-#           "and keeps the relative path for filename"
-#
-#     description = core.StepDescription(10, __file__)
-#     assert_equals(description.file, core.fs.relpath(__file__))
-#     assert_not_equals(description.file, __file__)
-#     assert_equals(description.line, 10)
-#
-#
-# def test_scenario_description():
-#     "Scenario description takes a scenario, filename and " \
-#         "a string, and keeps the relative path for filename and line"
-#
-#     string = '''
-#     asdasdasdasd
-#     8fg6f8g23o83g
-#     dfjdsfjsdScenario: NAMEOFSCENARIOjdkasbdkajsb
-# Fsdad
-#           Scenario: NAMEOFSCENARIO
-#  da  sodnasndjasdasd
-#     '''
-#
-#     class ScenarioFake:
-#         name = 'NAMEOFSCENARIO'
-#
-#     description = core.ScenarioDescription(
-#         ScenarioFake, __file__, string, core.Language())
-#
-#     assert_equals(description.file, core.fs.relpath(__file__))
-#     assert_not_equals(description.file, __file__)
-#     assert_equals(description.line, 6)
-#
-#
-# def test_feature_description():
-#     "Feature description takes a feature, filename and original " \
-#         "string, and keeps the relative path for filename, line " \
-#         "and description lines"
-#
-#     string = u'''
-#     # lang: en-us
-#     Feature: FEATURE NAME! #@@$%ˆ&*)(*%$E#
-#     here comes
-#     the description
-#     of the scenario
-#     really!
-#     '''
-#
-#     class FakeFeature:
-#         description = 'the description\nof the scenario\n'
-#
-#     description = core.FeatureDescription(
-#         FakeFeature, __file__, string, core.Language())
-#
-#     assert_equals(description.file, core.fs.relpath(__file__))
-#     assert_not_equals(description.file, __file__)
-#     assert_equals(description.line, 3)
-#     assert_equals(description.description_at, (5, 6))
-#
-#
 # def test_step_represent_string_when_not_defined():
 #     """Step.represent_string behaviour when not defined"""
 #
@@ -143,43 +91,45 @@ def test_step_definition():
 #     )
 #
 #
-# def test_step_represent_table():
-#     "Step.represent_hashes"
-#
-#     step = core.Step.from_string(STEP_WITH_TABLE)
-#
-#     assert_equals(
-#         step.represent_hashes(),
-#         '      | name  | description                                           |\n'
-#         '      | Glass | a nice glass to drink grape juice                     |\n'
-#         '      | Pasta | a pasta to cook and eat with grape juice in the glass |\n'
-#         '      | Pasta | a pasta to cook and eat with grape juice in the glass |\n'
-#     )
-#
-# STEP_WITH_MATRIX = u'''
-#     Given i have the following matrix:
-#     | a  | b | ab |
-#     | 2 | 24 | 3 |
-#     '''
-#
-# STEP_WITH_MATRIX2 = u'''
-#     Given i have the following matrix:
-#     | a  | a |
-#     | 2 | a |
-#     |  | 67 |
-#     '''
-#
-# def test_step_represent_matrix():
-#     "Step with a more suggestive representation for a matrix"
-#
-#     step = core.Step.from_string(STEP_WITH_MATRIX2)
-#     assert_equals(
-#         step.represent_columns(),
-#     '      | a | a |\n'
-#     '      | 2 | a |\n'
-#     '      |   | 67|\n'
-#     )
-#
+def test_step_represent_table():
+    """
+    Step.represent_hashes
+    """
+
+    step, = parse_steps(STEP_WITH_TABLE)
+
+    assert_equals(
+        step.represent_hashes(), unicode(
+        '      | name  | description                                           |\n'
+        '      | Glass | a nice glass to drink grape juice                     |\n'
+        '      | Pasta | a pasta to cook and eat with grape juice in the glass |\n'
+        '      | Pasta | a pasta to cook and eat with grape juice in the glass |'
+    ))
+
+STEP_WITH_MATRIX = u'''
+    Given i have the following matrix:
+    | a  | b | ab |
+    | 2 | 24 | 3 |
+    '''
+
+STEP_WITH_MATRIX2 = u'''
+    Given i have the following matrix:
+    | a  | a |
+    | 2 | a |
+    |  | 67 |
+    '''
+
+def test_step_represent_matrix():
+    "Step with a more suggestive representation for a matrix"
+
+    step, = parse_steps(STEP_WITH_MATRIX2)
+    assert_equals(
+        step.represent_hashes(),
+    '      | a | a  |\n'
+    '      | 2 | a  |\n'
+    '      |   | 67 |'
+    )
+
 # SCENARIO_OUTLINE = u'''
 # Scenario: Regular numbers
 #                                Given I do fill description with '<value_one>'

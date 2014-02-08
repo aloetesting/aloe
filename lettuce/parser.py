@@ -26,6 +26,7 @@ from textwrap import dedent
 from pyparsing import (CharsNotIn,
                        col,
                        Group,
+                       line,
                        lineEnd,
                        lineno,
                        OneOrMore,
@@ -56,11 +57,11 @@ class ParseLocation(object):
     The location of a parsed node within the stream
     """
 
-    def __init__(self, parent, filename=None, line=None, col=None):
+    def __init__(self, parent, s, loc, filename=None):
         self.parent = parent
         self._file = filename
-        self.line = line
-        self.col = col
+        self.line = lineno(loc, s)
+        self.col = col(loc, s)
 
     def __repr__(self):
         return '(%s, %s)' % (self.line, self.col)
@@ -92,9 +93,15 @@ class Node(object):
     """
 
     def __init__(self, s, loc, tokens):
-        self.described_at = ParseLocation(self,
-                                          line=lineno(loc, s),
-                                          col=col(loc, s))
+        self.described_at = ParseLocation(self, s, loc)
+        self.text = line(loc, s)
+
+    def represented(self):
+        """
+        Return a representation of the node
+        """
+
+        return self.text
 
 
 class Step(Node):
@@ -168,6 +175,25 @@ class Step(Node):
             dict(zip(keys, row))
             for row in self.table[1:]
         ]
+
+    def represent_hashes(self, indent=6):
+        """
+        Render the table
+        """
+
+        # calculate the width of each column
+        table = [map(str, row) for row in self.table]
+        lengths = [len(cell) for cell in table[0]]
+
+        for row in table[1:]:
+            lengths = map(max, zip(lengths, [len(cell) for cell in row]))
+
+        return u'\n'.join(
+            u' ' * indent +
+            u'| %s |' % u' | '.join(cell.ljust(length)
+                                    for cell, length in zip(row, lengths))
+            for row in table
+        )
 
     def resolve_substitutions(self, outline):
         """
