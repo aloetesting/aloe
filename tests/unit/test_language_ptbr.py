@@ -73,98 +73,132 @@ Funcionalidade: Pesquisar alunos com matrícula vencida
       | Ana   | R$ 231,00    |
 '''
 
+
+def parse_scenario(string, language=None):
+    feature = """
+Funcionalidade: parse_scenario
+    """
+
+    feature += string
+    feature = Feature.from_string(feature, language=language)
+
+    return feature.scenarios[0]
+
+
 def test_language_portuguese():
-    'Language: PT-BR -> Language class supports portuguese through code "pt-br"'
+    """
+    Language: PT-BR -> Language class supports portuguese through code "pt-br"
+    """
+
     lang = Language('pt-br')
 
     assert_equals(lang.code, u'pt-br')
     assert_equals(lang.name, u'Portuguese')
     assert_equals(lang.native, u'Português')
     assert_equals(lang.FEATURE, u'Funcionalidade')
-    # assert_equals(lang.SCENARIO, u'Cenário|Cenario')
-    # assert_equals(lang.EXAMPLES, u'Exemplos|Cenários')
+    assert_equals(unicode(lang.SCENARIO),
+                  u'{"Cenário" | "Cenario" | "Esquema do Cenário" | '
+                  u'"Esquema do Cenario" | "Delineação do Cenário" | '
+                  u'"Delineacao do Cenario"}')
+    assert_equals(lang.EXAMPLES, u'Exemplos')
 
-# def test_scenario_ptbr_from_string():
-#     'Language: PT-BR -> Scenario.from_string'
-#     ptbr = Language('pt-br')
-#     scenario = Scenario.from_string(SCENARIO, language=ptbr)
-#
-#     assert_equals(
-#         scenario.name,
-#         u'Consolidar o banco de dados de cursos universitários em arquivo texto'
-#     )
-#     assert_equals(
-#         scenario.steps[0].hashes,
-#         [
-#             {'Nome': u'Ciência da Computação', u'Duração': '5 anos'},
-#             {'Nome': u'Nutrição', u'Duração': '4 anos'},
-#         ]
-#     )
-#
-# def test_scenario_outline1_ptbr_from_string():
-#     'Language: PT-BR -> Scenario.from_string, with scenario outline, first case'
-#     ptbr = Language('pt-br')
-#     scenario = Scenario.from_string(SCENARIO_OUTLINE1, language=ptbr)
-#
-#     assert_equals(
-#         scenario.name,
-#         'Cadastrar um aluno no banco de dados'
-#     )
-#     assert_equals(
-#         scenario.outlines,
-#         [
-#             {'nome': u'Gabriel', u'idade': '22'},
-#             {'nome': u'João', u'idade': '30'},
-#         ]
-#     )
-#
-# def test_scenario_outline2_ptbr_from_string():
-#     'Language: PT-BR -> Scenario.from_string, with scenario outline, second case'
-#     ptbr = Language('pt-br')
-#     scenario = Scenario.from_string(SCENARIO_OUTLINE2, language=ptbr)
-#
-#     assert_equals(
-#         scenario.name,
-#         'Cadastrar um aluno no banco de dados'
-#     )
-#     assert_equals(
-#         scenario.outlines,
-#         [
-#             {'nome': u'Gabriel', u'idade': '99'},
-#             {'nome': u'João', u'idade': '100'},
-#         ]
-#     )
-#
-# def test_feature_ptbr_from_string():
-#     'Language: PT-BR -> Feature.from_string'
-#     ptbr = Language('pt-br')
-#     feature = Feature.from_string(FEATURE, language=ptbr)
-#
-#     assert_equals(
-#         feature.name,
-#         u'Pesquisar alunos com matrícula vencida'
-#     )
-#
-#     assert_equals(
-#         feature.description,
-#         u"Como gerente financeiro\n"
-#         u"Eu quero pesquisar alunos com matrícula vencida\n"
-#         u"Para propor um financiamento"
-#     )
-#
-#     (scenario, ) = feature.scenarios
-#
-#     assert_equals(
-#         scenario.name,
-#         'Pesquisar por nome do curso'
-#     )
-#
-#     assert_equals(
-#         scenario.steps[-1].hashes,
-#         [
-#             {'nome': u'João', u'valor devido': 'R$ 512,66'},
-#             {'nome': u'Maria', u'valor devido': 'R$ 998,41'},
-#             {'nome': u'Ana', u'valor devido': 'R$ 231,00'},
-#         ]
-#     )
-#
+
+def test_scenario_ptbr_from_string():
+    """
+    Language: PT-BR -> Scenario.from_string
+    """
+
+    ptbr = Language('pt-br')
+    scenario = parse_scenario(SCENARIO, language=ptbr)
+
+    assert_equals(
+        scenario.name,
+        u'Consolidar o banco de dados de cursos universitários em '
+        u'arquivo texto'
+    )
+    assert_equals(
+        scenario.steps[0].hashes,
+        [
+            {'Nome': u'Ciência da Computação', u'Duração': '5 anos'},
+            {'Nome': u'Nutrição', u'Duração': '4 anos'},
+        ]
+    )
+
+
+def test_scenario_outline1_ptbr_from_string():
+    """
+    Language: PT-BR -> Scenario.from_string, with scenario outline, first case
+    """
+
+    ptbr = Language('pt-br')
+    scenario = parse_scenario(SCENARIO_OUTLINE1, language=ptbr)
+
+    assert_equals(
+        scenario.name,
+        'Cadastrar um aluno no banco de dados'
+    )
+    assert_equals(
+        scenario.outlines,
+        [
+            {'nome': u'Gabriel', u'idade': '22'},
+            {'nome': u'João', u'idade': '30'},
+        ]
+    )
+
+
+def test_scenario_outline2_ptbr_from_string():
+    """
+    Language: PT-BR -> Scenario.from_string, with scenario outline, second case
+    """
+
+    ptbr = Language('pt-br')
+    scenario = parse_scenario(SCENARIO_OUTLINE2, language=ptbr)
+
+    assert_equals(
+        scenario.name,
+        'Cadastrar um aluno no banco de dados'
+    )
+    assert_equals(
+        scenario.outlines,
+        [
+            {'nome': u'Gabriel', u'idade': '99'},
+            {'nome': u'João', u'idade': '100'},
+        ]
+    )
+
+
+def test_feature_ptbr_from_string():
+    """
+    Language: PT-BR -> Feature.from_string
+    """
+
+    ptbr = Language('pt-br')
+    feature = Feature.from_string(FEATURE, language=ptbr)
+
+    assert_equals(
+        feature.name,
+        u'Pesquisar alunos com matrícula vencida'
+    )
+
+    assert_equals(
+        feature.description,
+        u"Como gerente financeiro\n"
+        u"Eu quero pesquisar alunos com matrícula vencida\n"
+        u"Para propor um financiamento"
+    )
+
+    (scenario, ) = feature.scenarios
+
+    assert_equals(
+        scenario.name,
+        'Pesquisar por nome do curso'
+    )
+
+    assert_equals(
+        scenario.steps[-1].hashes,
+        [
+            {'nome': u'João', u'valor devido': 'R$ 512,66'},
+            {'nome': u'Maria', u'valor devido': 'R$ 998,41'},
+            {'nome': u'Ana', u'valor devido': 'R$ 231,00'},
+        ]
+    )
