@@ -245,9 +245,6 @@ class Scenario(parser.Scenario):
 
                         except (NoDefinitionFound, AssertionError) as e:
                             # we expect steps to assert or not be found
-                            import logging
-                            logging.exception("oh shiz")
-
                             if failfast:
                                 raise FailFast()
 
