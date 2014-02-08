@@ -19,6 +19,7 @@
 A Gherkin parser written using pyparsing
 """
 
+from codecs import open
 from copy import deepcopy
 from textwrap import dedent
 
@@ -304,10 +305,8 @@ class Feature(TaggedBlock):
         token = tokens[0]
 
         self = token.node
-        self.description = '\n'.join(line.strip()
-                                     for line
-                                     in token.description[0].split('\n'))\
-            .strip()
+        self.description = u'\n'.join(u' '.join(line)
+                                      for line in token.description).strip()
         self.background = token.background \
             if isinstance(token.background, Background) else None
         self.scenarios = list(token.scenarios)
@@ -425,11 +424,22 @@ def parse(string=None, filename=None, token=None, lang=None):
     FEATURE_DEFN.setParseAction(Feature)
 
     #
+    # A description composed of zero or more lines, before the
+    # Background/Scenario block
+    #
+    DESCRIPTION = Group(
+        ZeroOrMore(
+            ~SCENARIO_DEFN + ~BACKGROUND_DEFN +
+            Group(ZeroOrMore(UTFWORD)) + EOL
+        )
+    )
+
+    #
     # Complete feature file definition
     #
     FEATURE = Group(
         FEATURE_DEFN('node') +
-        Group(SkipTo(BACKGROUND | SCENARIO))('description') +
+        DESCRIPTION('description') +
         Optional(BACKGROUND('background')) +
         Group(OneOrMore(SCENARIO))('scenarios') +
         stringEnd)
@@ -449,7 +459,8 @@ def parse(string=None, filename=None, token=None, lang=None):
         if string:
             tokens = token.parseString(string)
         elif filename:
-            tokens = token.parseFile(filename)
+            with open(filename, 'r', 'utf-8') as fp:
+                tokens = token.parseFile(fp)
         else:
             raise RuntimeError("Must pass string or filename")
 

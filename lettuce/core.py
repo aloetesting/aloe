@@ -288,15 +288,11 @@ class Feature(parser.Feature):
     """
 
     @classmethod
-    def from_string(cls, *args, **kwargs):
+    def _hack_class(cls, self):
         """
-        Parse a feature from a string
-
         Hackily cast the classes from the parser class to the core class
         """
 
-        self = parser.Feature.from_string(*args, **kwargs)
-        # cast to the core class (hacky)
         self.__class__ = cls
 
         if self.background:
@@ -307,6 +303,28 @@ class Feature(parser.Feature):
 
             for step in scenario.steps:
                 step.__class__ = Step
+
+        return self
+
+    @classmethod
+    def from_string(cls, *args, **kwargs):
+        """
+        Parse a feature from a string
+        """
+
+        self = parser.Feature.from_string(*args, **kwargs)
+        self = cls._hack_class(self)
+
+        return self
+
+    @classmethod
+    def from_file(cls, *args, **kwargs):
+        """
+        Parse a feature from a file
+        """
+
+        self = parser.Feature.from_file(*args, **kwargs)
+        self = cls._hack_class(self)
 
         return self
 

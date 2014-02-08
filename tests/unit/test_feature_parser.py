@@ -454,13 +454,17 @@ Feature: three tags in the first scenario
 
 
 def test_feature_has_repr():
-    "Feature implements __repr__ nicely"
+    """
+    Feature implements __repr__ nicely
+    """
     feature = Feature.from_string(FEATURE1)
     expect(repr(feature)).to.equal('<Feature: "Rent movies">')
 
 
 def test_scenario_has_name():
-    "It should extract the name string from the scenario"
+    """
+    It should extract the name string from the scenario
+    """
 
     feature = Feature.from_string(FEATURE1)
 
@@ -470,7 +474,9 @@ def test_scenario_has_name():
 
 
 def test_feature_has_scenarios():
-    "A feature object should have a list of scenarios"
+    """
+    A feature object should have a list of scenarios
+    """
 
     feature = Feature.from_string(FEATURE1)
 
@@ -507,7 +513,9 @@ def test_feature_has_scenarios():
 
 
 def test_can_parse_feature_description():
-    "A feature object should have a description"
+    """
+    A feature object should have a description
+    """
 
     feature = Feature.from_string(FEATURE2)
 

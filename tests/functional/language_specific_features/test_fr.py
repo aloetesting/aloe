@@ -26,7 +26,9 @@ join_path = lambda *x: join(current_dir, *x)
 
 @with_setup(prepare_stdout)
 def test_output_with_success_colorless():
-    "Language: fr -> sucess colorless"
+    """
+    Language: fr -> success colorless
+    """
 
     runner = Runner(join_path('fr', 'success', 'dumb.feature'), verbosity=3)
     runner.run()
