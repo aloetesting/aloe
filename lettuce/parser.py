@@ -345,8 +345,34 @@ def parse(string=None, filename=None, token=None, lang=None):
     #
     # A table
     #
-    TABLE_ROW = Suppress('|') + OneOrMore(CharsNotIn('|\n') +
-                                          Suppress('|')) + EOL
+    # A table is made up of rows of cells, e.g.
+    #
+    #   | column 1 | column 2 |
+    #
+    # Table cells need to be able to handle escaped tokens such as \| and \n
+    #
+    def handle_esc_char(tokens):
+        token = tokens[0]
+
+        if token == r'\|':
+            return u'|'
+        elif token == r'\n':
+            return u'\n'
+
+        raise NotImplementedError(u"Unknown token: %s" % token)
+
+    ESC_CHAR = Word(initChars=r'\\', bodyChars=unicodePrintables, exact=2)
+    ESC_CHAR.setParseAction(handle_esc_char)
+
+    #
+    # A cell can contain anything except a cell marker, new line or the
+    # beginning of a cell marker, we then handle escape characters separately
+    # and recombine the cell afterwards
+    #
+    CELL = OneOrMore(CharsNotIn('|\n\\') + Optional(ESC_CHAR))
+    CELL.setParseAction(lambda tokens: u''.join(tokens))
+
+    TABLE_ROW = Suppress('|') + OneOrMore(CELL + Suppress('|')) + EOL
     TABLE_ROW.setParseAction(lambda tokens: [v.strip() for v in tokens])
     TABLE = Group(OneOrMore(Group(TABLE_ROW)))
 

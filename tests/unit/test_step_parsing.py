@@ -263,7 +263,7 @@ def test_table_escaping():
 
     STEPS = """
     Given I have items in my table:
-        | Columns 1                |
+        | Column 1                 |
         | This is a column         |
         | This is \| also a column |
     """
