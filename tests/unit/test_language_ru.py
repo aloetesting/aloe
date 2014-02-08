@@ -20,18 +20,18 @@ from lettuce.languages import Language
 
 SCENARIO = u"""
 Сценарий: Сохранение базы курсов универитета в текстовый файл
-    Пускай имеем в базе университет следующие курсы:
+    Допустим имеем в базе университет следующие курсы:
        | Название                | Длительность  |
        | Матан                   | 2 года        |
        | Основы программирования | 1 год         |
     Когда я сохраняю базу курсову в файл 'курсы.txt'
-    Получаю в первой строке файла 'курсы.txt' строку 'Матан:2'
+    Тогда в первой строке файла 'курсы.txt' строку 'Матан:2'
     И во второй строке файла 'курсы.txt' строку 'Основы программирования:1'
 """
 
 SCENARIO_OUTLINE1 = u'''
 Структура сценария: Заполнение пользователей в базу
-    Пускай я заполняю в поле "имя" "<имя>"
+    Допустим я заполняю в поле "имя" "<имя>"
     И я заполняю в поле "возраст"  "<возраст>"
     Если я сохраняю форму
     То я вижу сообщени "Студент <имя>, возраст <возраст>, успешно занесен в базу!"
@@ -56,81 +56,108 @@ FEATURE = u'''
     | 0       | 5        | 0       |
 '''
 
+
+def parse_scenario(string, language=None):
+    feature = u"""
+    Функция: parse_scenario
+    """
+    feature += string
+    feature = Feature.from_string(feature, language=language)
+
+    return feature.scenarios[0]
+
+
 def test_language_russian():
-    'Language: RU -> Language class supports russian through code "ru"'
+    """
+    Language: RU -> Language class supports russian through code "ru"
+    """
+
     lang = Language('ru')
 
     assert_equals(lang.code, u'ru')
     assert_equals(lang.name, u'Russian')
     assert_equals(lang.native, u'Русский')
     assert_equals(lang.FEATURE, u'Функционал')
-    assert_equals(lang.SCENARIO, u'Сценарий')
-    # assert_equals(lang.EXAMPLES, u'Примеры|Сценарии')
-    # assert_equals(lang.scenario_outline, u'Структура сценария')
+    assert_equals(unicode(lang.SCENARIO),
+                  u'{"Сценарий" | "Структура сценария"}')
+    assert_equals(lang.EXAMPLES, u'Примеры')
 
-# def test_scenario_ru_from_string():
-#     'Language: RU -> Scenario.from_string'
-#     ru = Language('ru')
-#     scenario = Scenario.from_string(SCENARIO, language=ru)
-#
-#     assert_equals(
-#         scenario.name,
-#         u'Сохранение базы курсов универитета в текстовый файл'
-#     )
-#     assert_equals(
-#         scenario.steps[0].hashes,
-#         [
-#             {u'Название': u'Матан', u'Длительность': u'2 года'},
-#             {u'Название': u'Основы программирования', u'Длительность': u'1 год'},
-#         ]
-#     )
-#
-# def test_scenario_outline1_ru_from_string():
-#     'Language: RU -> Scenario.from_string, with scenario outline, first case'
-#     ru = Language('ru')
-#     scenario = Scenario.from_string(SCENARIO_OUTLINE1, language=ru)
-#
-#     assert_equals(
-#         scenario.name,
-#         u'Заполнение пользователей в базу'
-#     )
-#     assert_equals(
-#         scenario.outlines,
-#         [
-#             {u'имя': u'Вася', u'возраст': '22'},
-#             {u'имя': u'Петя', u'возраст': '30'},
-#         ]
-#     )
-#
-# def test_feature_ptbr_from_string():
-#     'Language: RU -> Feature.from_string'
-#     ru = Language('ru')
-#     feature = Feature.from_string(FEATURE, language=ru)
-#
-#     assert_equals(
-#         feature.name,
-#         u'Деление чисел'
-#     )
-#
-#     assert_equals(
-#         feature.description,
-#         u"Поскольку деление сложный процесс и люди часто допускают ошибки\n"
-#         u"Нужно дать им возможность делить на калькуляторе"
-#     )
-#
-#     (scenario, ) = feature.scenarios
-#
-#     assert_equals(
-#         scenario.name,
-#         u'Целочисленное деление'
-#     )
-#
-#     assert_equals(
-#         scenario.steps[-1].hashes,
-#         [
-#             {u'делимое': '100', u'делитель': '2', u'частное': '50'},
-#             {u'делимое': '28', u'делитель': '7', u'частное': '4'},
-#             {u'делимое': '0', u'делитель': '5', u'частное': '0'},
-#         ]
-#     )
-#
+def test_scenario_ru_from_string():
+    """
+    Language: RU -> Scenario.from_string
+    """
+
+    ru = Language('ru')
+    scenario = parse_scenario(SCENARIO, language=ru)
+
+    assert_equals(
+        scenario.name,
+        u'Сохранение базы курсов универитета в текстовый файл'
+    )
+    assert_equals(
+        scenario.steps[0].hashes,
+        [
+            {u'Название': u'Матан',
+             u'Длительность': u'2 года'},
+            {u'Название': u'Основы программирования',
+             u'Длительность': u'1 год'},
+        ]
+    )
+
+
+def test_scenario_outline1_ru_from_string():
+    """
+    Language: RU -> Scenario.from_string, with scenario outline, first case
+    """
+
+    ru = Language('ru')
+    scenario = parse_scenario(SCENARIO_OUTLINE1, language=ru)
+
+    assert_equals(
+        scenario.name,
+        u'Заполнение пользователей в базу'
+    )
+    assert_equals(
+        scenario.outlines,
+        [
+            {u'имя': u'Вася', u'возраст': '22'},
+            {u'имя': u'Петя', u'возраст': '30'},
+        ]
+    )
+
+
+def test_feature_ru_from_string():
+    """
+    Language: RU -> Feature.from_string
+    """
+
+    ru = Language('ru')
+    feature = Feature.from_string(FEATURE, language=ru)
+
+    assert_equals(
+        feature.name,
+        u'Деление чисел'
+    )
+
+    assert_equals(
+        feature.description,
+        u"Поскольку деление сложный процесс и люди часто допускают ошибки\n"
+        u"Нужно дать им возможность делить на калькуляторе"
+    )
+
+    (scenario, ) = feature.scenarios
+
+    assert_equals(
+        scenario.name,
+        u'Целочисленное деление'
+    )
+
+    assert_equals(
+        scenario.steps[-1].hashes,
+        [
+            {u'делимое': '100', u'делитель': '2', u'частное': '50'},
+            {u'делимое': '28', u'делитель': '7', u'частное': '4'},
+            {u'делимое': '0', u'делитель': '5', u'частное': '0'},
+        ]
+    )
+
