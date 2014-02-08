@@ -231,7 +231,9 @@ def parse_scenario(scenario,
 
 
 def test_scenario_has_name():
-    "It should extract the name of the scenario"
+    """
+    It should extract the name of the scenario
+    """
 
     scenario = parse_scenario(SCENARIO1)
 
@@ -242,16 +244,23 @@ def test_scenario_has_name():
         "Adding some students to my university database"
     )
 
+
 def test_scenario_has_repr():
-    "Scenario implements __repr__ nicely"
+    """
+    Scenario implements __repr__ nicely
+    """
+
     scenario = parse_scenario(SCENARIO1)
     assert_equals(
         repr(scenario),
         '<Scenario: "Adding some students to my university database">'
     )
 
+
 def test_scenario_has_steps():
-    "A scenario object should have a list of steps"
+    """
+    A scenario object should have a list of steps
+    """
 
     scenario = parse_scenario(SCENARIO1)
 
@@ -278,8 +287,12 @@ def test_scenario_has_steps():
         ]
     )
 
+
 def test_scenario_may_own_outlines():
-    "A scenario may own outlines"
+    """
+    A scenario may own outlines
+    """
+
     scenario = parse_scenario(OUTLINED_SCENARIO)
 
     assert_equals(len(scenario.steps), 4)
@@ -304,14 +317,21 @@ def test_scenario_may_own_outlines():
         ]
     )
 
+
 def test_steps_parsed_by_scenarios_has_scenarios():
-    "Steps parsed by scenarios has scenarios"
+    """
+    Steps parsed by scenarios has scenarios
+    """
+
     scenario = parse_scenario(SCENARIO1)
     for step in scenario.steps:
         assert_equals(step.scenario, scenario)
 
+
 def test_scenario_sentences_can_be_solved():
-    "A scenario with outlines may solve its sentences"
+    """
+    A scenario with outlines may solve its sentences
+    """
     scenario = parse_scenario(OUTLINED_SCENARIO)
 
     assert_equals(len(scenario.solved_steps), 12)
@@ -335,7 +355,10 @@ def test_scenario_sentences_can_be_solved():
         assert_equals(step.sentence, expected_sentence)
 
 def test_scenario_tables_are_solved_against_outlines():
-    "Outline substitution should apply to tables within a scenario"
+    """
+    Outline substitution should apply to tables within a scenario
+    """
+
     expected_hashes_per_step = [
             # a = 1, b = 2
             [{'Parameter': 'a', 'Value': '1'}, {'Parameter': 'b', 'Value': '2'}], # Given ...
@@ -354,7 +377,10 @@ def test_scenario_tables_are_solved_against_outlines():
         assert_equals(step.hashes, expected_hashes)
 
 def test_scenario_multilines_are_solved_against_outlines():
-    "Outline substitution should apply to multiline strings within a scenario"
+    """
+    Outline substitution should apply to multiline strings within a scenario
+    """
+
     expected_multiline = '<div>outline value</div>'
 
     scenario = parse_scenario(OUTLINED_SCENARIO_WITH_SUBSTITUTIONS_IN_MULTILINE)
@@ -364,13 +390,19 @@ def test_scenario_multilines_are_solved_against_outlines():
     assert_equals(step.multiline, expected_multiline)
 
 def test_solved_steps_also_have_scenario_as_attribute():
-    "Steps solved in scenario outlines also have scenario as attribute"
+    """
+    Steps solved in scenario outlines also have scenario as attribute
+    """
+
     scenario = parse_scenario(OUTLINED_SCENARIO)
     for step in scenario.solved_steps:
         assert_equals(step.scenario, scenario)
 
 def test_scenario_outlines_within_feature():
-    "Solving scenario outlines within a feature"
+    """
+    Solving scenario outlines within a feature
+    """
+
     feature = Feature.from_string(OUTLINED_FEATURE)
     scenario = feature.scenarios[0]
 
@@ -395,7 +427,10 @@ def test_scenario_outlines_within_feature():
         assert_equals(step.sentence, expected_sentence)
 
 def test_full_featured_feature():
-    "Solving scenarios within a full-featured feature"
+    """
+    Solving scenarios within a full-featured feature
+    """
+
     feature = Feature.from_string(OUTLINED_FEATURE_WITH_MANY)
     scenario1, scenario2, scenario3, scenario4 = feature.scenarios
 

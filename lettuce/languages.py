@@ -112,7 +112,9 @@ with open(i18n) as i18n:
             'native': defn['native'].title(),
             'FEATURE': build_keywords('feature'),
             'BACKGROUND': build_keywords('background'),
-            'SCENARIO': build_keywords('scenario', 'scenario_outline'),
+            # N.B. "Scenario Outline" must come before "Scenario" as pyparsing
+            # won't look ahead
+            'SCENARIO': build_keywords('scenario_outline', 'scenario'),
             'EXAMPLES': build_keywords('examples'),
             'STATEMENT': build_keywords('given', 'when', 'then', 'and', 'but'),
         })

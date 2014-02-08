@@ -97,9 +97,10 @@ def test_language_portuguese():
     assert_equals(lang.native, u'Português')
     assert_equals(lang.FEATURE, u'Funcionalidade')
     assert_equals(unicode(lang.SCENARIO),
-                  u'{"Cenário" | "Cenario" | "Esquema do Cenário" | '
+                  u'{"Esquema do Cenário" | '
                   u'"Esquema do Cenario" | "Delineação do Cenário" | '
-                  u'"Delineacao do Cenario"}')
+                  u'"Delineacao do Cenario" | '
+                  u'"Cenário" | "Cenario"}')
     assert_equals(lang.EXAMPLES, u'Exemplos')
 
 
