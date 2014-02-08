@@ -88,9 +88,6 @@ with open(i18n) as i18n:
 
             for string in args:
                 for keyword in defn[string].split('|'):
-                    if keyword == '*':
-                        continue
-
                     yield Keyword(keyword)
 
         def build_keywords(*args):
