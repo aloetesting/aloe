@@ -14,7 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from lettuce.core import STEP_REGISTRY
+from functools import wraps
+
+from lettuce.registry import STEP_REGISTRY
 
 def _is_step_sentence(sentence):
     return isinstance(sentence, str) or isinstance(sentence, basestring)
@@ -104,3 +106,22 @@ def steps(steps_class):
 
     setattr(steps_class, '__init__', init)
     return steps_class
+
+
+def memoizedproperty(func):
+    """
+    A property that supports memoizing.
+    """
+
+    prop_name = '__memoized_property_{func}'.format(func=func.__name__)
+
+    @wraps(func)
+    def inner(self):
+        try:
+            return getattr(self, prop_name)
+        except AttributeError:
+            value = func(self)
+            setattr(self, prop_name, value)
+            return value
+
+    return property(inner)

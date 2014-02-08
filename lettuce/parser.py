@@ -46,6 +46,7 @@ from fuzzywuzzy import fuzz
 
 from lettuce import languages, strings
 from lettuce.exceptions import LettuceSyntaxError
+from lettuce.decorators import memoizedproperty
 
 
 unicodePrintables = u''.join(unichr(c) for c in xrange(65536)
@@ -149,7 +150,7 @@ class Step(Node):
 
         return self.scenario.feature
 
-    @property
+    @memoizedproperty
     def keys(self):
         """
         Return the first row of a table if this statement contains one
@@ -159,7 +160,7 @@ class Step(Node):
         else:
             return []
 
-    @property
+    @memoizedproperty
     def hashes(self):
         """
         Return the table attached to the step as a list of hashes, where the
@@ -176,7 +177,7 @@ class Step(Node):
             for row in self.table[1:]
         ]
 
-    @property
+    @memoizedproperty
     def max_length(self):
         """
         The max length of the feature, description and child blocks
@@ -364,7 +365,7 @@ class Scenario(TaggedBlock):
 
         return self
 
-    @property
+    @memoizedproperty
     def max_length(self):
         """
         The max length of the feature, description and child blocks
@@ -395,7 +396,7 @@ class Scenario(TaggedBlock):
 
             yield (outline, steps)
 
-    @property
+    @memoizedproperty
     def solved_steps(self):
         """
         DO NOT USE: Used only in the tests.
@@ -481,7 +482,7 @@ class Feature(TaggedBlock):
 
         return self
 
-    @property
+    @memoizedproperty
     def max_length(self):
         """
         The max length of the feature, description and child blocks
