@@ -79,34 +79,82 @@ def test_success_outline_failfast():
 
 @with_setup(prepare_stdout)
 def test_fail_outline():
-    run_feature('fail_outline', True, False, 1, 1, 24, 3)
+    run_feature('fail_outline',
+                feature_will_fail=True,
+                failfast=False,
+                after_each_feature_count=1,
+                after_each_scenario_count=1,
+                after_each_step_count=20,
+                after_outline_count=3)
 
 @with_setup(prepare_stdout)
 def test_fail_outline_failfast():
-    run_feature('fail_outline', True, True, 1, 1, 12, 2)
+    run_feature('fail_outline',
+                feature_will_fail=True,
+                failfast=True,
+                after_each_feature_count=1,
+                after_each_scenario_count=1,
+                after_each_step_count=12,
+                after_outline_count=2)
 
 @with_setup(prepare_stdout)
 def test_success_non_outline():
-    run_feature('success_table', False, False, 1, 1, 5, 0)
+    run_feature('success_table',
+                feature_will_fail=False,
+                failfast=False,
+                after_each_feature_count=1,
+                after_each_scenario_count=1,
+                after_each_step_count=5,
+                after_outline_count=0)
 
 @with_setup(prepare_stdout)
 def test_success_non_outline_failfast():
-    run_feature('success_table', False, True, 1, 1, 5, 0)
+    run_feature('success_table',
+                feature_will_fail=False,
+                failfast=True,
+                after_each_feature_count=1,
+                after_each_scenario_count=1,
+                after_each_step_count=5,
+                after_outline_count=0)
 
 @with_setup(prepare_stdout)
 def test_fail_non_outline():
-    run_feature('failed_table', True, False, 1, 1, 5, 0)
+    run_feature('failed_table',
+                feature_will_fail=True,
+                failfast=False,
+                after_each_feature_count=1,
+                after_each_scenario_count=1,
+                after_each_step_count=2,
+                after_outline_count=0)
 
 @with_setup(prepare_stdout)
 def test_fail_non_outline_failfast():
-    run_feature('failed_table', True, True, 1, 1, 2, 0)
+    run_feature('failed_table',
+                feature_will_fail=True,
+                failfast=True,
+                after_each_feature_count=1,
+                after_each_scenario_count=1,
+                after_each_step_count=2,
+                after_outline_count=0)
 
 @with_setup(prepare_stderr)
 @with_setup(prepare_stdout)
 def test_fail_system_exiting_non_outline():
-    run_feature('system_exiting_error', True, False, 1, 1, 1, 0)
+    run_feature('system_exiting_error',
+                feature_will_fail=True,
+                failfast=False,
+                after_each_feature_count=1,
+                after_each_scenario_count=1,
+                after_each_step_count=1,
+                after_outline_count=0)
 
 @with_setup(prepare_stdout)
 def test_fail_system_exiting_failfast_non_outline():
-    run_feature('system_exiting_error', True, True, 1, 1, 1, 0)
+    run_feature('system_exiting_error',
+                feature_will_fail=True,
+                failfast=True,
+                after_each_feature_count=1,
+                after_each_scenario_count=1,
+                after_each_step_count=1,
+                after_outline_count=0)
 
