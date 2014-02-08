@@ -9,19 +9,19 @@ from os.path import dirname, join, abspath
 from tests.asserts import prepare_stdout, prepare_stderr
 
 def define_hooks(mock):
-    @after.each_feature    
+    @after.each_feature
     def after_each_feature(feature):
         mock.after_each_feature()
 
-    @after.each_scenario    
+    @after.each_scenario
     def after_each_scenario(scenario):
         mock.after_each_scenario()
 
-    @after.each_step    
+    @after.each_step
     def after_each_step(step):
         mock.after_each_step()
 
-    @after.outline    
+    @after.outline
     def after_outline(scenario, order, outline, reasons_to_fail):
         mock.after_outline()
 
@@ -44,7 +44,7 @@ def run_feature(feature, feature_will_fail, failfast,
              after_each_step_count, after_outline_count):
     mock = get_after_hook_mock()
     define_hooks(mock)
-    runner = Runner(feature_name(feature), failfast=failfast) 
+    runner = Runner(feature_name(feature), failfast=failfast)
     if feature_will_fail:
         try:
             runner.run()
@@ -59,11 +59,23 @@ def run_feature(feature, feature_will_fail, failfast,
 
 @with_setup(prepare_stdout)
 def test_success_outline():
-    run_feature('success_outline', False, False, 1, 1, 24, 3)
+    run_feature('success_outline',
+                feature_will_fail=False,
+                failfast=False,
+                after_each_feature_count=1,
+                after_each_scenario_count=1,
+                after_each_step_count=24,
+                after_outline_count=3)
 
 @with_setup(prepare_stdout)
 def test_success_outline_failfast():
-    run_feature('success_outline', False, True, 1, 1, 24, 3)
+    run_feature('success_outline',
+                feature_will_fail=False,
+                failfast=True,
+                after_each_feature_count=1,
+                after_each_scenario_count=1,
+                after_each_step_count=24,
+                after_outline_count=3)
 
 @with_setup(prepare_stdout)
 def test_fail_outline():

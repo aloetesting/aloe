@@ -99,13 +99,21 @@ CALLBACK_REGISTRY = CallbackDict(
         'scenario': {
             'before_each': [],
             'after_each': [],
-            'outline': [],
+            'outline': [],  # an example
         },
         'background': {
             'before_each': [],
             'after_each': [],
         },
         'feature': {
+            'before_each': [],
+            'after_each': [],
+        },
+        'scenario_outline': {
+            'before_each': [],
+            'after_each': [],
+        },
+        'example': {
             'before_each': [],
             'after_each': [],
         },

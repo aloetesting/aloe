@@ -94,6 +94,9 @@ class Step(parser.Step):
 
         return matched, StepDefinition(self, func)
 
+    def represented(self):
+        return ''
+
     def pre_run(self, ignore_case=True, with_outline=None):
         matched, step_definition = self._get_match(ignore_case)
         self.related_outline = with_outline
@@ -183,6 +186,9 @@ class Scenario(parser.Scenario):
     def failed(self):
         return any(step.failed for step in self.steps)
 
+    def represented(self):
+        return ''
+
     def run(self, ignore_case=True, failfast=False):
         """
         Runs a scenario, running each of its steps. Also call
@@ -192,91 +198,117 @@ class Scenario(parser.Scenario):
         running the tests. The results can be found at self.resultes
         """
 
-        # FIXME: is there an before/after outline hook?
         self.results = []
 
         if self.outlines:
+            call_hook('before_each', 'scenario_outline', self)
             generator = self.evaluated
         else:
             generator = ((None, self.steps),)
 
-        for outline, steps in generator:
+        try:
+            # before/after scenario hooks apply to the whole scenario or
+            # scenario outline
             call_hook('before_each', 'scenario', self)
 
-            try:
-                if self.background:
-                    self.background.run(ignore_case=ignore_case)
+            for outline, steps in generator:
+                try:
+                    # before/after examples applies to a single example
+                    call_hook('before_each', 'example', self, outline)
 
-                # pre-run the steps so we have their definitions set
-                for step in steps:
-                    try:
-                        step.pre_run(ignore_case=ignore_case,
-                                     with_outline=outline)
-                    except NoDefinitionFound:
-                        pass
+                    if self.background:
+                        try:
+                            self.background.run(ignore_case=ignore_case)
 
-                # run the steps for real
-                for step in steps:
-                    try:
-                        call_hook('before_each', 'step', step)
-                        call_hook('before_output', 'step', step)
+                        except (NoDefinitionFound, AssertionError) as e:
+                            if failfast:
+                                raise FailFast()
 
-                        step.run(ignore_case=ignore_case)
+                            # fixtures failed, no point proceeding
+                            continue
 
-                    except (NoDefinitionFound, AssertionError) as e:
-                        # we expect steps to assert or not be found
-                        if failfast:
-                            raise FailFast()
+                    # pre-run the steps so we have their definitions set
+                    for step in steps:
+                        try:
+                            step.pre_run(ignore_case=ignore_case,
+                                         with_outline=outline)
+                        except NoDefinitionFound:
+                            pass
 
-                        break
+                    # run the steps for real
+                    for step in steps:
+                        try:
+                            call_hook('before_each', 'step', step)
+                            call_hook('before_output', 'step', step)
 
-                    finally:
-                        call_hook('after_output', 'step', step)
-                        call_hook('after_each', 'step', step)
+                            step.run(ignore_case=ignore_case)
 
-            except FailFast:
-                return False
+                        except (NoDefinitionFound, AssertionError) as e:
+                            # we expect steps to assert or not be found
+                            import logging
+                            logging.exception("oh shiz")
 
-            finally:
-                call_hook('after_each', 'scenario', self)
+                            if failfast:
+                                raise FailFast()
 
-                if outline:
-                    call_hook('outline', 'scenario', self, order, outline,
-                            reasons_to_fail)
+                            break
 
-                steps_passed = [step for step in steps if step.passed]
-                steps_failed = [step for step in steps if step.failed]
-                steps_undefined = [step for step in steps
-                                   if not step.has_definition]
-                steps_skipped = [step for step in steps
-                                 if step.has_definition and not step.ran]
+                        finally:
+                            call_hook('after_output', 'step', step)
+                            call_hook('after_each', 'step', step)
 
-                self.results.append(ScenarioResult(self,
-                                                   steps_passed,
-                                                   steps_failed,
-                                                   steps_skipped,
-                                                   steps_undefined))
+                except FailFast:
+                    raise
 
-        return True
+                finally:
+                    if outline:
+                        call_hook('outline', 'scenario', self,
+                                  None, outline, None)
+                        call_hook('after_each', 'example', self, outline)
+
+                    steps_passed = [step for step in steps if step.passed]
+                    steps_failed = [step for step in steps if step.failed]
+                    steps_undefined = [step for step in steps
+                                       if not step.has_definition]
+                    steps_skipped = [step for step in steps
+                                     if step.has_definition and not step.ran]
+
+                    self.results.append(ScenarioResult(self,
+                                                       steps_passed,
+                                                       steps_failed,
+                                                       steps_skipped,
+                                                       steps_undefined))
+
+            if self.outlines:
+                call_hook('after_each', 'scenario_outline', self)
+
+        finally:
+            call_hook('after_each', 'scenario', self)
+
+        return self.results
 
 
 class Background(parser.Background):
 
     def run(self, ignore_case=True):
-        call_hook('before_each', 'background', self)
-        results = []
+        try:
+            call_hook('before_each', 'background', self)
 
-        for step in self.steps:
-            matched, step_definition = step.pre_run(ignore_case=ignore_case)
-            call_hook('before_each', 'step', step)
+            for step in self.steps:
+                try:
+                    call_hook('before_each', 'step', step)
+                    call_hook('before_output', 'step', step)
 
-            results.append(step.run(ignore_case=ignore_case))
+                    # any exception generated here will be caught in
+                    # Scenario.run()
+                    step.run(ignore_case=ignore_case)
 
-            call_hook('after_each', 'step', step)
+                finally:
+                    call_hook('after_output', 'step', step)
+                    call_hook('after_each', 'step', step)
 
-        call_hook('after_each', 'background', self, results)
-
-        return results
+        finally:
+            call_hook('after_each', 'background', self, results)
 
     def __repr__(self):
         return '<Background for feature: {0}>'.format(self.feature.name)
@@ -328,6 +360,9 @@ class Feature(parser.Feature):
 
         return self
 
+    def represented(self):
+        return ''
+
     def run(self, scenarios=None,
             ignore_case=True,
             tags=None,
@@ -359,12 +394,15 @@ class Feature(parser.Feature):
             call_hook('before_each', 'feature', self)
 
             for scenario in scenarios:
-                proceed = scenario.run(ignore_case=ignore_case,
-                                       failfast=failfast)
-                results += scenario.results
+                try:
+                    scenario.run(ignore_case=ignore_case,
+                                 failfast=failfast)
 
-                if not proceed:
+                except FailFast:
                     break
+
+                finally:
+                    results += scenario.results
 
         finally:
             call_hook('after_each', 'feature', self)
