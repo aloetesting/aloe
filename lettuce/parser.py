@@ -51,12 +51,34 @@ unicodePrintables = u''.join(unichr(c) for c in xrange(65536)
                              if not unichr(c).isspace())
 
 
-class Step(object):
+class ParseLocation(object):
+    """
+    The location of a parsed node within the stream
+    """
+
+    def __init__(self, filename=None, line=None, col=None):
+        self.file = filename
+        self.line = line
+        self.col = col
+
+
+class Node(object):
+    """
+    A parse node
+    """
+
+    def __init__(self, s, loc, tokens):
+        self.described_at = ParseLocation()
+
+
+class Step(Node):
     """
     A statement
     """
 
     def __init__(self, s, loc, tokens):
+
+        super(Step, self).__init__(s, loc, tokens)
 
         # statements are made up of a statement sentence + optional data
         # the optional data can either be a table or a multiline string
@@ -73,6 +95,18 @@ class Step(object):
 
     def __repr__(self):
         return unicode(self).encode('utf-8')
+
+    @classmethod
+    def parse_steps_from_string(cls, string, language=None):
+        """
+        Parse a number of steps, returns a list of steps
+
+        This is used by step.behave_as
+        """
+
+        tokens = parse(string=string, token='STATEMENTS', lang=language)
+
+        return list(tokens[0])
 
     @property
     def keys(self):
@@ -124,14 +158,16 @@ class Step(object):
         return self
 
 
-class Block(object):
+class Block(Node):
     """
     A generic block, e.g. Feature:, Scenario:
 
     Blocks contain a number of statements
     """
 
-    def __init__(self, tokens):
+    def __init__(self, *args):
+        super(Block, self).__init__(*args)
+
         self.statements = []
 
     @classmethod
@@ -160,7 +196,7 @@ class TaggedBlock(Block):
     Tagged blocks contain type-specific child content as well as tags
     """
     def __init__(self, s, loc, tokens):
-        super(TaggedBlock, self).__init__(tokens)
+        super(TaggedBlock, self).__init__(s, loc, tokens)
 
         token = tokens[0]
 
@@ -296,6 +332,22 @@ class Scenario(TaggedBlock):
 
 
 class Feature(TaggedBlock):
+    @classmethod
+    def from_string(cls, string, language=None):
+        """
+        Returns a Feature from a string
+        """
+
+        return parse(string=string, token='FEATURE', lang=language)[0]
+
+    @classmethod
+    def from_file(cls, filename, language=None):
+        """
+        Parse a file or filename
+        """
+
+        return parse(filename=filename, token='FEATURE', lang=language)[0]
+
     @classmethod
     def add_blocks(cls, tokens):
         """
@@ -500,37 +552,3 @@ def parse(string=None, filename=None, token=None, lang=None):
                 col=e.col,
                 line=e.line,
                 space=' ' * (e.col - 1)))
-
-
-def from_string(cls, string, language=None):
-    """
-    Factory returning a from_string parser for a given token
-    """
-
-    return parse(string=string, token='FEATURE', lang=language)[0]
-
-Feature.from_string = classmethod(from_string)
-
-
-def from_file(cls, filename, language=None):
-    """
-    Parse a file or filename
-    """
-
-    return parse(filename=filename, token='FEATURE', lang=language)[0]
-
-Feature.from_file = classmethod(from_file)
-
-
-def parse_statements(cls, string, language=None):
-    """
-    Parse a number of statements
-
-    This is used by step.behave_as
-    """
-
-    tokens = parse(string=string, token='STATEMENTS', lang=language)
-
-    return list(tokens[0])
-
-Step.parse_steps_from_string = classmethod(parse_statements)
