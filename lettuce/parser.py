@@ -30,7 +30,6 @@ from pyparsing import (CharsNotIn,
                        OneOrMore,
                        Optional,
                        ParseException,
-                       printables,
                        pythonStyleComment,
                        QuotedString,  # function
                        quotedString,  # token
@@ -45,6 +44,10 @@ from fuzzywuzzy import fuzz
 
 from lettuce.exceptions import LettuceSyntaxError
 from lettuce import languages
+
+
+unicodePrintables = u''.join(unichr(c) for c in xrange(65536)
+                             if not unichr(c).isspace())
 
 
 class Step(object):
@@ -333,11 +336,12 @@ def parse(string=None, filename=None, token=None, lang=None):
     # End of Line
     #
     EOL = Suppress(lineEnd)
+    UTFWORD = Word(unicodePrintables)
 
     #
     # @tag
     #
-    TAG = Suppress('@') + Word(printables)
+    TAG = Suppress('@') + UTFWORD
 
     #
     # A table
@@ -365,7 +369,7 @@ def parse(string=None, filename=None, token=None, lang=None):
     #
     STATEMENT_SENTENCE = Group(
         lang.STATEMENT +  # Given, When, Then, And
-        OneOrMore(Word(printables).setWhitespaceChars(' \t') |
+        OneOrMore(UTFWORD.setWhitespaceChars(' \t') |
                   quotedString.setWhitespaceChars(' \t')) +
         EOL
     )

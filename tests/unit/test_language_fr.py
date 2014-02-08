@@ -30,7 +30,7 @@ Scénario: Ajout de plusieurs cursus dans la base de mon université
 """
 
 OUTLINED_SCENARIO = u"""
-Plan de Scénario: Ajouter 2 nombres
+Plan du Scénario: Ajouter 2 nombres
     Soit <input_1> entré dans la calculatrice
     Et <input_2> entré dans la calculatrice
     Quand je presse <bouton>
@@ -44,13 +44,13 @@ Plan de Scénario: Ajouter 2 nombres
 """
 
 OUTLINED_SCENARIO2 = u"""
-Plan de Scénario: Ajouter 2 nombres
+Plan du Scénario: Ajouter 2 nombres
     Soit <input_1> entré dans la calculatrice
     Et <input_2> entré dans la calculatrice
     Quand je presse <bouton>
     Alors je doit avoir <output> à l'écran
 
-    Scénarios:
+    Exemples:
       | input_1 | input_2 | bouton | output |
       | 20      | 30      | add    | 50     |
       | 2       | 5       | add    | 7      |
@@ -63,7 +63,7 @@ Plan du Scénario: Ajouter 2 nombres
     Quand je presse <bouton>
     Alors je doit avoir <output> à l'écran
 
-    Scénarios:
+    Exemples:
       | input_1 | input_2 | bouton | output |
       | 20      | 30      | add    | 50     |
       | 2       | 5       | add    | 7      |
@@ -89,12 +89,12 @@ Fonctionnalité: Faire plusieur choses en même temps
         | 0       | 40      | add    | 40     |
 """
 OUTLINED_FEATURE2 = u"""
-Fonction: Faire plusieur choses en même temps
+Fonctionnalité: Faire plusieur choses en même temps
     De façon à automatiser les tests
     En tant que fainéant
     J'utilise les plans de scénario
 
-    Plan de Scénario: Ajouter 2 nombres
+    Plan du Scénario: Ajouter 2 nombres
         Soit <input_1> entré dans la calculatrice
         Et <input_2> entré dans la calculatrice
         Quand je presse <bouton>
@@ -107,8 +107,21 @@ Fonction: Faire plusieur choses en même temps
         | 0       | 40      | add    | 40     |
 """
 
+def parse_scenario(string, language=None):
+    feature = u"""
+    Fonctionnalité: parse_scenario
+    """
+
+    feature += string
+    feature = Feature.from_string(feature, language=language)
+
+    return feature.scenarios[0]
+
 def test_language_french():
-    'Language: FR -> Language class supports french through code "fr"'
+    """
+    Language: FR -> Language class supports french through code "fr"
+    """
+
     lang = Language('fr')
 
     assert_equals(lang.code, u'fr')
@@ -118,78 +131,94 @@ def test_language_french():
     assert_equals(lang.SCENARIO, u'Scénario')
     assert_equals(lang.EXAMPLES, u'Exemples')
 
-# def test_scenario_fr_from_string():
-#     'Language: FR -> Scenario.from_string'
-#     lang = Language('fr')
-#     scenario = Scenario.from_string(SCENARIO, language=lang)
-#
-#     assert_equals(
-#         scenario.name,
-#         u'Ajout de plusieurs cursus dans la base de mon université'
-#     )
-#     assert_equals(
-#         scenario.steps[0].hashes,
-#         [
-#             {'Nom': u"Science de l'Informatique", u'Durée': '5 ans'},
-#             {'Nom': u'Nutrition', u'Durée': '4 ans'},
-#         ]
-#     )
-#
-# def test_scenario_outline1_fr_from_string():
-#     'Language: FR -> Scenario.from_string, with scenario outline, first case'
-#     lang = Language('fr')
-#     scenario = Scenario.from_string(OUTLINED_SCENARIO, language=lang)
-#
-#     assert_equals(
-#         scenario.name,
-#         'Ajouter 2 nombres'
-#     )
-#     assert_equals(
-#         scenario.outlines,
-#         [
-#             {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
-#             {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
-#             {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
-#         ]
-#     )
-#
-# def test_scenario_outline2_fr_from_string():
-#     'Language: FR -> Scenario.from_string, with scenario outline, second case'
-#     lang = Language('fr')
-#     scenario = Scenario.from_string(OUTLINED_SCENARIO2, language=lang)
-#
-#     assert_equals(
-#         scenario.name,
-#         'Ajouter 2 nombres'
-#     )
-#     assert_equals(
-#         scenario.outlines,
-#         [
-#             {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
-#             {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
-#             {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
-#         ]
-#     )
-# def test_scenario_outline3_fr_from_string():
-#     'Language: FR -> Scenario.from_string, with scenario outline, third case'
-#     lang = Language('fr')
-#     scenario = Scenario.from_string(OUTLINED_SCENARIO2, language=lang)
-#
-#     assert_equals(
-#         scenario.name,
-#         'Ajouter 2 nombres'
-#     )
-#     assert_equals(
-#         scenario.outlines,
-#         [
-#             {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
-#             {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
-#             {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
-#         ]
-#     )
+def test_scenario_fr_from_string():
+    """
+    Language: FR -> Scenario.from_string
+    """
+
+    lang = Language('fr')
+    scenario = parse_scenario(SCENARIO, language=lang)
+
+    assert_equals(
+        scenario.name,
+        u'Ajout de plusieurs cursus dans la base de mon université'
+    )
+    assert_equals(
+        scenario.steps[0].hashes,
+        [
+            {'Nom': u"Science de l'Informatique", u'Durée': '5 ans'},
+            {'Nom': u'Nutrition', u'Durée': '4 ans'},
+        ]
+    )
+
+def test_scenario_outline1_fr_from_string():
+    """
+    Language: FR -> Scenario.from_string, with scenario outline, first case
+    """
+
+    lang = Language('fr')
+    scenario = parse_scenario(OUTLINED_SCENARIO, language=lang)
+
+    assert_equals(
+        scenario.name,
+        'Ajouter 2 nombres'
+    )
+    assert_equals(
+        scenario.outlines,
+        [
+            {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
+            {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
+            {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
+        ]
+    )
+
+def test_scenario_outline2_fr_from_string():
+    """
+    Language: FR -> Scenario.from_string, with scenario outline, second case
+    """
+
+    lang = Language('fr')
+    scenario = parse_scenario(OUTLINED_SCENARIO2, language=lang)
+
+    assert_equals(
+        scenario.name,
+        'Ajouter 2 nombres'
+    )
+    assert_equals(
+        scenario.outlines,
+        [
+            {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
+            {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
+            {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
+        ]
+    )
+
+def test_scenario_outline3_fr_from_string():
+    """
+    Language: FR -> Scenario.from_string, with scenario outline, third case
+    """
+
+    lang = Language('fr')
+    scenario = parse_scenario(OUTLINED_SCENARIO2, language=lang)
+
+    assert_equals(
+        scenario.name,
+        'Ajouter 2 nombres'
+    )
+    assert_equals(
+        scenario.outlines,
+        [
+            {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
+            {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
+            {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
+        ]
+    )
 
 def test_feature_fr_from_string():
-    'Language: FR -> Feature.from_string'
+    """
+    Language: FR -> Feature.from_string
+    """
+
     lang = Language('fr')
 
     feature = Feature.from_string(OUTLINED_FEATURE, language=lang)
@@ -222,36 +251,39 @@ def test_feature_fr_from_string():
         ]
     )
 
-# def test_feature_fr_from_string2():
-#     'Language: FR -> Feature.from_string, alternate name'
-#     lang = Language('fr')
-#
-#     feature = Feature.from_string(OUTLINED_FEATURE2, language=lang)
-#
-#     assert_equals(
-#         feature.name,
-#         u'Faire plusieur choses en même temps'
-#     )
-#
-#     assert_equals(
-#         feature.description,
-#         u"De façon à automatiser les tests\n"
-#         u"En tant que fainéant\n"
-#         u"J'utilise les plans de scénario"
-#     )
-#
-#     (scenario, ) = feature.scenarios
-#
-#     assert_equals(
-#         scenario.name,
-#         'Ajouter 2 nombres'
-#     )
-#
-#     assert_equals(
-#         scenario.outlines,
-#         [
-#             {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
-#             {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
-#             {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
-#         ]
-#     )
+def test_feature_fr_from_string2():
+    """
+    Language: FR -> Feature.from_string, alternate name
+    """
+
+    lang = Language('fr')
+
+    feature = Feature.from_string(OUTLINED_FEATURE2, language=lang)
+
+    assert_equals(
+        feature.name,
+        u'Faire plusieur choses en même temps'
+    )
+
+    assert_equals(
+        feature.description,
+        u"De façon à automatiser les tests\n"
+        u"En tant que fainéant\n"
+        u"J'utilise les plans de scénario"
+    )
+
+    (scenario, ) = feature.scenarios
+
+    assert_equals(
+        scenario.name,
+        'Ajouter 2 nombres'
+    )
+
+    assert_equals(
+        scenario.outlines,
+        [
+            {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
+            {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
+            {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
+        ]
+    )

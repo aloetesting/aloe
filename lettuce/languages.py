@@ -46,6 +46,13 @@ class Language(object):
     def name(self):
         return self.__class__.__name__
 
+    def print_keywords(self):
+        print u'FEATURE', unicode(self.FEATURE)
+        print u'BACKGROUND', unicode(self.BACKGROUND)
+        print u'SCENARIO', unicode(self.SCENARIO)
+        print u'EXAMPLES', unicode(self.EXAMPLES)
+        print u'STATEMENT', unicode(self.STATEMENT)
+
     @classmethod
     def guess_from_string(cls, string):
         # match = re.search(REP.language, string)
@@ -60,7 +67,7 @@ class Language(object):
     def __implement_me__(self):
         raise NotImplementedError("Language isn't complete")
 
-    FEATURE = BACKGROUND = SCENARIOS = EXAMPLES = STATEMENT = \
+    FEATURE = BACKGROUND = SCENARIO = EXAMPLES = STATEMENT = \
         property(__implement_me__)
 
 
@@ -109,3 +116,15 @@ with open(i18n) as i18n:
             'EXAMPLES': build_keywords('examples'),
             'STATEMENT': build_keywords('given', 'when', 'then', 'and', 'but'),
         })
+
+
+class PortugueseBrazilian(Portuguese, Language):
+    """
+    Add pt-br for compatibility
+    """
+
+    code = 'pt-br'
+
+    @property
+    def name(self):
+        return 'Portuguese'
