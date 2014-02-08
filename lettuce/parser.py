@@ -43,8 +43,8 @@ from pyparsing import (CharsNotIn,
 
 from fuzzywuzzy import fuzz
 
-from lettuce.exceptions import LettuceSyntaxError
 from lettuce import languages
+from lettuce.exceptions import LettuceSyntaxError
 
 
 unicodePrintables = u''.join(unichr(c) for c in xrange(65536)
@@ -56,10 +56,34 @@ class ParseLocation(object):
     The location of a parsed node within the stream
     """
 
-    def __init__(self, filename=None, line=None, col=None):
-        self.file = filename
+    def __init__(self, parent, filename=None, line=None, col=None):
+        self.parent = parent
+        self._file = filename
         self.line = line
         self.col = col
+
+    def __repr__(self):
+        return '(%s, %s)' % (self.line, self.col)
+
+    @property
+    def file(self):
+        """
+        Return the relative path to the file
+        """
+
+        # need to import this here to prevent a circular import
+        from lettuce.core import fs
+
+        if self._file:
+            return fs.relpath(self._file)
+        elif self.parent:
+            return self.parent.feature.described_at.file
+        else:
+            return None
+
+    @file.setter
+    def file(self, value):
+        self._file = value
 
 
 class Node(object):
@@ -68,7 +92,9 @@ class Node(object):
     """
 
     def __init__(self, s, loc, tokens):
-        self.described_at = ParseLocation()
+        self.described_at = ParseLocation(self,
+                                          line=lineno(loc, s),
+                                          col=col(loc, s))
 
 
 class Step(Node):
@@ -107,6 +133,14 @@ class Step(Node):
         tokens = parse(string=string, token='STATEMENTS', lang=language)
 
         return list(tokens[0])
+
+    @property
+    def feature(self):
+        """
+        The feature this step is a part of
+        """
+
+        return self.scenario.feature
 
     @property
     def keys(self):
@@ -331,6 +365,27 @@ class Scenario(TaggedBlock):
         return all_steps
 
 
+class Description(Node):
+    """
+    The description block of a feature
+    """
+
+    def __init__(self, s, loc, tokens):
+
+        super(Description, self).__init__(s, loc, tokens)
+
+        token = tokens[0]
+
+        self.description = u'\n'.join(u' '.join(line)
+                                      for line in token).strip()
+
+    def __unicode__(self):
+        return self.description
+
+    def __repr__(self):
+        return unicode(self)
+
+
 class Feature(TaggedBlock):
     @classmethod
     def from_string(cls, string, language=None):
@@ -346,7 +401,9 @@ class Feature(TaggedBlock):
         Parse a file or filename
         """
 
-        return parse(filename=filename, token='FEATURE', lang=language)[0]
+        self = parse(filename=filename, token='FEATURE', lang=language)[0]
+        self.described_at.file = filename
+        return self
 
     @classmethod
     def add_blocks(cls, tokens):
@@ -357,8 +414,16 @@ class Feature(TaggedBlock):
         token = tokens[0]
 
         self = token.node
-        self.description = u'\n'.join(u' '.join(line)
-                                      for line in token.description).strip()
+        #
+        # In order to remain compatible with the existing API we disassemble
+        # the Description node
+        #
+        self.description = unicode(token.description)
+        # FIXME: this is not at all right
+        self.described_at.description_at = (
+            token.description.described_at.line,
+            token.description.described_at.col)
+
         self.background = token.background \
             if isinstance(token.background, Background) else None
         self.scenarios = list(token.scenarios)
@@ -511,6 +576,7 @@ def parse(string=None, filename=None, token=None, lang=None):
             Group(ZeroOrMore(UTFWORD)) + EOL
         )
     )
+    DESCRIPTION.setParseAction(Description)
 
     #
     # Complete feature file definition

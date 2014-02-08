@@ -162,8 +162,9 @@ class Step(parser.Step):
 
 
 class Scenario(parser.Scenario):
-    """ Object that represents each scenario on feature files."""
-    described_at = None
+    """
+    Object that represents each scenario on feature files.
+    """
 
     @property
     def background(self):
