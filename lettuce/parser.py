@@ -44,7 +44,7 @@ from pyparsing import (CharsNotIn,
 
 from fuzzywuzzy import fuzz
 
-from lettuce import languages
+from lettuce import languages, strings
 from lettuce.exceptions import LettuceSyntaxError
 
 
@@ -176,24 +176,24 @@ class Step(Node):
             for row in self.table[1:]
         ]
 
+    @property
+    def max_length(self):
+        """
+        The max length of the feature, description and child blocks
+        """
+
+        return max(
+            0,
+            len(self.represented()),
+            *[len(line) for line in self.represent_hashes().splitlines()]
+        )
+
     def represent_hashes(self, indent=6):
         """
         Render the table
         """
 
-        # calculate the width of each column
-        table = [map(str, row) for row in self.table]
-        lengths = [len(cell) for cell in table[0]]
-
-        for row in table[1:]:
-            lengths = map(max, zip(lengths, [len(cell) for cell in row]))
-
-        return u'\n'.join(
-            u' ' * indent +
-            u'| %s |' % u' | '.join(cell.ljust(length)
-                                    for cell, length in zip(row, lengths))
-            for row in table
-        )
+        return strings.represent_table(self.table, indent=indent)
 
     def resolve_substitutions(self, outline):
         """
@@ -249,6 +249,13 @@ class Block(Node):
                    for statement in self.steps)
 
         return self
+
+    def represented(self, indent=2):
+        """
+        Include block indents
+        """
+
+        return u' ' * indent + super(Block, self).represented().strip()
 
 
 class TaggedBlock(Block):
@@ -358,6 +365,17 @@ class Scenario(TaggedBlock):
         return self
 
     @property
+    def max_length(self):
+        """
+        The max length of the feature, description and child blocks
+        """
+
+        return max(
+            len(self.represented()),
+            *[step.max_length for step in self.steps]
+        )
+
+    @property
     def tags(self):
         return self._tags + self.feature.tags
 
@@ -462,6 +480,20 @@ class Feature(TaggedBlock):
             scenario.feature = self
 
         return self
+
+    @property
+    def max_length(self):
+        """
+        The max length of the feature, description and child blocks
+        """
+
+        return max(
+            len(self.text),
+            *[scenario.max_length for scenario in self.scenarios]
+        )
+
+    def represented(self):
+        return Node.represented(self)
 
 
 def parse(string=None, filename=None, token=None, lang=None):
