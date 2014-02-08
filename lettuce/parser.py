@@ -97,12 +97,12 @@ class Node(object):
         self.described_at = ParseLocation(self, s, loc)
         self.text = line(loc, s)
 
-    def represented(self):
+    def represented(self, indent=0):
         """
         Return a representation of the node
         """
 
-        return self.text
+        return u' ' * indent + self.text.strip()
 
 
 class Step(Node):
@@ -189,6 +189,13 @@ class Step(Node):
             *[len(line) for line in self.represent_hashes().splitlines()]
         )
 
+    def represented(self, indent=4):
+        """
+        Represent the line
+        """
+
+        return super(Step, self).represented(indent=indent)
+
     def represent_hashes(self, indent=6):
         """
         Render the table
@@ -256,7 +263,7 @@ class Block(Node):
         Include block indents
         """
 
-        return u' ' * indent + super(Block, self).represented().strip()
+        return super(Block, self).represented(indent=indent)
 
 
 class TaggedBlock(Block):
@@ -365,6 +372,13 @@ class Scenario(TaggedBlock):
 
         return self
 
+    def represent_outlines(self, indent=4):
+        """
+        Render the outlines table
+        """
+
+        return strings.represent_table(self.outlines_table, indent=indent)
+
     @memoizedproperty
     def max_length(self):
         """
@@ -372,9 +386,33 @@ class Scenario(TaggedBlock):
         """
 
         return max(
+            0,
             len(self.represented()),
-            *[step.max_length for step in self.steps]
+            *([step.max_length for step in self.steps] +
+              [len(line) for line in self.represent_outlines().splitlines()])
         )
+
+    @memoizedproperty
+    def outlines_table(self):
+        """
+        Return the outlines as a table
+        """
+
+        # get the list of column headings
+        headings = set()
+
+        for outline in self.outlines:
+            headings |= set(outline.keys())
+
+        headings = list(headings)
+
+        table = [headings]
+
+        # append the data to the table
+        for outline in self.outlines:
+            table.append([outline.get(cell, '') for cell in headings])
+
+        return table
 
     @property
     def tags(self):
@@ -489,12 +527,14 @@ class Feature(TaggedBlock):
         """
 
         return max(
+            0,
             len(self.text),
-            *[scenario.max_length for scenario in self.scenarios]
+            *([len(line) for line in self.description.splitlines()] +
+              [scenario.max_length for scenario in self.scenarios])
         )
 
-    def represented(self):
-        return Node.represented(self)
+    def represented(self, indent=0):
+        return super(Feature, self).represented(indent=indent)
 
 
 def parse(string=None, filename=None, token=None, lang=None):
