@@ -79,7 +79,7 @@ def test_language_russian():
     assert_equals(lang.native, u'Русский')
     assert_equals(lang.FEATURE, u'Функционал')
     assert_equals(unicode(lang.SCENARIO),
-                  u'{"Структура сценария" | "Сценарий"}')
+                  u'{"Сценарий" ^ "Структура сценария"}')
     assert_equals(lang.EXAMPLES, u'Примеры')
 
 def test_scenario_ru_from_string():

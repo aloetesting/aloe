@@ -103,7 +103,9 @@ with open(i18n) as i18n:
             comb = next(i_)
 
             for i_ in i_:
-                comb |= i_
+                # take the longest matching keyword
+                # (e.g. `Scenario Outline' instead of `Scenario')
+                comb ^= i_
 
             return comb
 
@@ -112,9 +114,7 @@ with open(i18n) as i18n:
             'native': defn['native'].title(),
             'FEATURE': build_keywords('feature'),
             'BACKGROUND': build_keywords('background'),
-            # N.B. "Scenario Outline" must come before "Scenario" as pyparsing
-            # won't look ahead
-            'SCENARIO': build_keywords('scenario_outline', 'scenario'),
+            'SCENARIO': build_keywords('scenario', 'scenario_outline'),
             'EXAMPLES': build_keywords('examples'),
             'STATEMENT': build_keywords('given', 'when', 'then', 'and', 'but'),
         })
