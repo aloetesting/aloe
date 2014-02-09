@@ -84,8 +84,7 @@ def test_feature_loaded_from_file_has_feature_line_and_feature_filename():
     assert_equals(feature.described_at.file, fs.relpath(feature_file))
     assert_equals(feature.described_at.line, 2)
     assert_equals(feature.name, 'Division')
-    # FIXME
-    # assert_equals(feature.described_at.description_at, (3, 4))
+    assert_equals(feature.described_at.description_at, (3, 4))
 
 
 def test_feature_loaded_from_file_has_description_at():
@@ -100,8 +99,7 @@ def test_feature_loaded_from_file_has_description_at():
     assert_equals(feature.described_at.file, fs.relpath(feature_file))
     assert_equals(feature.described_at.line, 5)
     assert_equals(feature.name, 'Addition')
-    # FIXME
-    # assert_equals(feature.described_at.description_at, (6, 7, 8))
+    assert_equals(feature.described_at.description_at, (6, 7, 8))
     assert_equals(
         feature.description,
         "In order to avoid silly mistakes\n"

@@ -64,8 +64,12 @@ class ParseLocation(object):
         self.line = lineno(loc, s)
         self.col = col(loc, s)
 
+    def __unicode__(self):
+        return u'{file}:{line}'.format(file=self.file,
+                                       line=self.line)
+
     def __repr__(self):
-        return '(%s, %s)' % (self.line, self.col)
+        return unicode(self)
 
     @property
     def file(self):
@@ -97,12 +101,18 @@ class Node(object):
         self.described_at = ParseLocation(self, s, loc)
         self.text = line(loc, s)
 
-    def represented(self, indent=0):
+    def represented(self, indent=0, annotate=True):
         """
         Return a representation of the node
         """
 
-        return u' ' * indent + self.text.strip()
+        s = u' ' * indent + self.text.strip()
+
+        if annotate:
+            s = s.ljust(self.max_length + 1) + \
+                u'# ' + unicode(self.described_at)
+
+        return s
 
 
 class Step(Node):
@@ -185,16 +195,16 @@ class Step(Node):
 
         return max(
             0,
-            len(self.represented()),
+            len(self.represented(annotate=False)),
             *[len(line) for line in self.represent_hashes().splitlines()]
         )
 
-    def represented(self, indent=4):
+    def represented(self, indent=4, annotate=True):
         """
         Represent the line
         """
 
-        return super(Step, self).represented(indent=indent)
+        return super(Step, self).represented(indent=indent, annotate=annotate)
 
     def represent_hashes(self, indent=6):
         """
@@ -258,12 +268,12 @@ class Block(Node):
 
         return self
 
-    def represented(self, indent=2):
+    def represented(self, indent=2, annotate=True):
         """
         Include block indents
         """
 
-        return super(Block, self).represented(indent=indent)
+        return super(Block, self).represented(indent=indent, annotate=annotate)
 
 
 class TaggedBlock(Block):
@@ -387,7 +397,7 @@ class Scenario(TaggedBlock):
 
         return max(
             0,
-            len(self.represented()),
+            len(self.represented(annotate=False)),
             *([step.max_length for step in self.steps] +
               [len(line) for line in self.represent_outlines().splitlines()])
         )
@@ -468,6 +478,25 @@ class Description(Node):
     def __repr__(self):
         return unicode(self)
 
+    @memoizedproperty
+    def description_at(self):
+        """
+        Return a tuple of lines in the string containing the description
+        """
+
+        offset = self.described_at.line
+
+        return tuple(offset + lineno for lineno, _
+                     in enumerate(self.description.splitlines()))
+
+    @memoizedproperty
+    def max_length(self):
+        try:
+            return max(len(line) for line in
+                       self.represented(annotate=False).splitlines())
+        except ValueError:
+            return 0
+
 
 class Feature(TaggedBlock):
     @classmethod
@@ -497,21 +526,17 @@ class Feature(TaggedBlock):
         token = tokens[0]
 
         self = token.node
-        #
-        # In order to remain compatible with the existing API we disassemble
-        # the Description node
-        #
-        self.description = unicode(token.description)
-        # FIXME: this is not at all right
-        self.described_at.description_at = (
-            token.description.described_at.line,
-            token.description.described_at.col)
+        self.description_node = token.description
+        # this is here for legacy compatability
+        self.described_at.description_at = token.description.description_at
 
         self.background = token.background \
             if isinstance(token.background, Background) else None
         self.scenarios = list(token.scenarios)
 
         # add the back references
+        self.description_node.feature = self
+
         if self.background:
             self.background.feature = self
 
@@ -519,6 +544,14 @@ class Feature(TaggedBlock):
             scenario.feature = self
 
         return self
+
+    @property
+    def description(self):
+        """
+        In order to remain compatible with the existing API we disassemble
+        the Description node
+        """
+        return unicode(self.description_node)
 
     @memoizedproperty
     def max_length(self):
@@ -528,13 +561,20 @@ class Feature(TaggedBlock):
 
         return max(
             0,
-            len(self.text),
-            *([len(line) for line in self.description.splitlines()] +
-              [scenario.max_length for scenario in self.scenarios])
+            len(self.represented(annotate=False, description=False)),
+            self.description_node.max_length,
+            *[scenario.max_length for scenario in self.scenarios]
         )
 
-    def represented(self, indent=0):
-        return super(Feature, self).represented(indent=indent)
+    def represented(self, indent=0, annotate=True, description=True):
+        s = super(Feature, self).represented(indent=indent, annotate=annotate)
+
+        # FIXME: indent here is description default indent + feature
+        # requested indent
+        if description:
+            s += self.description_node.represented(annotate=annotate)
+
+        return s
 
 
 def parse(string=None, filename=None, token=None, lang=None):
@@ -642,7 +682,8 @@ def parse(string=None, filename=None, token=None, lang=None):
     SCENARIO_DEFN = Group(
         Group(ZeroOrMore(TAG))('tags') +
         Suppress(lang.SCENARIO + ':') +
-        restOfLine('name')
+        restOfLine('name') +
+        EOL
     )
     SCENARIO_DEFN.setParseAction(Scenario)
 
@@ -661,7 +702,8 @@ def parse(string=None, filename=None, token=None, lang=None):
     FEATURE_DEFN = Group(
         Group(ZeroOrMore(TAG))('tags') +
         Suppress(lang.FEATURE + ':') +
-        restOfLine('name')
+        restOfLine('name') +
+        EOL
     )
     FEATURE_DEFN.setParseAction(Feature)
 
@@ -669,12 +711,12 @@ def parse(string=None, filename=None, token=None, lang=None):
     # A description composed of zero or more lines, before the
     # Background/Scenario block
     #
-    DESCRIPTION = Group(
-        ZeroOrMore(
-            ~SCENARIO_DEFN + ~BACKGROUND_DEFN +
-            Group(ZeroOrMore(UTFWORD)) + EOL
-        )
+    DESCRIPTION_LINE = Group(
+        ~BACKGROUND_DEFN + ~SCENARIO_DEFN +
+        OneOrMore(UTFWORD).setWhitespaceChars(' \t') +
+        EOL
     )
+    DESCRIPTION = Group(ZeroOrMore(DESCRIPTION_LINE))
     DESCRIPTION.setParseAction(Description)
 
     #
