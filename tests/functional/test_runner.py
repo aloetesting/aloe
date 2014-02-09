@@ -104,7 +104,7 @@ def test_feature_representation_without_colors():
         "Feature: Addition                                      # tests/functional/simple_features/1st_feature_dir/some.feature:5\n"
         "  In order to avoid silly mistakes                     # tests/functional/simple_features/1st_feature_dir/some.feature:6\n"
         "  As a math idiot                                      # tests/functional/simple_features/1st_feature_dir/some.feature:7\n"
-        "  I want to be told the sum of two numbers             # tests/functional/simple_features/1st_feature_dir/some.feature:8\n"
+        "  I want to be told the sum of two numbers             # tests/functional/simple_features/1st_feature_dir/some.feature:8"
     )
 
 
@@ -115,7 +115,7 @@ def test_scenario_outline_representation_without_colors():
     feature = Feature.from_file(feature_file)
     assert_equals(
         feature.scenarios[0].represented(),
-        "  Scenario Outline: Add two numbers                    # tests/functional/simple_features/1st_feature_dir/some.feature:10\n"
+        "  Scenario Outline: Add two numbers                    # tests/functional/simple_features/1st_feature_dir/some.feature:10"
     )
 
 
@@ -126,7 +126,7 @@ def test_scenario_representation_without_colors():
     feature = Feature.from_file(feature_file)
     assert_equals(
         feature.scenarios[0].represented(),
-        "  Scenario: Do nothing                   # tests/functional/output_features/runner_features/first.feature:6\n"
+        "  Scenario: Do nothing                   # tests/functional/output_features/runner_features/first.feature:6"
     )
 
 

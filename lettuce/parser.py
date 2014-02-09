@@ -109,7 +109,7 @@ class Node(object):
         s = u' ' * indent + self.text.strip()
 
         if annotate:
-            s = s.ljust(self.max_length + 1) + \
+            s = s.ljust(self.feature.max_length + 1) + \
                 u'# ' + unicode(self.described_at)
 
         return s
@@ -469,14 +469,35 @@ class Description(Node):
 
         token = tokens[0]
 
-        self.description = u'\n'.join(u' '.join(line)
-                                      for line in token).strip()
+        self.lines = [u' '.join(line).strip() for line in token]
 
     def __unicode__(self):
-        return self.description
+        return u'\n'.join(self.lines)
 
     def __repr__(self):
         return unicode(self)
+
+    def represented(self, indent=2, annotate=True):
+        return u'\n'.join(
+            self.represent_line(n)
+            for n, _ in enumerate(self.lines)
+        )
+
+    def represent_line(self, n, indent=2, annotate=True):
+        """
+        Represent the nth line in the description
+        """
+
+        line = self.lines[n]
+        s = u' ' * indent + line
+
+        if annotate:
+            s = s.ljust(self.feature.max_length + 1) + \
+                u'# {file}:{line}'.format(
+                    file=self.described_at.file,
+                    line=self.description_at[n])
+
+        return s
 
     @memoizedproperty
     def description_at(self):
@@ -487,13 +508,13 @@ class Description(Node):
         offset = self.described_at.line
 
         return tuple(offset + lineno for lineno, _
-                     in enumerate(self.description.splitlines()))
+                     in enumerate(self.lines))
 
     @memoizedproperty
     def max_length(self):
         try:
-            return max(len(line) for line in
-                       self.represented(annotate=False).splitlines())
+            return max(len(self.represent_line(n, annotate=False))
+                       for n, _ in enumerate(self.lines))
         except ValueError:
             return 0
 
@@ -553,6 +574,14 @@ class Feature(TaggedBlock):
         """
         return unicode(self.description_node)
 
+    @property
+    def feature(self):
+        """
+        Convenience property for generic functions
+        """
+
+        return self
+
     @memoizedproperty
     def max_length(self):
         """
@@ -572,6 +601,7 @@ class Feature(TaggedBlock):
         # FIXME: indent here is description default indent + feature
         # requested indent
         if description:
+            s += u'\n'
             s += self.description_node.represented(annotate=annotate)
 
         return s
