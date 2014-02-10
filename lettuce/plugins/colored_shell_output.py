@@ -49,8 +49,8 @@ def wp(l):
     if l.startswith("\033[1;30m"):
         l = l.replace(" |", "\033[1;37m |\033[1;30m")
     if l.startswith("\033[1;31m"):
-        l = l.replace(" |", "\033[1;37m |\033[0;31m")  
-  
+        l = l.replace(" |", "\033[1;37m |\033[0;31m")
+
     return l
 
 
@@ -60,7 +60,7 @@ def write_out(what):
 
 @before.each_step
 def print_step_running(step):
-    if not step.defined_at or not step.display:
+    if not step.defined_at:
         return
 
     color = '\033[1;30m'
@@ -68,7 +68,7 @@ def print_step_running(step):
     if step.scenario and step.scenario.outlines:
         color = '\033[0;36m'
 
-    string = step.represent_string(step.original_sentence)
+    string = step.represented()
     string = wrap_file_and_line(string, '\033[1;30m', '\033[0m')
     write_out("%s%s" % (color, string))
     if step.hashes and step.defined_at:
@@ -78,15 +78,13 @@ def print_step_running(step):
 
 @after.each_step
 def print_step_ran(step):
-    if not step.display:
-        return
     if step.scenario and step.scenario.outlines and (step.failed or step.passed or step.defined_at):
         return
 
     if step.hashes and step.defined_at:
         write_out("\033[A" * (len(step.hashes) + 1))
 
-    string = step.represent_string(step.original_sentence)
+    string = step.represented()
 
     if not step.failed:
         string = wrap_file_and_line(string, '\033[1;30m', '\033[0m')

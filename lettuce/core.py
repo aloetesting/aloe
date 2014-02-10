@@ -59,6 +59,10 @@ class StepDefinition(object):
 
         return ret
 
+    def __unicode__(self):
+        return '{file}:{line}'.format(file=self.file,
+                                      line=self.line)
+
     def __repr__(self):
         return '<StepDefinition: {func} {file}:{line}>'.format(
             func=self.function.__name__,
@@ -93,6 +97,25 @@ class Step(parser.Step):
                 break
 
         return matched, StepDefinition(self, func)
+
+    def represented(self, indent=4, annotate=True):
+        """
+        Override the version of represented provided by the parser node
+        to add the additional capability of annotating with the step
+        definition
+        """
+
+        s = super(Step, self).represented(
+            indent=indent,
+            # steps without definitions return their feature file
+            annotate=annotate and not self.has_definition)
+
+        # steps with definitions return their step definition
+        if annotate and self.has_definition:
+            s = s.ljust(self.feature.max_length + 1) + \
+                u'# ' + unicode(self.defined_at)
+
+        return s
 
     def pre_run(self, ignore_case=True, with_outline=None):
         matched, step_definition = self._get_match(ignore_case)

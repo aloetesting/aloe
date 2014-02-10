@@ -131,24 +131,29 @@ def test_scenario_representation_without_colors():
 
 
 def test_undefined_step_represent_string():
-    "Undefined step represented without colors"
+    """
+    Undefined step represented without colors
+    """
+
     feature_file = ojoin('runner_features', 'first.feature')
 
     feature = Feature.from_file(feature_file)
     step = feature.scenarios[0].steps[0]
     assert_equals(
-        step.represent_string(step.sentence),
-        "    Given I do nothing                   # tests/functional/output_features/runner_features/first.feature:7\n"
+        step.represented(),
+        "    Given I do nothing                   # tests/functional/output_features/runner_features/first.feature:7"
     )
 
-    assert_equals(
-        step.represent_string("foo bar"),
-        "    foo bar                              # tests/functional/output_features/runner_features/first.feature:7\n"
-    )
+    # FIXME: what is this for?
+    # assert_equals(
+    #     step.represent_string("foo bar"),
+    #     "    foo bar                              # tests/functional/output_features/runner_features/first.feature:7\n"
+    # )
 
 
 def test_defined_step_represent_string():
-    "Defined step represented without colors"
+    """Defined step represented without colors"""
+
     feature_file = ojoin('runner_features', 'first.feature')
     feature_dir = ojoin('runner_features')
     loader = FeatureLoader(feature_dir)
@@ -161,8 +166,8 @@ def test_defined_step_represent_string():
     step.run(True)
 
     assert_equals(
-        step.represent_string(step.sentence),
-        "    Given I do nothing                   # tests/functional/output_features/runner_features/dumb_steps.py:6\n"
+        step.represented(),
+        "    Given I do nothing                   # tests/functional/output_features/runner_features/dumb_steps.py:6"
     )
 
 

@@ -32,10 +32,7 @@ def wrt(what):
 
 @after.each_step
 def print_step_running(step):
-    if not step.display:
-        return
-
-    wrt(step.represent_string(step.original_sentence).rstrip())
+    wrt(step.represented())
     if not step.defined_at:
         wrt(" (undefined)")
 
@@ -64,6 +61,7 @@ def print_scenario_running(scenario):
             return
     wrt('\n')
     wrt(scenario.represented())
+    wrt('\n')
 
 
 @before.each_background
@@ -104,6 +102,7 @@ def print_outline(scenario, order, outline, reasons_to_fail):
 def print_feature_running(feature):
     wrt("\n")
     wrt(feature.represented())
+    wrt('\n')
 
 
 @after.all
