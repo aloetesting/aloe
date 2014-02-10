@@ -22,6 +22,9 @@ from lettuce import registry
 from difflib import Differ
 
 
+real_stdout = sys.stdout
+real_stderr = sys.stderr
+
 
 def prepare_stdout():
     registry.clear()
@@ -86,7 +89,17 @@ def assert_lines_with_traceback(one, other):
         else:
             assert_unicode_equals(line1, line2)
 
-    assert_unicode_equals(len(lines_one), len(lines_other))
+    try:
+        assert_equals(len(lines_one), len(lines_other))
+    except AssertionError:
+        for line1, line2 in zip(lines_one, lines_other):
+            if line1 != line2:
+                print >> real_stdout, line1, ' | ', line2
+
+        print >> real_stdout, lines_one[-2:]
+        print >> real_stdout, lines_other[-2:]
+
+        raise
 
 
 def assert_unicode_equals(original, expected):

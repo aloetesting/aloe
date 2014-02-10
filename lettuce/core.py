@@ -117,6 +117,10 @@ class Step(parser.Step):
 
         return s
 
+    def represent_traceback(self, indent=4):
+        return u'\n'.join(u' ' * indent + line
+                          for line in self.why.traceback.splitlines())
+
     def pre_run(self, ignore_case=True, with_outline=None):
         matched, step_definition = self._get_match(ignore_case)
         self.related_outline = with_outline
@@ -254,19 +258,24 @@ class Scenario(parser.Scenario):
                             pass
 
                     # run the steps for real
+                    failed = False
                     for step in steps:
                         try:
                             call_hook('before_each', 'step', step)
                             call_hook('before_output', 'step', step)
 
-                            step.run(ignore_case=ignore_case)
+                            if not failed:
+                                step.run(ignore_case=ignore_case)
 
                         except (NoDefinitionFound, AssertionError) as e:
                             # we expect steps to assert or not be found
                             if failfast:
                                 raise FailFast()
 
-                            break
+                            # we still need to emit signals for the skipped
+                            # steps, else they won't be rendered by the
+                            # output plugin
+                            failed = True
 
                         finally:
                             call_hook('after_output', 'step', step)
@@ -478,11 +487,12 @@ class TotalResult(object):
                     self.failed_scenario_locations.append(scenario_result.scenario.represented())
 
     def _filter_proposed_definitions(self):
-        sentences = []
-        for step in self._proposed_definitions:
-            if step.proposed_sentence not in sentences:
-                sentences.append(step.proposed_sentence)
-                yield step
+        return []
+        # sentences = []
+        # for step in self._proposed_definitions:
+        #     if step.proposed_sentence not in sentences:
+        #         sentences.append(step.proposed_sentence)
+        #         yield step
 
     @property
     def proposed_definitions(self):

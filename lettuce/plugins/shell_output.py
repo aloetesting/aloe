@@ -39,12 +39,11 @@ def print_step_running(step):
     wrt('\n')
     if step.hashes:
         wrt(step.represent_hashes())
+        wrt('\n')
 
     if step.failed:
-        print_spaced = lambda x: wrt("%s%s\n" % (" " * step.indentation, x))
-
-        for line in step.why.traceback.splitlines():
-            print_spaced(line)
+        wrt(step.represent_traceback())
+        wrt('\n')
 
 
 @before.each_scenario
@@ -79,23 +78,9 @@ def print_first_scenario_running(background, results):
 
 @after.outline
 def print_outline(scenario, order, outline, reasons_to_fail):
-    table = strings.dicts_to_string(scenario.outlines, scenario.keys)
-    lines = table.splitlines()
-    head = lines.pop(0)
-
-    wline = lambda x: wrt("%s%s\n" % (" " * scenario.table_indentation, x))
-    if order is 0:
-        wrt("\n")
-        wrt("%s%s:\n" % (" " * scenario.indentation, scenario.language.first_of_examples))
-        wline(head)
-
-    line = lines[order]
-    wline(line)
-    if reasons_to_fail:
-        print_spaced = lambda x: wrt("%s%s\n" % (" " * scenario.table_indentation, x))
-        elines = reasons_to_fail[0].traceback.splitlines()
-        for line in elines:
-            print_spaced(line)
+    wrt("\n")
+    wrt(scenario.represent_outlines())
+    wrt('\n')
 
 
 @before.each_feature

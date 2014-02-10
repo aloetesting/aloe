@@ -84,7 +84,7 @@ def test_fail_outline():
                 failfast=False,
                 after_each_feature_count=1,
                 after_each_scenario_count=1,
-                after_each_step_count=20,
+                after_each_step_count=24,
                 after_outline_count=3)
 
 @with_setup(prepare_stdout)
@@ -124,7 +124,7 @@ def test_fail_non_outline():
                 failfast=False,
                 after_each_feature_count=1,
                 after_each_scenario_count=1,
-                after_each_step_count=2,
+                after_each_step_count=5,
                 after_outline_count=0)
 
 @with_setup(prepare_stdout)

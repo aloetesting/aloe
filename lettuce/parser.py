@@ -600,7 +600,7 @@ class Feature(TaggedBlock):
 
         # FIXME: indent here is description default indent + feature
         # requested indent
-        if description:
+        if description and self.description != '':
             s += u'\n'
             s += self.description_node.represented(annotate=annotate)
 
