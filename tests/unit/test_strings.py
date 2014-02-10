@@ -69,8 +69,6 @@ def test_represent_table_allows_empty():
         ['Miguel | Arcanjo', ''],
     ]
 
-    print strings.represent_table(table)
-
     assert_equals(
         strings.represent_table(table),
         ur"| name              | age |" "\n"

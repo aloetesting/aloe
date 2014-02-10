@@ -87,8 +87,6 @@ def parse_steps(step):
 
     feature += step
 
-    print feature
-
     return Feature.from_string(feature).scenarios[0].steps
 
 
@@ -250,7 +248,6 @@ def test_multiline_is_part_of_previous_step():
     """
 
     steps = parse_steps(MULTI_LINE)
-    print steps
     assert_equals(len(steps), 1)
     assert isinstance(steps[0], Step)
     assert_equals(steps[0].sentence, 'Given I have a string like so:')
