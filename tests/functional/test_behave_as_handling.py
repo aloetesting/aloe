@@ -25,7 +25,6 @@ from tests.asserts import prepare_stdout
 from tests.asserts import assert_stdout_lines
 from tests.asserts import assert_stdout_lines_with_traceback
 
-return # FIXME
 
 current_dir = abspath(dirname(__file__))
 lettuce_dir = abspath(dirname(lettuce.__file__))
