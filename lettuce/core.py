@@ -52,7 +52,7 @@ class StepDefinition(object):
         try:
             ret = self.function(self.step, *args, **kw)
             self.step.passed = True
-        except (AssertionError, NoDefinitionFound) as e:
+        except Exception as e:
             self.step.failed = True
             self.step.why = ReasonToFail(self.step, e)
             raise e
@@ -242,7 +242,7 @@ class Scenario(parser.Scenario):
                         try:
                             self.background.run(ignore_case=ignore_case)
 
-                        except (NoDefinitionFound, AssertionError) as e:
+                        except Exception as e:
                             if failfast:
                                 raise FailFast()
 

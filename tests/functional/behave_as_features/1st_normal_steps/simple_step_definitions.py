@@ -22,7 +22,7 @@ def the_result_should_be_NUM_on_the_screen(step, num):
 @step(u'I multiply (\d+) and (\d+) into the calculator')
 def multiply_X_and_Y_into_the_calculator(step, x, y):
     step.behave_as('''
-    I have entered {0} into the calculator
+    Given I have entered {0} into the calculator
     And I have entered {1} into the calculator
     And I press multiply
     '''.format(x, y))
