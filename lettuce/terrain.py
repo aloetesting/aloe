@@ -14,8 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from functools import wraps
+
 from lettuce.registry import world
 from lettuce.registry import CALLBACK_REGISTRY
+
+
 world._set = True
 
 
@@ -37,32 +41,88 @@ def spew(name):
         return item
 
 
+def callback(where, when):
+    """
+    This is a bit tricky.
+
+    @callback is a decorator factory, i.e. a decorator that creates
+    decorators. It takes two properties, `where' and `when' which are
+    used to register the callback with the registry as well as the method
+    we are turning into a decorator.
+
+    The inner method registers the func with the callback registry.
+    """
+
+    def outer(method):
+        method.__callback__ = {}
+
+        @wraps(method)
+        def inner(self, callback):
+            CALLBACK_REGISTRY.append_to(
+                where,
+                when.format(name=self.name),
+                callback)
+
+            return callback
+
+        return inner
+
+    return outer
+
+
 class Main(object):
-    def __init__(self, callback):
-        self.name = callback
 
-    @classmethod
-    def _add_method(cls, name, where, when):
-        def method(self, fn):
-            CALLBACK_REGISTRY.append_to(where, when % {'0': self.name}, fn)
-            return fn
+    def __init__(self, name):
+        self.name = name
 
-        method.__name__ = method.fn_name = name
-        setattr(cls, name, method)
+    @callback('all', '{name}')
+    def all(fn):
+        pass
 
-for name, where, when in (
-        ('all', 'all', '%(0)s'),
-        ('each_step', 'step', '%(0)s_each'),
-        ('step_output', 'step',  '%(0)s_output'),
-        ('each_scenario', 'scenario', '%(0)s_each'),
-        ('each_background', 'background', '%(0)s_each'),
-        ('each_feature', 'feature', '%(0)s_each'),
-        ('harvest', 'harvest', '%(0)s'),
-        ('each_app', 'app', '%(0)s_each'),
-        ('runserver', 'runserver', '%(0)s'),
-        ('handle_request', 'handle_request', '%(0)s'),
-        ('outline', 'scenario', 'outline')):
-    Main._add_method(name, where, when)
+    @callback('step', '{name}_each')
+    def each_step(fn):
+        pass
+
+    @callback('step', '{name}_output')
+    def step_output(fn):
+        pass
+
+    @callback('scenario', '{name}_each')
+    def each_scenario(fn):
+        pass
+
+    @callback('example', '{name}_each')
+    def each_example(fn):
+        pass
+
+    @callback('background', '{name}_each')
+    def each_background(fn):
+        pass
+
+    @callback('feature', '{name}_each')
+    def each_feature(fn):
+        pass
+
+    @callback('harvest', '{name}')
+    def harvest(fn):
+        pass
+
+    @callback('app', '{name}_each')
+    def each_app(*args):
+        pass
+
+    @callback('runserver', '{name}')
+    def runserver(*args):
+        pass
+
+    @callback('handle_request', '{name}')
+    def handle_request(*args):
+        pass
+
+    @callback('scenario', 'outline')
+    def outline():
+        pass
+
 
 before = Main('before')
 after = Main('after')
