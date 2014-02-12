@@ -21,10 +21,11 @@ import re
 import sys
 from contextlib import contextmanager
 from cStringIO import StringIO
+from gettext import ngettext as N_
 
 from blessings import Terminal
 
-from lettuce import core
+from lettuce import core, strings
 
 from lettuce.terrain import after, before, world
 
@@ -138,7 +139,7 @@ def print_step_ran(step):
     print_(step.represented(), color=color)
 
     if step.table:
-        print_(step.represent_hashes(), color=color)
+        print step.represent_hashes(cell_wrap=color)
 
     sys.stdout.write(stdout)
     sys.stderr.write(stderr)
@@ -151,38 +152,18 @@ def print_step_ran(step):
 def print_scenario_running(scenario):
     print_(scenario.represented(), color=term.bold)
 
-#
-# @after.outline
-# def print_outline(scenario, order, outline, reasons_to_fail):
-#     table = strings.dicts_to_string(scenario.outlines, scenario.keys)
-#     lines = table.splitlines()
-#     head = lines.pop(0)
-#
-#     wline = lambda x: write_out("\033[0;36m%s%s\033[0m\n" % (" " * scenario.table_indentation, x))
-#     wline_success = lambda x: write_out("\033[1;32m%s%s\033[0m\n" % (" " * scenario.table_indentation, x))
-#     wline_red_outline = lambda x: write_out("\033[1;31m%s%s\033[0m\n" % (" " * scenario.table_indentation, x))
-#     wline_red = lambda x: write_out("%s%s" % (" " * scenario.table_indentation, x))
-#     if order is 0:
-#         wrt("\n")
-#         wrt("\033[1;37m%s%s:\033[0m\n" % (" " * scenario.indentation, scenario.language.first_of_examples))
-#         wline(head)
-#
-#     line = lines[order]
-#     if reasons_to_fail:
-#         wline_red_outline(line)
-#     else:
-#         wline_success(line)
-#     if reasons_to_fail:
-#         elines = reasons_to_fail[0].traceback.splitlines()
-#         wrt("\033[1;31m")
-#         for pindex, line in enumerate(elines):
-#             wline_red(line)
-#             if pindex + 1 < len(elines):
-#                 wrt("\n")
-#
-#         wrt("\033[0m\n")
-#
-#
+
+@before.each_example
+def print_example_running(scenario, outline):
+    if not outline:
+        return
+
+    print
+    print strings.represent_table([outline.keys(), outline.values()],
+                                  indent=4)
+    print
+
+
 @before.each_feature
 def print_feature_running(feature):
     s = iter(feature.represented().splitlines())
@@ -193,97 +174,105 @@ def print_feature_running(feature):
         print_(s)
 
     print
-#
-#
-# @after.all
-# def print_end(total):
-#     write_out("\n")
-#
-#     word = total.features_ran > 1 and "features" or "feature"
-#
-#     color = "\033[1;32m"
-#     if total.features_passed is 0:
-#         color = "\033[0;31m"
-#
-#     write_out("\033[1;37m%d %s (%s%d passed\033[1;37m)\033[0m\n" % (
-#         total.features_ran,
-#         word,
-#         color,
-#         total.features_passed))
-#
-#     color = "\033[1;32m"
-#     if total.scenarios_passed is 0:
-#         color = "\033[0;31m"
-#
-#     word = total.scenarios_ran > 1 and "scenarios" or "scenario"
-#     write_out("\033[1;37m%d %s (%s%d passed\033[1;37m)\033[0m\n" % (
-#         total.scenarios_ran,
-#         word,
-#         color,
-#         total.scenarios_passed))
-#
-#     steps_details = []
-#     kinds_and_colors = {
-#         'failed': '\033[0;31m',
-#         'skipped': '\033[0;36m',
-#         'undefined': '\033[0;33m'
-#     }
-#
-#     for kind, color in kinds_and_colors.items():
-#         attr = 'steps_%s' % kind
-#         stotal = getattr(total, attr)
-#         if stotal:
-#             steps_details.append("%s%d %s" % (color, stotal, kind))
-#
-#     steps_details.append("\033[1;32m%d passed\033[1;37m" % total.steps_passed)
-#     word = total.steps > 1 and "steps" or "step"
-#     content = "\033[1;37m, ".join(steps_details)
-#
-#     word = total.steps > 1 and "steps" or "step"
-#     write_out("\033[1;37m%d %s (%s)\033[0m\n" % (
-#         total.steps,
-#         word,
-#         content))
-#
-#     if total.proposed_definitions:
-#         wrt("\n\033[0;33mYou can implement step definitions for undefined steps with these snippets:\n\n")
-#         wrt("# -*- coding: utf-8 -*-\n")
-#         wrt("from lettuce import step\n\n")
-#
-#         last = len(total.proposed_definitions) - 1
-#         for current, step in enumerate(total.proposed_definitions):
-#             method_name = step.proposed_method_name
-#             wrt("@step(u'%s')\n" % step.proposed_sentence)
-#             wrt("def %s:\n" % method_name)
-#             wrt("    assert False, 'This step must be implemented'")
-#             if current is last:
-#                 wrt("\033[0m")
-#
-#             wrt("\n")
-#
-#     if total.failed_scenario_locations:
-#         # print list of failed scenarios, with their file and line number
-#         wrt("\n")
-#         wrt("\033[1;31m")
-#         wrt("List of failed scenarios:\n")
-#         wrt("\033[0;31m")
-#         for scenario in total.failed_scenario_locations:
-#             wrt(scenario)
-#         wrt("\033[0m")
-#         wrt("\n")
-#
-#
-# def print_no_features_found(where):
-#     where = core.fs.relpath(where)
-#     if not where.startswith(os.sep):
-#         where = '.%s%s' % (os.sep, where)
-#
-#     write_out('\033[1;31mOops!\033[0m\n')
-#     write_out(
-#         '\033[1;37mcould not find features at '
-#         '\033[1;33m%s\033[0m\n' % where)
-#
-#
+
+
+@after.all
+def print_summary(total):
+    """
+    Print the summary
+    """
+
+    print
+
+    color = term.bold_green \
+        if total.features_passed == total.features_ran \
+        else term.bold_red
+    print u"{total} ({passed})".format(
+        total=term.bold(N_("%d feature",
+                           "%d features",
+                           total.features_ran) % total.features_ran),
+        passed=color("%d passed" % total.features_passed))
+
+    color = term.bold_green \
+        if total.scenarios_passed == total.scenarios_ran \
+        else term.bold_red
+    print u"{total} ({passed})".format(
+        total=term.bold(N_("%d scenario",
+                           "%d scenarios",
+                           total.scenarios_ran) % total.scenarios_ran),
+        passed=color("%d passed" % total.scenarios_passed))
+
+    color = term.bold_green \
+        if total.steps_passed == total.steps \
+        else term.bold_red
+    print u"{total} ({passed})".format(
+        total=term.bold(N_("%d step",
+                           "%d steps",
+                           total.steps) % total.steps),
+        passed=color("%d passed" % total.steps_passed))
+
+    # steps_details = []
+    # kinds_and_colors = {
+    #     'failed': '\033[0;31m',
+    #     'skipped': '\033[0;36m',
+    #     'undefined': '\033[0;33m'
+    # }
+
+    # for kind, color in kinds_and_colors.items():
+    #     attr = 'steps_%s' % kind
+    #     stotal = getattr(total, attr)
+    #     if stotal:
+    #         steps_details.append("%s%d %s" % (color, stotal, kind))
+
+    # steps_details.append("\033[1;32m%d passed\033[1;37m" % total.steps_passed)
+    # word = total.steps > 1 and "steps" or "step"
+    # content = "\033[1;37m, ".join(steps_details)
+
+    # word = total.steps > 1 and "steps" or "step"
+    # write_out("\033[1;37m%d %s (%s)\033[0m\n" % (
+    #     total.steps,
+    #     word,
+    #     content))
+
+    # if total.proposed_definitions:
+    #     wrt("\n\033[0;33mYou can implement step definitions for undefined steps with these snippets:\n\n")
+    #     wrt("# -*- coding: utf-8 -*-\n")
+    #     wrt("from lettuce import step\n\n")
+
+    #     last = len(total.proposed_definitions) - 1
+    #     for current, step in enumerate(total.proposed_definitions):
+    #         method_name = step.proposed_method_name
+    #         wrt("@step(u'%s')\n" % step.proposed_sentence)
+    #         wrt("def %s:\n" % method_name)
+    #         wrt("    assert False, 'This step must be implemented'")
+    #         if current is last:
+    #             wrt("\033[0m")
+
+    #         wrt("\n")
+
+    # if total.failed_scenario_locations:
+    #     # print list of failed scenarios, with their file and line number
+    #     wrt("\n")
+    #     wrt("\033[1;31m")
+    #     wrt("List of failed scenarios:\n")
+    #     wrt("\033[0;31m")
+    #     for scenario in total.failed_scenario_locations:
+    #         wrt(scenario)
+    #     wrt("\033[0m")
+    #     wrt("\n")
+
+
+def print_no_features_found(where):
+    where = core.fs.relpath(where)
+    if not where.startswith(os.sep):
+        where = '.%s%s' % (os.sep, where)
+
+    write_out('\033[1;31mOops!\033[0m\n')
+    write_out(
+        '\033[1;37mcould not find features at '
+        '\033[1;33m%s\033[0m\n' % where)
+
+
 @before.each_background
 def print_background_running(background):
     print_(background.represented(), color=term.bold_white)

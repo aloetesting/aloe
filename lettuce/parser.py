@@ -206,12 +206,12 @@ class Step(Node):
 
         return super(Step, self).represented(indent=indent, annotate=annotate)
 
-    def represent_hashes(self, indent=6):
+    def represent_hashes(self, indent=6, **kwargs):
         """
         Render the table
         """
 
-        return strings.represent_table(self.table, indent=indent)
+        return strings.represent_table(self.table, indent=indent, **kwargs)
 
     def resolve_substitutions(self, outline):
         """
