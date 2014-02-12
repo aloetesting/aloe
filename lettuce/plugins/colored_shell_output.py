@@ -21,7 +21,8 @@ import re
 import sys
 from contextlib import contextmanager
 from cStringIO import StringIO
-from gettext import ngettext as N_
+from gettext import (gettext as _,
+                     ngettext as N_)
 
 from blessings import Terminal
 
@@ -125,7 +126,7 @@ def print_step_ran(step):
     elif step.passed:
         color = term.bold_green
 
-    elif not step.run:
+    elif not step.ran:
         color = term.cyan
 
     elif not step.has_definition:
@@ -142,10 +143,10 @@ def print_step_ran(step):
         print step.represent_hashes(cell_wrap=color)
 
     sys.stdout.write(stdout)
-    sys.stderr.write(stderr)
+    sys.stderr.write(term.red(stderr))
 
     if step.failed:
-        print color(step.represent_traceback())
+        print term.bright_red(step.represent_traceback())
 
 
 @before.each_scenario
@@ -159,6 +160,8 @@ def print_example_running(scenario, outline):
         return
 
     print
+    print " ",
+    print term.bold(_("Example #%d:" % (scenario.outlines.index(outline) + 1)))
     print strings.represent_table([outline.keys(), outline.values()],
                                   indent=4)
     print
