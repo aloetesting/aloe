@@ -267,7 +267,7 @@ class Scenario(parser.Scenario):
                             if not failed:
                                 step.run(ignore_case=ignore_case)
 
-                        except (NoDefinitionFound, AssertionError) as e:
+                        except Exception as e:
                             # we expect steps to assert or not be found
                             if failfast:
                                 raise FailFast()

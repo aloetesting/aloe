@@ -27,9 +27,11 @@ def utf8_string(s):
     return s
 
 
-def represent_table(table, indent=0):
+def represent_table(table, indent=0, cell_wrap=lambda s: s):
     """
     Render a table
+
+    cell_wrap is a method to wrap the cell values in
     """
 
     if not table:
@@ -46,7 +48,7 @@ def represent_table(table, indent=0):
 
     return u'\n'.join(
         u' ' * indent +
-        u'| %s |' % u' | '.join(cell.ljust(length)
+        u'| %s |' % u' | '.join(cell_wrap(cell.ljust(length))
                                 for cell, length in zip(row, lengths))
         for row in table
     )
