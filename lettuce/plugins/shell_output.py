@@ -26,6 +26,7 @@ from lettuce.terrain import world
 
 def wrt(what):
     if isinstance(what, unicode):
+        # what += '\n' if what[-1] != '\n' else what
         what = what.encode('utf-8')
     sys.stdout.write(what)
 
@@ -134,7 +135,7 @@ def print_end(total):
         # print list of failed scenarios, with their file and line number
         wrt("\nList of failed scenarios:\n")
         for scenario in total.failed_scenario_locations:
-            wrt(scenario)
+            wrt("  %s\n" % scenario)
         wrt("\n")
 
 def print_no_features_found(where):
