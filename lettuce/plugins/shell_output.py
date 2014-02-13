@@ -26,7 +26,6 @@ from lettuce.terrain import world
 
 def wrt(what):
     if isinstance(what, unicode):
-        # what += '\n' if what[-1] != '\n' else what
         what = what.encode('utf-8')
     sys.stdout.write(what)
 
