@@ -158,7 +158,10 @@ class Step(Node):
         The feature this step is a part of
         """
 
-        return self.scenario.feature
+        try:
+            return self.scenario.feature
+        except AttributeError:
+            return self.background.feature
 
     @memoizedproperty
     def keys(self):
@@ -286,6 +289,7 @@ class TaggedBlock(Block):
         token = tokens[0]
 
         self._tags = list(token.tags)
+        self.keyword = token.keyword
         self.name = token.name.strip()
 
         if self.name == '':
@@ -308,6 +312,27 @@ class TaggedBlock(Block):
     @property
     def tags(self):
         return self._tags
+
+    def represented(self, indent=0, annotate=True):
+        """
+        Reresent a tagged block
+        """
+
+        s = u' ' * indent + '{keyword}: {name}'.format(keyword=self.keyword,
+                                                       name=self.name)
+        if annotate:
+            s = s.ljust(self.feature.max_length + 1) + \
+                u'# ' + unicode(self.described_at)
+
+        return s
+
+    def represent_tags(self, indent=0):
+        """
+        Represent the tags of a tagged block
+        """
+
+        return u'  '.join(u'@%s' % tag
+                          for tag in self.tags)
 
     def matches_tags(self, tags):
         """
@@ -606,6 +631,9 @@ class Feature(TaggedBlock):
 
         return s
 
+    def represent_description(self, **kwargs):
+        return self.description_node.represented(**kwargs)
+
 
 def parse(string=None, filename=None, token=None, lang=None):
     """
@@ -697,7 +725,7 @@ def parse(string=None, filename=None, token=None, lang=None):
     # Background:
     #
     BACKGROUND_DEFN = \
-        Suppress(lang.BACKGROUND + ':' + EOL)
+        lang.BACKGROUND('keyword') + Suppress(':') + EOL
     BACKGROUND_DEFN.setParseAction(Background)
 
     BACKGROUND = Group(
@@ -711,7 +739,7 @@ def parse(string=None, filename=None, token=None, lang=None):
     #
     SCENARIO_DEFN = Group(
         Group(ZeroOrMore(TAG))('tags') +
-        Suppress(lang.SCENARIO + ':') +
+        lang.SCENARIO('keyword') + Suppress(':') +
         restOfLine('name') +
         EOL
     )
@@ -731,7 +759,7 @@ def parse(string=None, filename=None, token=None, lang=None):
     #
     FEATURE_DEFN = Group(
         Group(ZeroOrMore(TAG))('tags') +
-        Suppress(lang.FEATURE + ':') +
+        lang.FEATURE('keyword') + Suppress(':') +
         restOfLine('name') +
         EOL
     )
@@ -746,7 +774,7 @@ def parse(string=None, filename=None, token=None, lang=None):
         OneOrMore(UTFWORD).setWhitespaceChars(' \t') +
         EOL
     )
-    DESCRIPTION = Group(ZeroOrMore(DESCRIPTION_LINE))
+    DESCRIPTION = Group(ZeroOrMore(DESCRIPTION_LINE | EOL))
     DESCRIPTION.setParseAction(Description)
 
     #

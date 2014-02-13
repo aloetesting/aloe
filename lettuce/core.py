@@ -288,7 +288,8 @@ class Scenario(parser.Scenario):
                     if outline:
                         call_hook('outline', 'scenario', self,
                                   None, outline, None)
-                        call_hook('after_each', 'example', self, outline)
+
+                    call_hook('after_each', 'example', self, outline)
 
                     steps_passed = [step for step in steps if step.passed]
                     steps_failed = [step for step in steps if step.failed]
@@ -332,7 +333,7 @@ class Background(parser.Background):
                     call_hook('after_each', 'step', step)
 
         finally:
-            call_hook('after_each', 'background', self, results)
+            call_hook('after_each', 'background', self)
 
     def __repr__(self):
         return '<Background for feature: {0}>'.format(self.feature.name)
@@ -353,6 +354,9 @@ class Feature(parser.Feature):
 
         if self.background:
             self.background.__class__ = Background
+
+            for step in self.background.steps:
+                step.__class__ = Step
 
         for scenario in self.scenarios:
             scenario.__class__ = Scenario

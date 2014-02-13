@@ -48,6 +48,8 @@ class OutputManager(object):
 
     def divert(self):
         self.diverted = True
+
+        # FIXME: these should share one buffer, with the stderr coloured
         sys.stdout = StringIO()
         sys.stderr = StringIO()
 
@@ -113,7 +115,7 @@ def print_step_running(step):
     with output.capture_and_count():
         print_(step.represented())
         if step.table:
-            print step.represent_hashes()
+            print step.represent_hashes(cell_wrap=term.white)
 
     output.divert()
 
@@ -142,8 +144,9 @@ def print_step_ran(step):
     if step.table:
         print step.represent_hashes(cell_wrap=color)
 
-    sys.stdout.write(stdout)
-    sys.stderr.write(term.red(stderr))
+    if step.failed:
+        sys.stdout.write(stdout)
+        sys.stderr.write(term.red(stderr))
 
     if step.failed:
         print term.bright_red(step.represent_traceback())
@@ -151,6 +154,8 @@ def print_step_ran(step):
 
 @before.each_scenario
 def print_scenario_running(scenario):
+    print
+    print term.cyan(scenario.represent_tags())
     print_(scenario.represented(), color=term.bold)
 
 
@@ -167,16 +172,20 @@ def print_example_running(scenario, outline):
     print
 
 
+@after.each_example
+def print_end_of_example(scenario, outline):
+    print
+    print ' ', term.dim_white('-' * 76)
+
+
 @before.each_feature
 def print_feature_running(feature):
-    s = iter(feature.represented().splitlines())
-
-    print_(next(s), color=term.bold_white)
-
-    for s in s:
-        print_(s)
-
     print
+    print term.cyan(feature.represent_tags())
+    print_(feature.represented(description=False), color=term.bold_white)
+
+    for line in feature.represent_description().splitlines():
+        print_(line, color=term.white)
 
 
 @after.all
@@ -278,9 +287,11 @@ def print_no_features_found(where):
 
 @before.each_background
 def print_background_running(background):
+    print
     print_(background.represented(), color=term.bold_white)
 
 
 @after.each_background
-def print_background_ran(background, results):
-    print_("...")
+def print_background_ran(background):
+    print
+    print " ", term.bold_white(_("Scenario:"))
