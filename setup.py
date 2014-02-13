@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import sys
+import glob
 from setuptools import setup
 
 
@@ -48,6 +49,7 @@ setup(
     author='Gabriel Falcao',
     author_email='gabriel@nacaolivre.org',
     url='http://lettuce.it',
+    data_files=[(r'lettuce', glob.glob(r'lettuce/i18n.json'))],
     packages=get_packages(),
     install_requires=required_modules,
     entry_points={
