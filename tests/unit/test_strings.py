@@ -75,3 +75,21 @@ def test_represent_table_allows_empty():
         ur"| Gabriel \| Falcão | 22  |" "\n"
         ur"| Miguel \| Arcanjo |     |"
     )
+
+
+def test_column_width():
+    """strings.column_width"""
+
+    assert_equals(
+        strings.get_terminal_width(u"あいうえお"),
+        10
+    )
+
+
+def test_column_width_w_number_and_char():
+    """strings.column_width_w_number_and_char"""
+
+    assert_equals(
+        strings.get_terminal_width(u"%s%c" % (u"4209", 0x4209)),
+        6
+    )

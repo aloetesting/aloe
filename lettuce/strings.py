@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
-import time
 import unicodedata
 
 
@@ -52,3 +50,19 @@ def represent_table(table, indent=0, cell_wrap=lambda s: s):
                                 for cell, length in zip(row, lengths))
         for row in table
     )
+
+
+def get_terminal_width(string):
+    """
+    Get the terminal width of a string
+
+    This is not the length in characters, but the width that the characters
+    will be displayed on a terminal, compensating for double-wide characters.
+    """
+
+    widths = {
+        'W': 2,
+        'F': 2,
+    }
+
+    return sum(widths.get(unicodedata.east_asian_width(c), 1) for c in string)
