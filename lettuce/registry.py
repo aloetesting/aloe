@@ -141,10 +141,6 @@ def call_hook(situation, kind, *args, **kw):
     for callback in CALLBACK_REGISTRY[kind][situation]:
         try:
             callback(*args, **kw)
-        except UnicodeError:
-            # ignore unicode errors here, no idea why we're getting them anyway
-            # unicode output seems to work fine...
-            pass
         except Exception as e:
             traceback.print_exc(e)
             raise

@@ -9,7 +9,7 @@ Fonctionnalité: Plan de scénario en français
   Plan du Scénario: Faire la sieste
     Soit un après midi de <mois>
     Quand je veux faire la sieste
-    Je peux aller <lieux>
+    Et je peux aller <lieux>
 
   Exemples:
     | mois      | lieux	            |

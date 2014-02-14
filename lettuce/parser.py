@@ -318,8 +318,8 @@ class TaggedBlock(Block):
         Reresent a tagged block
         """
 
-        s = u' ' * indent + '{keyword}: {name}'.format(keyword=self.keyword,
-                                                       name=self.name)
+        s = u' ' * indent + u'{keyword}: {name}'.format(keyword=self.keyword,
+                                                        name=self.name)
         if annotate:
             s = s.ljust(self.feature.max_length + 1) + \
                 u'# ' + unicode(self.described_at)

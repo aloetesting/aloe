@@ -42,7 +42,6 @@ def prepare_stderr():
 
 
 def assert_lines(original, expected):
-    original = original.decode('utf-8') if isinstance(original, basestring) else original
     assert_lines_unicode(original, expected)
 
 
