@@ -224,7 +224,7 @@ class Step(Node):
         self = deepcopy(self)
 
         for key, value in outline.items():
-            key = '<{key}>'.format(key=key)
+            key = u'<{key}>'.format(key=key)
 
             self.sentence = self.sentence.replace(key, value)
 

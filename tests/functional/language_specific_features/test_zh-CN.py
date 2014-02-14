@@ -33,11 +33,11 @@ def test_output_with_success_colorless():
 
     assert_stdout_lines(
         u"\n"
-        u"特性: 简单测试           # tests/functional/language_specific_features/zh-CN/success/dumb.feature:3\n"
-        u"  什么都不做应该运行成功 # tests/functional/language_specific_features/zh-CN/success/dumb.feature:4\n"
+        u"功能: 简单测试            # tests/functional/language_specific_features/zh-CN/success/dumb.feature:3\n"
+        u"  什么都不做应该运行成功  # tests/functional/language_specific_features/zh-CN/success/dumb.feature:4\n"
         u"\n"
-        u"  场景: 什么都不做       # tests/functional/language_specific_features/zh-CN/success/dumb.feature:6\n"
-        u"    如果 什么都不做      # tests/functional/language_specific_features/zh-CN/success/dumb_steps.py:6\n"
+        u"  场景: 什么都不做        # tests/functional/language_specific_features/zh-CN/success/dumb.feature:6\n"
+        u"    假如< 如果 什么都不做 # tests/functional/language_specific_features/zh-CN/success/dumb_steps.py:6\n"
         u"\n"
         u"1 feature (1 passed)\n"
         u"1 scenario (1 passed)\n"
