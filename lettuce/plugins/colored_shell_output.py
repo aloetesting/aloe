@@ -187,7 +187,7 @@ def print_feature_running(feature):
     for line in feature.represent_description().splitlines():
         print_(line, color=term.white)
 
-
+@after.harvest
 @after.all
 def print_summary(total):
     """

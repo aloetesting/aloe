@@ -27,5 +27,6 @@ sure==1.1.7
 testtools==0.9.34
 tornado==2.3
 tox==1.4.2
-virtualenv==1.11.2
-wsgiref==0.1.2
+markment==0.1.6
+steadymark==0.4.5
+testtools==0.9.34
