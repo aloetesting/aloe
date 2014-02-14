@@ -71,7 +71,7 @@ def print_background_running(background):
 
 
 @after.each_background
-def print_first_scenario_running(background, results):
+def print_first_scenario_running(background):
     scenario = world.background_scenario_holder[background]
     print_scenario_running(scenario)
 

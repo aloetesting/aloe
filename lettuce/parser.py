@@ -407,6 +407,9 @@ class Scenario(TaggedBlock):
 
         return self
 
+    def represented(self, indent=2, **kwargs):
+        return super(Scenario, self).represented(indent=indent, **kwargs)
+
     def represent_outlines(self, indent=4):
         """
         Render the outlines table
@@ -809,11 +812,19 @@ def parse(string=None, filename=None, token=None, lang=None):
 
         return tokens
     except ParseException as e:
+        if e.parserElement == stringEnd:
+            msg = "Expected EOF (max one feature per file)"
+        else:
+            msg = e.msg
+
         raise LettuceSyntaxError(
             filename,
             u"{lineno}:{col} Syntax Error: {msg}\n{line}\n{space}^".format(
-                msg=e.msg,
+                msg=msg,
                 lineno=e.lineno,
                 col=e.col,
                 line=e.line,
                 space=' ' * (e.col - 1)))
+    except LettuceSyntaxError as e:
+        # reraise the exception with the filename
+        raise LettuceSyntaxError(filename, e.string)
