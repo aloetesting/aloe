@@ -39,14 +39,15 @@ def represent_table(table, indent=0, cell_wrap=lambda s: s):
     table = [[unicode(cell).replace('|', r'\|')
               for cell in row]
              for row in table]
-    lengths = [len(cell) for cell in table[0]]
+    lengths = [get_terminal_width(cell) for cell in table[0]]
 
     for row in table[1:]:
-        lengths = map(max, zip(lengths, [len(cell) for cell in row]))
+        lengths = map(max, zip(lengths,
+                               [get_terminal_width(cell) for cell in row]))
 
     return u'\n'.join(
         u' ' * indent +
-        u'| %s |' % u' | '.join(cell_wrap(cell.ljust(length))
+        u'| %s |' % u' | '.join(cell_wrap(ljust(cell, length))
                                 for cell, length in zip(row, lengths))
         for row in table
     )
