@@ -17,6 +17,9 @@
 
 import os
 import sys
+
+from gettext import gettext as _
+
 from lettuce import core
 from lettuce import strings
 from lettuce.terrain import after
@@ -78,7 +81,7 @@ def print_first_scenario_running(background):
 
 @after.outline
 def print_outline(scenario, order, outline, reasons_to_fail):
-    wrt("\n")
+    wrt("\n  %s:\n" % _("Examples"))
     wrt(scenario.represent_outlines())
     wrt('\n')
 

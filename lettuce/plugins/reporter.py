@@ -64,4 +64,5 @@ class Reporter(object):
             self.wrt("List of failed scenarios:\n")
             for scenario in total.failed_scenario_locations:
                 self.wrt(scenario)
+                self.wrt("\n")
             self.wrt("\n")
