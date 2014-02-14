@@ -26,6 +26,7 @@ from textwrap import dedent
 from pyparsing import (CharsNotIn,
                        col,
                        Group,
+                       Keyword,
                        line,
                        lineEnd,
                        lineno,
@@ -36,7 +37,6 @@ from pyparsing import (CharsNotIn,
                        QuotedString,  # function
                        quotedString,  # token
                        restOfLine,
-                       SkipTo,
                        stringEnd,
                        Suppress,
                        Word,
@@ -638,15 +638,55 @@ class Feature(TaggedBlock):
         return self.description_node.represented(**kwargs)
 
 
+def guess_language(string=None, filename=None):
+    """
+    Attempt to guess the language
+
+    Do this by parsing the comments at the top of the file for the
+
+        # language: fr
+
+    phrase.
+    """
+
+    LANG_PARSER = ZeroOrMore(
+        Suppress('#') + (
+            ((Suppress(Keyword('language')) + Suppress(':') +
+              Word(unicodePrintables)('language')) |
+             Suppress(restOfLine))
+        )
+    )
+
+    try:
+        if string:
+            tokens = LANG_PARSER.parseString(string)
+        elif filename:
+            with open(filename, 'r', 'utf-8') as fp:
+                tokens = LANG_PARSER.parseFile(fp)
+        else:
+            raise RuntimeError("Must pass string or filename")
+
+        code = tokens.language
+
+        if code != '':
+            return languages.Language(code=code)
+
+    except ParseException as e:
+        # try English
+        pass
+
+    return languages.English()
+
+
 def parse(string=None, filename=None, token=None, lang=None):
     """
-    Attempt to parse a token stream from a string or raise a SyntaxError
+    Parse a token stream from or raise a SyntaxError
 
     This function includes the parser grammar.
     """
 
     if not lang:
-        lang = languages.English()
+        lang = guess_language(string, filename)
 
     #
     # End of Line
