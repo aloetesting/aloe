@@ -109,7 +109,7 @@ class Node(object):
         s = u' ' * indent + self.text.strip()
 
         if annotate:
-            s = s.ljust(self.feature.max_length + 1) + \
+            s = strings.ljust(s, self.feature.max_length + 1) + \
                 u'# ' + unicode(self.described_at)
 
         return s
@@ -198,8 +198,9 @@ class Step(Node):
 
         return max(
             0,
-            len(self.represented(annotate=False)),
-            *[len(line) for line in self.represent_hashes().splitlines()]
+            strings.get_terminal_width(self.represented(annotate=False)),
+            *[strings.get_terminal_width(line)
+              for line in self.represent_hashes().splitlines()]
         )
 
     def represented(self, indent=4, annotate=True):
@@ -321,7 +322,7 @@ class TaggedBlock(Block):
         s = u' ' * indent + u'{keyword}: {name}'.format(keyword=self.keyword,
                                                         name=self.name)
         if annotate:
-            s = s.ljust(self.feature.max_length + 1) + \
+            s = strings.ljust(s, self.feature.max_length + 1) + \
                 u'# ' + unicode(self.described_at)
 
         return s
@@ -425,9 +426,10 @@ class Scenario(TaggedBlock):
 
         return max(
             0,
-            len(self.represented(annotate=False)),
+            strings.get_terminal_width(self.represented(annotate=False)),
             *([step.max_length for step in self.steps] +
-              [len(line) for line in self.represent_outlines().splitlines()])
+              [strings.get_terminal_width(line)
+               for line in self.represent_outlines().splitlines()])
         )
 
     @memoizedproperty
@@ -520,7 +522,7 @@ class Description(Node):
         s = u' ' * indent + line
 
         if annotate:
-            s = s.ljust(self.feature.max_length + 1) + \
+            s = strings.ljust(s, self.feature.max_length + 1) + \
                 u'# {file}:{line}'.format(
                     file=self.described_at.file,
                     line=self.description_at[n])
@@ -541,8 +543,9 @@ class Description(Node):
     @memoizedproperty
     def max_length(self):
         try:
-            return max(len(self.represent_line(n, annotate=False))
-                       for n, _ in enumerate(self.lines))
+            return max(strings.get_terminal_width(
+                self.represent_line(n, annotate=False))
+                for n, _ in enumerate(self.lines))
         except ValueError:
             return 0
 
@@ -618,7 +621,8 @@ class Feature(TaggedBlock):
 
         return max(
             0,
-            len(self.represented(annotate=False, description=False)),
+            strings.get_terminal_width(
+                self.represented(annotate=False, description=False)),
             self.description_node.max_length,
             *[scenario.max_length for scenario in self.scenarios]
         )

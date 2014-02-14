@@ -66,3 +66,14 @@ def get_terminal_width(string):
     }
 
     return sum(widths.get(unicodedata.east_asian_width(c), 1) for c in string)
+
+
+def ljust(string, n):
+    """
+    A version of ljust that considers the terminal width (see
+    get_terminal_width)
+    """
+
+    n -= get_terminal_width(string)
+
+    return string + u' ' * n

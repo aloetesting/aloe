@@ -112,7 +112,7 @@ class Step(parser.Step):
 
         # steps with definitions return their step definition
         if annotate and self.has_definition:
-            s = s.ljust(self.feature.max_length + 1) + \
+            s = strings.ljust(s, self.feature.max_length + 1) + \
                 u'# ' + unicode(self.defined_at)
 
         return s
