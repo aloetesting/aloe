@@ -67,7 +67,7 @@ def yield_transitions(iterable):
     yield (last_index, i, register)
 
 
-def assert_equals(original, expected):
+def assert_equals(original, expected, stream=real_stdout):
     """
     A new version of assert_equals that does coloured differences
     """
@@ -104,17 +104,14 @@ def assert_equals(original, expected):
 
             if next_code == '? ':
                 # combine the next line
-                coloured_line = ''
-
-                for (i1, i2, char) in yield_transitions(next_line):
-                    if char == '+':
-                        coloured_line += changed(line[i1:i2])
-                    else:
-                        coloured_line += unchanged(line[i1:i2])
+                line = u''.join(changed(line[i1:i2]) if char == '+'
+                                else unchanged(line[i1:i2])
+                                for (i1, i2, char)
+                                in yield_transitions(next_line))
             else:
-                coloured_line = unchanged(line)
+                line = unchanged(line)
 
-            print >> real_stdout, unchanged(code) + coloured_line
+            print >> stream, unchanged(code) + line
 
         raise
 
