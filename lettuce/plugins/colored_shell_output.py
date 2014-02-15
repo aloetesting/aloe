@@ -128,11 +128,11 @@ def print_step_ran(step):
     elif step.passed:
         color = term.bold_green
 
-    elif not step.ran:
-        color = term.cyan
-
     elif not step.has_definition:
         color = term.yellow
+
+    elif not step.ran:
+        color = term.cyan
 
     else:
         raise NotImplementedError("Should not reach here")
@@ -187,6 +187,7 @@ def print_feature_running(feature):
     for line in feature.represent_description().splitlines():
         print_(line, color=term.white)
 
+
 @after.harvest
 @after.all
 def print_summary(total):
@@ -194,34 +195,53 @@ def print_summary(total):
     Print the summary
     """
 
+    def print_breakdown(klass):
+        """
+        Create the breakdown of passes and fails
+        """
+
+        breakdown = []
+
+        for outcome, color in (
+            ('passed', term.bold_green),
+            ('undefined', term.yellow),
+            ('skipped', term.cyan)
+        ):
+            n = getattr(total, '%s_%s' % (klass, outcome), 0)
+
+            if n < 1:
+                continue
+
+            breakdown.append(color(_("{n} {outcome}".format(n=n,
+                                                            outcome=outcome))))
+
+        ran = getattr(total, '%s_ran' % klass, 0)
+        passed = getattr(total, '%s_passed' % klass, 0)
+
+        if passed < ran:
+            breakdown.append(term.bold_red(
+                _("{n} failed".format(n=ran - passed))
+            ))
+
+        return u', '.join(breakdown)
+
     print
 
-    color = term.bold_green \
-        if total.features_passed == total.features_ran \
-        else term.bold_red
-    print u"{total} ({passed})".format(
+    print u"{total} ({breakdown})".format(
         total=term.bold(N_("%d feature",
                            "%d features",
                            total.features_ran) % total.features_ran),
-        passed=color("%d passed" % total.features_passed))
+        breakdown=print_breakdown('features'))
 
-    color = term.bold_green \
-        if total.scenarios_passed == total.scenarios_ran \
-        else term.bold_red
-    print u"{total} ({passed})".format(
+    print u"{total} ({breakdown})".format(
         total=term.bold(N_("%d scenario",
                            "%d scenarios",
                            total.scenarios_ran) % total.scenarios_ran),
-        passed=color("%d passed" % total.scenarios_passed))
+        breakdown=print_breakdown('scenarios'))
 
-    color = term.bold_green \
-        if total.steps_passed == total.steps \
-        else term.bold_red
-    print u"{total} ({passed})".format(
-        total=term.bold(N_("%d step",
-                           "%d steps",
-                           total.steps) % total.steps),
-        passed=color("%d passed" % total.steps_passed))
+    print u"{total} ({breakdown})".format(
+        total=term.bold(N_("%d step", "%d steps", total.steps) % total.steps),
+        breakdown=print_breakdown('steps'))
 
     # steps_details = []
     # kinds_and_colors = {
@@ -236,7 +256,8 @@ def print_summary(total):
     #     if stotal:
     #         steps_details.append("%s%d %s" % (color, stotal, kind))
 
-    # steps_details.append("\033[1;32m%d passed\033[1;37m" % total.steps_passed)
+    # steps_details.append("\033[1;32m%d passed\033[1;37m" %
+    # total.steps_passed)
     # word = total.steps > 1 and "steps" or "step"
     # content = "\033[1;37m, ".join(steps_details)
 
@@ -247,7 +268,8 @@ def print_summary(total):
     #     content))
 
     # if total.proposed_definitions:
-    #     wrt("\n\033[0;33mYou can implement step definitions for undefined steps with these snippets:\n\n")
+    #     wrt("\n\033[0;33mYou can implement step definitions for undefined
+    #     steps with these snippets:\n\n")
     #     wrt("# -*- coding: utf-8 -*-\n")
     #     wrt("from lettuce import step\n\n")
 
@@ -279,10 +301,8 @@ def print_no_features_found(where):
     if not where.startswith(os.sep):
         where = '.%s%s' % (os.sep, where)
 
-    write_out('\033[1;31mOops!\033[0m\n')
-    write_out(
-        '\033[1;37mcould not find features at '
-        '\033[1;33m%s\033[0m\n' % where)
+    print _("Oops!")
+    print _("Could not find features at %s" % where)
 
 
 @before.each_background
