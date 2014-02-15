@@ -58,9 +58,9 @@ def print_end(total):
         word,
         total.scenarios_passed))
 
-    word = total.steps > 1 and "steps" or "step"
+    word = total.steps_ran > 1 and "steps" or "step"
     logging.info("%d %s (%d passed)\n" % (
-        total.steps,
+        total.steps_ran,
         word,
         total.steps_passed))
 

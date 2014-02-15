@@ -17,14 +17,11 @@
 
 import os
 import sys
-
 from gettext import gettext as _
+from itertools import groupby
 
-from lettuce import core
-from lettuce import strings
-from lettuce.terrain import after
-from lettuce.terrain import before
-from lettuce.terrain import world
+from lettuce import core, strings
+from lettuce.terrain import after, before, world
 
 
 def wrt(what):
@@ -122,29 +119,56 @@ def print_end(total=None):
             steps_details.append("%d %s" % (stotal, kind))
 
     steps_details.append("%d passed" % total.steps_passed)
-    word = total.steps > 1 and "steps" or "step"
+    word = total.steps_ran > 1 and "steps" or "step"
     wrt("%d %s (%s)\n" % (
-        total.steps,
+        total.steps_ran,
         word,
         ", ".join(steps_details)))
 
     if total.proposed_definitions:
-        wrt("\nYou can implement step definitions for undefined steps with these snippets:\n\n")
-        wrt("# -*- coding: utf-8 -*-\n")
-        wrt("from lettuce import step\n\n")
+        # print a list of undefined sentences
+        print
+        print u"You can implement step definitions for undefined steps " \
+            u"with these snippets:"
+
+        print """
+# -*- coding: utf-8 -*-
+from lettuce import step
+        """
+
         for step in total.proposed_definitions:
-            method_name = step.proposed_method_name
-            wrt("@step(u'%s')\n" % step.proposed_sentence)
-            wrt("def %s:\n" % method_name)
-            wrt("    assert False, 'This step must be implemented'\n")
+            step_defn, method_name, n_params = step.proposed_sentence
+
+            params = [u'self'] + [
+                u'param%d' % (i + 1) for i in xrange(n_params)
+            ]
+
+            print u'''@step(ur'%s')''' % step_defn
+            print u'''def %s(%s):''' % (
+                method_name,
+                u', '.join(params))
+            print u'''    raise NotImplementedError()'''
+            print
 
 
-    if total.failed_scenario_locations:
+    if total.failed_scenarios:
         # print list of failed scenarios, with their file and line number
-        wrt("\nList of failed scenarios:\n")
-        for scenario in total.failed_scenario_locations:
-            wrt(scenario)
-        wrt("\n")
+        print
+        print _("List of failed scenarios:")
+        print
+
+        for feature, scenarios in groupby(total.failed_scenarios,
+                                          lambda s: s.feature):
+            print u' * ' + feature.represented(indent=0, annotate=False,
+                                               description=False)
+
+            for scenario in scenarios:
+                print u'    - ' + scenario.represented(
+                    indent=0, annotate=False)
+                print u'      (%s:%d)' % (
+                    scenario.described_at.file, scenario.described_at.line)
+
+        print
 
 def print_no_features_found(where):
     where = core.fs.relpath(where)

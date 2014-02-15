@@ -1,4 +1,6 @@
 import sys
+from gettext import gettext as _
+from itertools import groupby
 
 
 class Reporter(object):
@@ -53,16 +55,27 @@ class Reporter(object):
                 steps_details.append("%d %s" % (stotal, kind))
 
         steps_details.append("%d passed" % total.steps_passed)
-        word = total.steps > 1 and "steps" or "step"
+        word = total.steps_ran > 1 and "steps" or "step"
         self.wrt("%d %s (%s)\n" % (
-            total.steps,
+            total.steps_ran,
             word,
             ", ".join(steps_details)))
 
-        if total.failed_scenario_locations:
-            self.wrt("\n")
-            self.wrt("List of failed scenarios:\n")
-            for scenario in total.failed_scenario_locations:
-                self.wrt(scenario)
-                self.wrt("\n")
-            self.wrt("\n")
+        if total.failed_scenarios:
+            # print list of failed scenarios, with their file and line number
+            print
+            print _("List of failed scenarios:")
+            print
+
+            for feature, scenarios in groupby(total.failed_scenarios,
+                                              lambda s: s.feature):
+                print u' * ' + feature.represented(indent=0, annotate=False,
+                                                   description=False)
+
+                for scenario in scenarios:
+                    print u'    - ' + scenario.represented(
+                        indent=0, annotate=False)
+                    print u'      (%s:%d)' % (
+                        scenario.described_at.file, scenario.described_at.line)
+
+            print

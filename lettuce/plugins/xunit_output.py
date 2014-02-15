@@ -57,7 +57,7 @@ def enable(filename=None):
         parent = step.scenario or step.background
         if getattr(parent, 'outlines', None):
             return
-        
+
         name = getattr(parent, 'name', 'Background')    # Background sections are nameless
         classname = u"%s : %s" % (parent.feature.name, name)
         tc = doc.createElement("testcase")
@@ -108,7 +108,7 @@ def enable(filename=None):
 
     @after.all
     def output_xml(total):
-        root.setAttribute("tests", str(total.steps))
+        root.setAttribute("tests", str(total.steps_ran))
         root.setAttribute("failures", str(total.steps_failed))
         root.setAttribute("errors", '0')
         root.setAttribute("time", '0')
