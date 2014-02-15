@@ -121,7 +121,7 @@ class Step(parser.Step):
         return u'\n'.join(u' ' * indent + line
                           for line in self.why.traceback.splitlines())
 
-    def pre_run(self, ignore_case=True, with_outline=None):
+    def pre_run(self, with_outline=None):
         matched, step_definition = self._get_match()
         self.related_outline = with_outline
 
@@ -135,13 +135,13 @@ class Step(parser.Step):
         return matched, step_definition
 
     def given(self, string):
-        return self.behave_as("Given " + string)
+        return self.behave_as(u"Given " + string)
 
     def when(self, string):
-        return self.behave_as("When " + string)
+        return self.behave_as(u"When " + string)
 
     def then(self, string):
-        return self.behave_as("Then " + string)
+        return self.behave_as(u"Then " + string)
 
     def behave_as(self, string):
         """
@@ -169,10 +169,10 @@ class Step(parser.Step):
             step.scenario = self.scenario
             step.run()
 
-    def run(self, ignore_case=True):
+    def run(self):
         """Runs a step, trying to resolve it on available step
         definitions"""
-        matched, step_definition = self.pre_run(ignore_case=ignore_case)
+        matched, step_definition = self.pre_run()
         self.ran = True
         kw = matched.groupdict()
 
@@ -234,7 +234,7 @@ class Scenario(parser.Scenario):
     def failed(self):
         return any(step.failed for step in self.steps)
 
-    def run(self, ignore_case=True, failfast=False):
+    def run(self, failfast=False):
         """
         Runs a scenario, running each of its steps. Also call
         before_each and after_each callbacks for steps and scenario
@@ -263,7 +263,7 @@ class Scenario(parser.Scenario):
 
                     if self.background:
                         try:
-                            self.background.run(ignore_case=ignore_case)
+                            self.background.run()
 
                         except Exception as e:
                             if failfast:
@@ -275,8 +275,7 @@ class Scenario(parser.Scenario):
                     # pre-run the steps so we have their definitions set
                     for step in steps:
                         try:
-                            step.pre_run(ignore_case=ignore_case,
-                                         with_outline=outline)
+                            step.pre_run(with_outline=outline)
                         except NoDefinitionFound:
                             pass
 
@@ -288,7 +287,7 @@ class Scenario(parser.Scenario):
                             call_hook('before_output', 'step', step)
 
                             if not failed:
-                                step.run(ignore_case=ignore_case)
+                                step.run()
 
                         except Exception as e:
                             # we expect steps to assert or not be found
@@ -579,5 +578,5 @@ class SummaryTotalResults(TotalResult):
                     self.steps_ran += scenario_result.total_steps
                     self._proposed_definitions.extend(scenario_result.steps_undefined)
                     if len(scenario_result.steps_failed) > 0:
-                        self.failed_scenario_locations.append(scenario_result.scenario.represented())
+                        self.failed_scenarios.append(scenario_result.scenario)
 
