@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # <Lettuce - Behaviour Driven Development for python>
 # Copyright (C) <2010-2012>  Gabriel Falcão <gabriel@nacaolivre.org>
+# Copyright (C) <2014>  Danielle Madeley <danielle@madeley.id.au>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +19,7 @@
 import json
 import os.path
 
-from pyparsing import Keyword
+from pyparsing import Keyword, Literal
 
 
 class Language(object):
@@ -87,8 +88,15 @@ with open(i18n) as i18n:
             """
 
             for string in args:
-                for keyword in defn[string].split('|'):
-                    yield Keyword(keyword)
+                for keyword in defn[string].split(u'|'):
+                    if keyword.endswith(u'<'):
+                        # this language has character words, and we should
+                        # treat this as a literal rather than a keyword
+                        # (a literal matches the start of a sentence)
+                        # minus the <
+                        yield Literal(keyword[:-1])
+                    else:
+                        yield Keyword(keyword)
 
         def build_keywords(*args):
             """

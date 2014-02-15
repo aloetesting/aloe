@@ -24,6 +24,7 @@ from lettuce import Runner
 current_dir = abspath(dirname(__file__))
 join_path = lambda *x: join(current_dir, *x)
 
+
 @with_setup(prepare_stdout)
 def test_output_with_success_colorless():
     "Language: zh-CN -> sucess colorless"
@@ -33,16 +34,17 @@ def test_output_with_success_colorless():
 
     assert_stdout_lines(
         u"\n"
-        u"功能: 简单测试            # tests/functional/language_specific_features/zh-CN/success/dumb.feature:3\n"
-        u"  什么都不做应该运行成功  # tests/functional/language_specific_features/zh-CN/success/dumb.feature:4\n"
+        u"功能: 简单测试           # tests/functional/language_specific_features/zh-CN/success/dumb.feature:3\n"
+        u"  什么都不做应该运行成功 # tests/functional/language_specific_features/zh-CN/success/dumb.feature:4\n"
         u"\n"
-        u"  场景: 什么都不做        # tests/functional/language_specific_features/zh-CN/success/dumb.feature:6\n"
-        u"    假如< 如果 什么都不做 # tests/functional/language_specific_features/zh-CN/success/dumb_steps.py:6\n"
+        u"  场景: 什么都不做       # tests/functional/language_specific_features/zh-CN/success/dumb.feature:6\n"
+        u"    假如 如果 什么都不做 # tests/functional/language_specific_features/zh-CN/success/dumb_steps.py:6\n"
         u"\n"
         u"1 feature (1 passed)\n"
         u"1 scenario (1 passed)\n"
         u"1 step (1 passed)\n"
     )
+
 
 @with_setup(prepare_stdout)
 def test_output_of_table_with_success_colorless():
@@ -57,7 +59,7 @@ def test_output_of_table_with_success_colorless():
         u"  简体中文表格步骤的成功测试     # tests/functional/language_specific_features/zh-CN/success/table.feature:4\n"
         u"\n"
         u"  场景: 什么都不做的表格步骤测试 # tests/functional/language_specific_features/zh-CN/success/table.feature:6\n"
-        u"    假如< 如果 输入数据如下:     # tests/functional/language_specific_features/zh-CN/success/table_steps.py:6\n"
+        u"    假如 如果 输入数据如下:      # tests/functional/language_specific_features/zh-CN/success/table_steps.py:6\n"
         u"      | id | 名称   |\n"
         u"      | 12 | 名称一 |\n"
         u"      | 64 | 名称二 |\n"
@@ -66,6 +68,7 @@ def test_output_of_table_with_success_colorless():
         u"1 scenario (1 passed)\n"
         u"1 step (1 passed)\n"
     )
+
 
 @with_setup(prepare_stdout)
 def test_output_outlines_success_colorless():
@@ -76,13 +79,13 @@ def test_output_outlines_success_colorless():
 
     assert_stdout_lines(
         u"\n"
-        u"特性: 中文场景模板           # tests/functional/language_specific_features/zh-CN/success/outlines.feature:3\n"
-        u"  中文场景模板图表测试       # tests/functional/language_specific_features/zh-CN/success/outlines.feature:4\n"
+        u"特性: 中文场景模板          # tests/functional/language_specific_features/zh-CN/success/outlines.feature:3\n"
+        u"  中文场景模板图表测试      # tests/functional/language_specific_features/zh-CN/success/outlines.feature:4\n"
         u"\n"
-        u"  场景模板: 用表格描述场景   # tests/functional/language_specific_features/zh-CN/success/outlines.feature:6\n"
-        u"    如果 输入是<输入>        # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:13\n"
-        u"    当 执行<处理>时          # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:22\n"
-        u"    那么 得到<结果>          # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:31\n"
+        u"  场景模板: 用表格描述场景  # tests/functional/language_specific_features/zh-CN/success/outlines.feature:6\n"
+        u"    如果输入是<输入>        # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:13\n"
+        u"    当执行<处理>时          # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:22\n"
+        u"    那么得到<结果>          # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:31\n"
         u"\n"
         u"  例如:\n"
         u"    | 输入 | 处理 | 结果         |\n"
