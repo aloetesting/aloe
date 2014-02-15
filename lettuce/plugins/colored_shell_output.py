@@ -23,6 +23,7 @@ from contextlib import contextmanager
 from cStringIO import StringIO
 from gettext import (gettext as _,
                      ngettext as N_)
+from itertools import groupby
 
 from blessings import Terminal
 
@@ -218,9 +219,15 @@ def print_summary(total):
         ran = getattr(total, '%s_ran' % klass, 0)
         passed = getattr(total, '%s_passed' % klass, 0)
 
-        if passed < ran:
+        try:
+            # only steps has a failed attribute
+            failed = getattr(total, '%s_failed' % klass)
+        except AttributeError:
+            failed = ran - passed
+
+        if failed:
             breakdown.append(term.bold_red(
-                _("{n} failed".format(n=ran - passed))
+                _("{n} failed".format(n=failed))
             ))
 
         return u', '.join(breakdown)
@@ -240,7 +247,9 @@ def print_summary(total):
         breakdown=print_breakdown('scenarios'))
 
     print u"{total} ({breakdown})".format(
-        total=term.bold(N_("%d step", "%d steps", total.steps) % total.steps),
+        total=term.bold(N_("%d step",
+                           "%d steps",
+                           total.steps_ran) % total.steps_ran),
         breakdown=print_breakdown('steps'))
 
     # steps_details = []
@@ -284,16 +293,24 @@ def print_summary(total):
 
     #         wrt("\n")
 
-    # if total.failed_scenario_locations:
-    #     # print list of failed scenarios, with their file and line number
-    #     wrt("\n")
-    #     wrt("\033[1;31m")
-    #     wrt("List of failed scenarios:\n")
-    #     wrt("\033[0;31m")
-    #     for scenario in total.failed_scenario_locations:
-    #         wrt(scenario)
-    #     wrt("\033[0m")
-    #     wrt("\n")
+    if total.failed_scenarios:
+        # print list of failed scenarios, with their file and line number
+        print
+        print term.bold(_("List of failed scenarios:"))
+        print
+
+        for feature, scenarios in groupby(total.failed_scenarios,
+                                          lambda s: s.feature):
+            print u' * ' + feature.represented(indent=0, annotate=False,
+                                               description=False)
+
+            for scenario in scenarios:
+                print term.bright_red(u'    - ' + scenario.represented(
+                    indent=0, annotate=False))
+                print term.dim_red(u'      (%s:%d)' % (
+                    scenario.described_at.file, scenario.described_at.line))
+
+        print
 
 
 def print_no_features_found(where):
