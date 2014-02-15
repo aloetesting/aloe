@@ -23,6 +23,7 @@ import unicodedata
 from random import shuffle
 
 from lettuce import parser, strings, languages
+from lettuce.decorators import memoizedproperty
 from lettuce.fs import FileSystem
 from lettuce.registry import STEP_REGISTRY, call_hook
 from lettuce.exceptions import (ReasonToFail,
@@ -183,6 +184,29 @@ class Step(parser.Step):
             step_definition(*groups)
 
         return True
+
+    @memoizedproperty
+    def proposed_sentence(self):
+        """
+        Something
+        """
+
+        # take the sentence apart with a grammar
+        SENTENCE = parser.OneOrMore(
+            parser.Word(parser.unicodePrintables) ^
+            parser.quotedString.setParseAction(lambda t: '-')
+        )
+        tokens = SENTENCE.parseString(self.sentence)
+
+        step_defn = u' '.join(u'"([^"]*)"' if token == '-' else token
+                              for token in tokens[1:])
+
+        method_name = u'_'.join(u'str' if token == '-' else token.lower()
+                                for token in tokens[1:])
+
+        nparams = len([token for token in tokens[1:] if token == '-'])
+
+        return (step_defn, method_name, nparams)
 
 
 class Scenario(parser.Scenario):
@@ -493,17 +517,9 @@ class TotalResult(object):
                 if scenario_result.steps_failed:
                     self.failed_scenarios.append(scenario_result.scenario)
 
-    def _filter_proposed_definitions(self):
-        return []
-        # sentences = []
-        # for step in self._proposed_definitions:
-        #     if step.proposed_sentence not in sentences:
-        #         sentences.append(step.proposed_sentence)
-        #         yield step
-
     @property
     def proposed_definitions(self):
-        return list(self._filter_proposed_definitions())
+        return list(set(self._proposed_definitions))
 
     @property
     def features_ran(self):

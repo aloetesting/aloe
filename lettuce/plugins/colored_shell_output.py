@@ -252,46 +252,30 @@ def print_summary(total):
                            total.steps_ran) % total.steps_ran),
         breakdown=print_breakdown('steps'))
 
-    # steps_details = []
-    # kinds_and_colors = {
-    #     'failed': '\033[0;31m',
-    #     'skipped': '\033[0;36m',
-    #     'undefined': '\033[0;33m'
-    # }
+    if total.proposed_definitions:
+        # print a list of undefined sentences
+        print
+        print u"You can implement step definitions for undefined steps " \
+            u"with these snippets:"
 
-    # for kind, color in kinds_and_colors.items():
-    #     attr = 'steps_%s' % kind
-    #     stotal = getattr(total, attr)
-    #     if stotal:
-    #         steps_details.append("%s%d %s" % (color, stotal, kind))
+        print term.yellow("""
+# -*- coding: utf-8 -*-
+from lettuce import step
+        """)
 
-    # steps_details.append("\033[1;32m%d passed\033[1;37m" %
-    # total.steps_passed)
-    # word = total.steps > 1 and "steps" or "step"
-    # content = "\033[1;37m, ".join(steps_details)
+        for step in total.proposed_definitions:
+            step_defn, method_name, n_params = step.proposed_sentence
 
-    # word = total.steps > 1 and "steps" or "step"
-    # write_out("\033[1;37m%d %s (%s)\033[0m\n" % (
-    #     total.steps,
-    #     word,
-    #     content))
+            params = [u'self'] + [
+                u'param%d' % (i + 1) for i in xrange(n_params)
+            ]
 
-    # if total.proposed_definitions:
-    #     wrt("\n\033[0;33mYou can implement step definitions for undefined
-    #     steps with these snippets:\n\n")
-    #     wrt("# -*- coding: utf-8 -*-\n")
-    #     wrt("from lettuce import step\n\n")
-
-    #     last = len(total.proposed_definitions) - 1
-    #     for current, step in enumerate(total.proposed_definitions):
-    #         method_name = step.proposed_method_name
-    #         wrt("@step(u'%s')\n" % step.proposed_sentence)
-    #         wrt("def %s:\n" % method_name)
-    #         wrt("    assert False, 'This step must be implemented'")
-    #         if current is last:
-    #             wrt("\033[0m")
-
-    #         wrt("\n")
+            print term.yellow(u'''@step(ur'%s')''' % step_defn)
+            print term.yellow(u'''def %s(%s):''' % (
+                method_name,
+                u', '.join(params)))
+            print term.yellow(u'''    raise NotImplementedError()''')
+            print
 
     if total.failed_scenarios:
         # print list of failed scenarios, with their file and line number
