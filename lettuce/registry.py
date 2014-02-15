@@ -68,7 +68,7 @@ class StepDict(dict):
 
     def _assert_is_step(self, step, func):
         try:
-            return re.compile(step, re.I)
+            return re.compile(step, re.I | re.U)
         except re.error, e:
             raise StepLoadingError("Error when trying to compile:\n"
                                    "  regex: %r\n"
@@ -141,6 +141,9 @@ def call_hook(situation, kind, *args, **kw):
     for callback in CALLBACK_REGISTRY[kind][situation]:
         try:
             callback(*args, **kw)
+        except UnicodeEncodeError:
+            # why is this back?
+            pass
         except Exception as e:
             traceback.print_exc(e)
             raise

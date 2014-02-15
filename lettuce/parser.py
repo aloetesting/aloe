@@ -69,7 +69,7 @@ class ParseLocation(object):
                                        line=self.line)
 
     def __repr__(self):
-        return unicode(self)
+        return unicode(self).encode('utf-8')
 
     @property
     def file(self):
@@ -505,7 +505,7 @@ class Description(Node):
         return u'\n'.join(self.lines)
 
     def __repr__(self):
-        return unicode(self)
+        return unicode(self).encode('utf-8')
 
     def represented(self, indent=2, annotate=True):
         return u'\n'.join(

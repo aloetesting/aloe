@@ -36,7 +36,7 @@ term = Terminal()
 
 
 _ansi = re.compile(r'\x1b[^m]*m')
-strip_ansi = lambda s: _ansi.sub('', s)
+strip_ansi = lambda s: _ansi.sub(u'', s)
 
 
 class OutputManager(object):
@@ -97,7 +97,7 @@ def print_(string, color=term.white, comment_color=term.color(8)):
     # print a string in the given colour, with the reference in grey
 
     try:
-        left, right = string.rsplit('#')
+        left, right = string.rsplit(u'#')
 
         right = u'#' + right
 
@@ -167,7 +167,8 @@ def print_example_running(scenario, outline):
 
     print
     print " ",
-    print term.bold(_("Example #%d:" % (scenario.outlines.index(outline) + 1)))
+    print term.bold(_(u"Example #%d:" % (
+        scenario.outlines.index(outline) + 1)))
     print strings.represent_table([outline.keys(), outline.values()],
                                   indent=4)
     print
@@ -213,8 +214,8 @@ def print_summary(total):
             if n < 1:
                 continue
 
-            breakdown.append(color(_("{n} {outcome}".format(n=n,
-                                                            outcome=outcome))))
+            breakdown.append(color(_(u"{n} {outcome}".format(
+                n=n, outcome=outcome))))
 
         ran = getattr(total, '%s_ran' % klass, 0)
         passed = getattr(total, '%s_passed' % klass, 0)
@@ -227,7 +228,7 @@ def print_summary(total):
 
         if failed:
             breakdown.append(term.bold_red(
-                _("{n} failed".format(n=failed))
+                _(u"{n} failed".format(n=failed))
             ))
 
         return u', '.join(breakdown)
@@ -235,20 +236,20 @@ def print_summary(total):
     print
 
     print u"{total} ({breakdown})".format(
-        total=term.bold(N_("%d feature",
-                           "%d features",
+        total=term.bold(N_(u"%d feature",
+                           u"%d features",
                            total.features_ran) % total.features_ran),
         breakdown=print_breakdown('features'))
 
     print u"{total} ({breakdown})".format(
-        total=term.bold(N_("%d scenario",
-                           "%d scenarios",
+        total=term.bold(N_(u"%d scenario",
+                           u"%d scenarios",
                            total.scenarios_ran) % total.scenarios_ran),
         breakdown=print_breakdown('scenarios'))
 
     print u"{total} ({breakdown})".format(
-        total=term.bold(N_("%d step",
-                           "%d steps",
+        total=term.bold(N_(u"%d step",
+                           u"%d steps",
                            total.steps_ran) % total.steps_ran),
         breakdown=print_breakdown('steps'))
 
@@ -258,7 +259,7 @@ def print_summary(total):
         print u"You can implement step definitions for undefined steps " \
             u"with these snippets:"
 
-        print term.yellow("""
+        print term.yellow(u"""
 # -*- coding: utf-8 -*-
 from lettuce import step
         """)
@@ -280,7 +281,7 @@ from lettuce import step
     if total.failed_scenarios:
         # print list of failed scenarios, with their file and line number
         print
-        print term.bold(_("List of failed scenarios:"))
+        print term.bold(_(u"List of failed scenarios:"))
         print
 
         for feature, scenarios in groupby(total.failed_scenarios,
@@ -302,8 +303,8 @@ def print_no_features_found(where):
     if not where.startswith(os.sep):
         where = '.%s%s' % (os.sep, where)
 
-    print _("Oops!")
-    print _("Could not find features at %s" % where)
+    print _(u"Oops!")
+    print _(u"Could not find features at %s" % where)
 
 
 @before.each_background
@@ -315,4 +316,4 @@ def print_background_running(background):
 @after.each_background
 def print_background_ran(background):
     print
-    print " ", term.bold_white(_("Scenario:"))
+    print " ", term.bold_white(_(u"Scenario:"))
