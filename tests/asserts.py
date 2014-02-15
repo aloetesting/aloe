@@ -16,10 +16,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import re
 import sys
+from difflib import ndiff
+from itertools import tee, izip_longest
 from StringIO import StringIO
-from nose.tools import assert_equals, assert_not_equals
+
+from blessings import Terminal
 from lettuce import registry
-from difflib import Differ
+
+
+term = Terminal()
 
 
 real_stdout = sys.stdout
@@ -33,6 +38,7 @@ def prepare_stdout():
     std = StringIO()
     sys.stdout = std
 
+
 def prepare_stderr():
     registry.clear()
     if isinstance(sys.stderr, StringIO):
@@ -41,34 +47,84 @@ def prepare_stderr():
     sys.stderr = std
 
 
+def yield_transitions(iterable):
+    """
+    Yield the tuples of (index, value) indicating the transitions in the
+    iterable
+    """
+
+    register = None
+    last_index = 0
+
+    for i, elem in enumerate(iterable):
+        if elem != register:
+            if register:
+                yield (last_index, i, register)
+
+            register = elem
+            last_index = i
+
+    yield (last_index, i, register)
+
+
+def assert_equals(original, expected):
+    """
+    A new version of assert_equals that does coloured differences
+    """
+
+    try:
+        assert original == expected
+    except AssertionError:
+        diff = ndiff(original.splitlines(), expected.splitlines())
+
+        # consider each line along with it's next line
+        #
+        # if the next line is a '? ' line we combine this into the line to
+        # indicate where the change has occured
+        first_line, second_line = tee(diff)
+        next(second_line)  # consume a line from this generator
+
+        for line, next_line in izip_longest(first_line, second_line,
+                                            fillvalue=None):
+
+            code, line = line[:2], line[2:]
+            if next_line:
+                next_code, next_line = next_line[:2], next_line[2:]
+            else:
+                next_code = ''
+
+            # we don't render '? ' lines, only combine their results in
+            if code == '? ':
+                continue
+
+            unchanged, changed = {
+                '+ ': (term.green, term.black_on_green),
+                '- ': (term.red, term.black_on_red),
+            }.get(code, (term.white, term.white))
+
+            if next_code == '? ':
+                # combine the next line
+                coloured_line = ''
+
+                for (i1, i2, char) in yield_transitions(next_line):
+                    if char == '+':
+                        coloured_line += changed(line[i1:i2])
+                    else:
+                        coloured_line += unchanged(line[i1:i2])
+            else:
+                coloured_line = unchanged(line)
+
+            print >> real_stdout, unchanged(code) + coloured_line
+
+        raise
+
+
 def assert_lines(original, expected):
-    assert_lines_unicode(original, expected)
+    assert_lines(original, expected)
 
 
 def assert_lines_unicode(original, expected):
-    if isinstance(expected, unicode):
-        expected = expected.encode('utf-8')
-
-    if isinstance(original, unicode):
-        original = original.encode('utf-8')
-
-    expected_lines = expected.splitlines(1)
-    original_lines = original.splitlines(1)
-
-    if original != expected:
-        comparison = Differ().compare(expected_lines, original_lines)
-        if isinstance(comparison, unicode):
-            expected = expected.encode('utf-8')
-
-        diff = u''.encode('utf-8').join(comparison)
-        msg = (u'Output differed as follows:\n{0}\n'
-               'Output was:\n{1}\nExpected was:\n{2}'.encode('utf-8'))
-
-        raise AssertionError(repr(msg.format(diff, original, expected)).replace(r'\n', '\n'))
-
-    assert_equals(
-        len(expected), len(original),
-        u'Output appears equal, but of different lengths.')
+    assert_equals(original, expected)
 
 
 def assert_lines_with_traceback(one, other):
@@ -86,43 +142,34 @@ def assert_lines_with_traceback(one, other):
             assert filename in line1, error % params
 
         else:
-            assert_unicode_equals(line1, line2)
-
-    try:
-        assert_equals(len(lines_one), len(lines_other))
-    except AssertionError:
-        for line1, line2 in zip(lines_one, lines_other):
-            if line1 != line2:
-                print >> real_stdout, line1, ' | ', line2
-
-        print >> real_stdout, lines_one[-2:]
-        print >> real_stdout, lines_other[-2:]
-
-        raise
+            assert_equals(line1, line2)
 
 
 def assert_unicode_equals(original, expected):
-    if isinstance(original, basestring):
-        original = original.decode('utf-8')
-    assert_equals.im_class.maxDiff = None
     assert_equals(original, expected)
+
 
 def assert_stderr(expected):
     string = sys.stderr.getvalue()
-    assert_unicode_equals(string, expected)
+    assert_equals(string, expected)
+
 
 def assert_stdout(expected):
     string = sys.stdout.getvalue()
-    assert_unicode_equals(string, expected)
+    assert_equals(string, expected)
+
 
 def assert_stdout_lines(other):
-    assert_lines(sys.stdout.getvalue(), other)
+    assert_equals(sys.stdout.getvalue(), other)
+
 
 def assert_stderr_lines(other):
-    assert_lines(sys.stderr.getvalue(), other)
+    assert_equals(sys.stderr.getvalue(), other)
+
 
 def assert_stdout_lines_with_traceback(other):
     assert_lines_with_traceback(sys.stdout.getvalue(), other)
+
 
 def assert_stderr_lines_with_traceback(other):
     assert_lines_with_traceback(sys.stderr.getvalue(), other)
