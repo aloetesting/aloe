@@ -17,7 +17,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import re
 import unicodedata
 
 from random import shuffle
@@ -89,11 +88,11 @@ class Step(parser.Step):
     def parent(self):
         return self.scenario or self.background
 
-    def _get_match(self, ignore_case=True):
+    def _get_match(self):
         matched, func = None, lambda: None
 
-        for regex, func in STEP_REGISTRY.items():
-            matched = re.search(regex, self.sentence, ignore_case and re.I or 0)
+        for regex, func in STEP_REGISTRY.iteritems():
+            matched = regex.search(self.sentence)
             if matched:
                 break
 
@@ -123,7 +122,7 @@ class Step(parser.Step):
                           for line in self.why.traceback.splitlines())
 
     def pre_run(self, ignore_case=True, with_outline=None):
-        matched, step_definition = self._get_match(ignore_case)
+        matched, step_definition = self._get_match()
         self.related_outline = with_outline
 
         if not self.defined_at:
@@ -339,7 +338,7 @@ class Scenario(parser.Scenario):
 
 class Background(parser.Background):
 
-    def run(self, ignore_case=True):
+    def run(self):
         try:
             call_hook('before_each', 'background', self)
 
@@ -350,7 +349,7 @@ class Background(parser.Background):
 
                     # any exception generated here will be caught in
                     # Scenario.run()
-                    step.run(ignore_case=ignore_case)
+                    step.run()
 
                 finally:
                     call_hook('after_output', 'step', step)
@@ -413,7 +412,6 @@ class Feature(parser.Feature):
         return self
 
     def run(self, scenarios=None,
-            ignore_case=True,
             tags=None,
             random=False,
             failfast=False):
@@ -444,8 +442,7 @@ class Feature(parser.Feature):
 
             for scenario in scenarios:
                 try:
-                    scenario.run(ignore_case=ignore_case,
-                                 failfast=failfast)
+                    scenario.run(failfast=failfast)
 
                 except FailFast:
                     break

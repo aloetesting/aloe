@@ -190,7 +190,7 @@ class Command(BaseCommand):
                     registry.call_hook('after_each', 'app', app_module, result)
 
                 results.append(result)
-                if not result or result.steps != result.steps_passed:
+                if not result or result.steps_ran != result.steps_passed:
                     failed = True
         except SystemExit, e:
             failed = e.code

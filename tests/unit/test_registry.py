@@ -14,6 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import re
+
 from lettuce.registry import _function_matches, StepDict
 from lettuce.exceptions import StepLoadingError
 
@@ -48,6 +50,8 @@ def test_StepDict_can_load_a_step_composed_of_a_regex_and_a_function():
     func = lambda: ""
     step = "a step to test"
     steps.load(step, func)
+
+    step = re.compile(step, re.I)
     assert (step in steps)
     assert_equal(steps[step], func)
 
@@ -80,7 +84,7 @@ def test_StepDict_can_load_a_step_from_a_function():
 
     steps.load_func(a_step_to_test)
 
-    expected_sentence = "A step to test"
+    expected_sentence = re.compile("A step to test", re.I)
     assert (expected_sentence in steps)
     assert_equal(steps[expected_sentence], a_step_to_test)
 
@@ -97,8 +101,8 @@ def test_StepDict_can_load_steps_from_an_object():
     step_list = LotsOfSteps()
     steps.load_steps(step_list)
 
-    expected_sentence1 = "Step 1"
-    expected_sentence2 = "Doing something"
+    expected_sentence1 = re.compile("Step 1", re.I)
+    expected_sentence2 = re.compile("Doing something", re.I)
     assert (expected_sentence1 in steps)
     assert (expected_sentence2 in steps)
     assert_equal(steps[expected_sentence1], step_list.step_1)
@@ -118,8 +122,8 @@ def test_StepDict_can_exclude_methods_when_load_steps():
     step_list = LotsOfSteps()
     steps.load_steps(step_list)
 
-    expected_sentence1 = "Step 1"
-    expected_sentence2 = "Doing something"
+    expected_sentence1 = re.compile("Step 1", re.I)
+    expected_sentence2 = re.compile("Doing something", re.I)
     assert (expected_sentence1 not in steps)
     assert (expected_sentence2 in steps)
 

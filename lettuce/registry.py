@@ -42,7 +42,7 @@ class CallbackDict(dict):
 
 class StepDict(dict):
     def load(self, step, func):
-        self._assert_is_step(step, func)
+        step = self._assert_is_step(step, func)
         self[step] = func
         return func
 
@@ -68,7 +68,7 @@ class StepDict(dict):
 
     def _assert_is_step(self, step, func):
         try:
-            re.compile(step)
+            return re.compile(step, re.I)
         except re.error, e:
             raise StepLoadingError("Error when trying to compile:\n"
                                    "  regex: %r\n"
