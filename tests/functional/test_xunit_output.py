@@ -152,7 +152,7 @@ def test_xunit_output_with_no_steps():
         assert_equals(root.find("testcase").get("name"), "Given I do nothing")
         assert_equals(len(root.getchildren()), 1)
         assert_equals(root.find("testcase/skipped").get("type"), "UndefinedStep(Given I do nothing)")
-        assert_equals(float(root.find("testcase").get("time")), 0)
+        assert 0 < float(root.find("testcase").get("time")) < 0.0003
 
     old = xunit_output.wrt_output
     xunit_output.wrt_output = assert_correct_xml
@@ -167,7 +167,7 @@ def test_xunit_output_with_no_steps():
 def test_xunit_output_with_background_section():
     'Test xunit output with a background section in the feature'
     called = []
-    
+
     def assert_correct_xml(filename, content):
         called.append(True)
         assert_xsd_valid(filename, content)
@@ -181,14 +181,14 @@ def test_xunit_output_with_background_section():
         assert_true(float(passed1.get("time")) > 0)
         assert_equals(passed2.get("name"), 'Given the variable "X" is equal to 2')
         assert_true(float(passed2.get("time")) > 0)
-    
+
     from lettuce import step
-    
+
     @step(ur'the variable "(\w+)" holds (\d+)')
     @step(ur'the variable "(\w+)" is equal to (\d+)')
     def just_pass(step, *args):
         pass
-    
+
     filename = bg_feature_name('simple')
     old = xunit_output.wrt_output
     xunit_output.wrt_output = assert_correct_xml

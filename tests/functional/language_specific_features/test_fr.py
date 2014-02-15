@@ -75,9 +75,10 @@ def test_output_of_table_with_success_colorless():
 
 @with_setup(prepare_stdout)
 def test_output_outlines_success_colorless():
-    "Language: fr -> sucess outlines colorless"
+    """Language: fr -> success outlines colorless"""
 
-    runner = Runner(join_path('fr', 'success', 'outlines.feature'), verbosity=3)
+    runner = Runner(join_path('fr', 'success', 'outlines.feature'),
+                    verbosity=3)
     runner.run()
 
     assert_stdout_lines(
@@ -87,10 +88,10 @@ def test_output_outlines_success_colorless():
         u'  Je veux tester les plans de scénario       # tests/functional/language_specific_features/fr/success/outlines.feature:6\n'
         u'  Et surtout les sorties                     # tests/functional/language_specific_features/fr/success/outlines.feature:7\n'
         u'\n'
-        u'  Plan de Scénario: Faire la sieste          # tests/functional/language_specific_features/fr/success/outlines.feature:9\n'
+        u'  Plan du Scénario: Faire la sieste          # tests/functional/language_specific_features/fr/success/outlines.feature:9\n'
         u'    Soit un après midi de <mois>             # tests/functional/language_specific_features/fr/success/outlines_steps.py:13\n'
         u'    Quand je veux faire la sieste            # tests/functional/language_specific_features/fr/success/outlines_steps.py:22\n'
-        u'    Je peux aller <lieux>                    # tests/functional/language_specific_features/fr/success/outlines_steps.py:26\n'
+        u'    Et je peux aller <lieux>                 # tests/functional/language_specific_features/fr/success/outlines_steps.py:26\n'
         u'\n'
         u'  Exemples:\n'
         u'    | mois    | lieux              |\n'

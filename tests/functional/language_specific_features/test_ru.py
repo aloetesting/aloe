@@ -39,7 +39,7 @@ def test_output_with_success_colorless():
         u'  Я хочу что бы тест был зеленый      # tests/functional/language_specific_features/ru/success/dumb.feature:6\n'
         u'\n'
         u'  Сценарий: Ничего не делать          # tests/functional/language_specific_features/ru/success/dumb.feature:8\n'
-        u'    Пуская я ничего не делаю          # tests/functional/language_specific_features/ru/success/dumb_steps.py:6\n'
+        u'    Когда Пуская я ничего не делаю    # tests/functional/language_specific_features/ru/success/dumb_steps.py:6\n'
         u'    Тогда я вижу что тест выполняется # tests/functional/language_specific_features/ru/success/dumb_steps.py:10\n'
         u'\n'
         u'1 feature (1 passed)\n'
@@ -62,7 +62,7 @@ def test_output_of_table_with_success_colorless():
         u"  Я хочу, что бы тесты с таблицами работали отлично и на русском # tests/functional/language_specific_features/ru/success/table.feature:6\n"
         u"\n"
         u"  Сценарий: Проверить таблички                                   # tests/functional/language_specific_features/ru/success/table.feature:8\n"
-        u"    Пускай имеем таблицу пациентов:                              # tests/functional/language_specific_features/ru/success/table_steps.py:5\n"
+        u"    Когда Пускай имеем таблицу пациентов:                        # tests/functional/language_specific_features/ru/success/table_steps.py:5\n"
         u"      | ФИО        | Диагноз             |\n"
         u"      | Петров ПП  | диарея              |\n"
         u"      | Сидоров НА | хронический снобизм |\n"
@@ -76,33 +76,33 @@ def test_output_of_table_with_success_colorless():
 def test_output_outlines_success_colorless():
     "Language: ru -> sucess outlines colorless"
 
-    runner = Runner(join_path('ru', 'success', 'outlines.feature'), verbosity=3)
+    runner = Runner(join_path('ru', 'success', 'outlines.feature'),
+                    verbosity=3)
     runner.run()
 
-    assert_stdout_lines(
-        u'\n'
-        u'Функционал: Проверить вывод структурного сценария                                  # tests/functional/language_specific_features/ru/success/outlines.feature:3\n'
-        u'  Как программист                                                                  # tests/functional/language_specific_features/ru/success/outlines.feature:4\n'
-        u'  Для того чобы lettuce был надежным                                               # tests/functional/language_specific_features/ru/success/outlines.feature:5\n'
-        u'  Я хочу, что бы сценарии со структурой работали на русском                        # tests/functional/language_specific_features/ru/success/outlines.feature:6\n'
-        u'\n'
-        u'  Структура сценария: Заполнить форму                                              # tests/functional/language_specific_features/ru/success/outlines.feature:8\n'
-        u'    Пускай я открываю в браузере  "http://sona-studio.com/contacts/"               # tests/functional/language_specific_features/ru/success/outlines_steps.py:12\n'
-        u'    Когда я заполняю в поле "Имя" "<имя>"                                          # tests/functional/language_specific_features/ru/success/outlines_steps.py:16\n'
-        u'    И я заполняю в поле "Email" "<email>"                                          # tests/functional/language_specific_features/ru/success/outlines_steps.py:24\n'
-        u'    И я заполняю в поле "Сообщение" "<сообщение>"                                  # tests/functional/language_specific_features/ru/success/outlines_steps.py:32\n'
-        u'    И я нажимаю "Отправить"                                                        # tests/functional/language_specific_features/ru/success/outlines_steps.py:40\n'
-        u'    Тогда я получаю сообщение "Спасибо за ваше сообщение"                          # tests/functional/language_specific_features/ru/success/outlines_steps.py:43\n'
-        u'\n'
-        u'  Примеры:\n'
-        u'    | имя              | email          | сообщение                              |\n'
-        u'    | Виталий Игоревич | john@gmail.org | Есть интересный проект, нужно обсудить |\n'
-        u'    | Марина Банраул   | mary@email.com | Мне нравятся ваши дизайны, хочу сайт   |\n'
-        u'\n'
-        u'1 feature (1 passed)\n'
-        u'2 scenarios (2 passed)\n'
-        u'12 steps (12 passed)\n'
-    )
+    assert_stdout_lines(u"""
+Функционал: Проверить вывод структурного сценария                                  # tests/functional/language_specific_features/ru/success/outlines.feature:3
+  Как программист                                                                  # tests/functional/language_specific_features/ru/success/outlines.feature:4
+  Для того чобы lettuce был надежным                                               # tests/functional/language_specific_features/ru/success/outlines.feature:5
+  Я хочу, что бы сценарии со структурой работали на русском                        # tests/functional/language_specific_features/ru/success/outlines.feature:6
+
+  Структура сценария: Заполнить форму                                              # tests/functional/language_specific_features/ru/success/outlines.feature:8
+    Пускай я открываю в браузере  "http://sona-studio.com/contacts/"               # tests/functional/language_specific_features/ru/success/outlines_steps.py:12
+    Когда я заполняю в поле "Имя" "<имя>"                                          # tests/functional/language_specific_features/ru/success/outlines_steps.py:16
+    И я заполняю в поле "Email" "<email>"                                          # tests/functional/language_specific_features/ru/success/outlines_steps.py:24
+    И я заполняю в поле "Сообщение" "<сообщение>"                                  # tests/functional/language_specific_features/ru/success/outlines_steps.py:32
+    И я нажимаю "Отправить"                                                        # tests/functional/language_specific_features/ru/success/outlines_steps.py:40
+    Тогда я получаю сообщение "Спасибо за ваше сообщение"                          # tests/functional/language_specific_features/ru/success/outlines_steps.py:43
+
+  Примеры:
+    | имя              | email          | сообщение                              |
+    | Виталий Игоревич | john@gmail.org | Есть интересный проект, нужно обсудить |
+    | Марина Банраул   | mary@email.com | Мне нравятся ваши дизайны, хочу сайт   |
+
+1 feature (1 passed)
+2 scenarios (2 passed)
+12 steps (12 passed)
+    """)
 
 @with_setup(prepare_stdout)
 def test_output_outlines_success_colorful():

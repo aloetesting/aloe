@@ -69,31 +69,30 @@ def test_output_of_table_with_success_colorless():
 
 @with_setup(prepare_stdout)
 def test_output_outlines_success_colorless():
-    "Language: ja -> sucess outlines colorless"
+    """Language: ja -> success outlines colorless"""
 
     runner = Runner(join_path('ja', 'success', 'outlines.feature'), verbosity=3)
     runner.run()
 
-    assert_stdout_lines(
-        u"\n"
-        u"フィーチャ: アウトラインを日本語で書く           # tests/functional/language_specific_features/ja/success/outlines.feature:3\n"
-        u"  図表のテストをパスすること                     # tests/functional/language_specific_features/ja/success/outlines.feature:4\n"
-        u"\n"
-        u"  シナリオアウトライン: 全てのテストで何もしない # tests/functional/language_specific_features/ja/success/outlines.feature:6\n"
-        u"    前提 入力値を <データ1> とし                 # tests/functional/language_specific_features/ja/success/outlines_steps.py:13\n"
-        u"    もし 処理 <方法> を使って                    # tests/functional/language_specific_features/ja/success/outlines_steps.py:22\n"
-        u"    ならば 表示は <結果> である                  # tests/functional/language_specific_features/ja/success/outlines_steps.py:31\n"
-        u"\n"
-        u"  例:\n"
-        u"    | データ1 | 方法 | 結果       |\n"
-        u"    | 何か    | これ | 機能       |\n"
-        u"    | その他  | ここ | 同じ       |\n"
-        u"    | データ  | 動く | unicodeで! |\n"
-        u"\n"
-        u"1 feature (1 passed)\n"
-        u"3 scenarios (3 passed)\n"
-        u"9 steps (9 passed)\n"
-    )
+    assert_stdout_lines(u"""
+フィーチャ: アウトラインを日本語で書く       # tests/functional/language_specific_features/ja/success/outlines.feature:3
+  図表のテストをパスすること                 # tests/functional/language_specific_features/ja/success/outlines.feature:4
+
+  シナリオテンプレ: 全てのテストで何もしない # tests/functional/language_specific_features/ja/success/outlines.feature:6
+    前提 入力値を <データ1> とし             # tests/functional/language_specific_features/ja/success/outlines_steps.py:13
+    もし 処理 <方法> を使って                # tests/functional/language_specific_features/ja/success/outlines_steps.py:22
+    ならば 表示は <結果> である              # tests/functional/language_specific_features/ja/success/outlines_steps.py:31
+
+  例:
+    | データ1 | 方法 | 結果       |
+    | 何か    | これ | 機能       |
+    | その他  | ここ | 同じ       |
+    | データ  | 動く | unicodeで! |
+
+1 feature (1 passed)
+3 scenarios (3 passed)
+9 steps (9 passed)
+    """)
 
 @with_setup(prepare_stdout)
 def test_output_outlines_success_colorful():

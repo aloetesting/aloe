@@ -77,26 +77,25 @@ def test_output_outlines_success_colorless():
     runner = Runner(join_path('zh-CN', 'success', 'outlines.feature'), verbosity=3)
     runner.run()
 
-    assert_stdout_lines(
-        u"\n"
-        u"特性: 中文场景模板          # tests/functional/language_specific_features/zh-CN/success/outlines.feature:3\n"
-        u"  中文场景模板图表测试      # tests/functional/language_specific_features/zh-CN/success/outlines.feature:4\n"
-        u"\n"
-        u"  场景模板: 用表格描述场景  # tests/functional/language_specific_features/zh-CN/success/outlines.feature:6\n"
-        u"    如果输入是<输入>        # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:13\n"
-        u"    当执行<处理>时          # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:22\n"
-        u"    那么得到<结果>          # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:31\n"
-        u"\n"
-        u"  例如:\n"
-        u"    | 输入 | 处理 | 结果         |\n"
-        u"    | 什么 | 这个 | 功能         |\n"
-        u"    | 其他 | 这里 | 一样         |\n"
-        u"    | 数据 | 动作 | unicode输出! |\n"
-        u"\n"
-        u"1 feature (1 passed)\n"
-        u"3 scenarios (3 passed)\n"
-        u"9 steps (9 passed)\n"
-    )
+    assert_stdout_lines(u"""
+功能: 中文场景模板                 # tests/functional/language_specific_features/zh-CN/success/outlines.feature:3
+  中文场景模板图表测试             # tests/functional/language_specific_features/zh-CN/success/outlines.feature:4
+
+  场景大纲: 用表格描述场景         # tests/functional/language_specific_features/zh-CN/success/outlines.feature:6
+    假如如果 输入是<输入>          # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:13
+    当执行<处理>时                 # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:22
+    那么得到<结果>                 # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:31
+
+  例如:
+    | 输入 | 处理 | 结果         |
+    | 什么 | 这个 | 功能         |
+    | 其他 | 这里 | 一样         |
+    | 数据 | 动作 | unicode输出! |
+
+1 feature (1 passed)
+3 scenarios (3 passed)
+9 steps (9 passed)
+    """)
 
 @with_setup(prepare_stdout)
 def test_output_outlines_success_colorful():

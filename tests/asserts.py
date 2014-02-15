@@ -75,7 +75,7 @@ def assert_equals(original, expected, stream=real_stdout):
     try:
         assert original == expected
     except AssertionError:
-        diff = ndiff(original.splitlines(), expected.splitlines())
+        diff = ndiff(expected.splitlines(), original.splitlines())
 
         # consider each line along with it's next line
         #
@@ -119,7 +119,7 @@ def assert_equals(original, expected, stream=real_stdout):
 
 
 def assert_lines(original, expected):
-    assert_lines(original, expected)
+    assert_equals(original, expected)
 
 
 def assert_lines_unicode(original, expected):

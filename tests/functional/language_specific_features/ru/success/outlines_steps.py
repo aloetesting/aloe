@@ -8,7 +8,7 @@ def assert_in(text, variants):
         text, variants
     )
 
-@step(u'я открываю в браузере  "([^"]*)"')
+@step(u'я открываю в браузере "([^"]*)"')
 def otkrivayu_v_brauzere(step, url):
     pass
 
