@@ -64,7 +64,7 @@ def yield_transitions(iterable):
             register = elem
             last_index = i
 
-    yield (last_index, i, register)
+    yield (last_index, i + 1, register)
 
 
 def assert_equals(original, expected, stream=real_stdout):
@@ -104,6 +104,8 @@ def assert_equals(original, expected, stream=real_stdout):
 
             if next_code == '? ':
                 # combine the next line
+                # make sure the lines are the same length
+                next_line = next_line.ljust(len(line))
                 line = u''.join(changed(line[i1:i2]) if char == '+'
                                 else unchanged(line[i1:i2])
                                 for (i1, i2, char)
