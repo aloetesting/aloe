@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # language: fr
 
-Fonction: Plan de scénario en français
+Fonctionnalité: Plan de scénario en français
   En tant que programmeur
   Je veux tester les plans de scénario
   Et surtout les sorties

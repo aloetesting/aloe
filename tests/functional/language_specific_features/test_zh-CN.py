@@ -72,7 +72,7 @@ def test_output_of_table_with_success_colorless():
 
 @with_setup(prepare_stdout)
 def test_output_outlines_success_colorless():
-    "Language: zh-CN -> sucess outlines colorless"
+    """Language: zh-CN -> success outlines colorless"""
 
     runner = Runner(join_path('zh-CN', 'success', 'outlines.feature'), verbosity=3)
     runner.run()
