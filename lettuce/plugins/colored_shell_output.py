@@ -102,7 +102,7 @@ def print_(string, color=term.white, comment_color=term.color(8)):
         right = u'#' + right
 
         if len(string) > term.width:
-            print color(left)
+            print color(left.rstrip())
             print comment_color(right.rjust(term.width))
         else:
             print color(left) + comment_color(right)
