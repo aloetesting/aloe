@@ -332,8 +332,7 @@ class TaggedBlock(Block):
         Represent the tags of a tagged block
         """
 
-        return u'  '.join(u'@%s' % tag
-                          for tag in self.tags)
+        return u' ' * indent + u'  '.join(u'@%s' % tag for tag in self.tags)
 
     def matches_tags(self, tags):
         """

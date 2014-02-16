@@ -156,7 +156,8 @@ def print_step_ran(step):
 @before.each_scenario
 def print_scenario_running(scenario):
     print
-    print term.cyan(scenario.represent_tags())
+    print u"  #%d " % (scenario.feature.scenarios.index(scenario) + 1), \
+        term.cyan(scenario.represent_tags())
     print_(scenario.represented(), color=term.bold)
 
 
@@ -183,7 +184,10 @@ def print_end_of_example(scenario, outline):
 @before.each_feature
 def print_feature_running(feature):
     print
-    print term.cyan(feature.represent_tags())
+
+    if feature.tags:
+        print term.cyan(feature.represent_tags())
+
     print_(feature.represented(description=False), color=term.bold_white)
 
     for line in feature.represent_description().splitlines():
