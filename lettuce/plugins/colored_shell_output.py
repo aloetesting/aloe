@@ -145,7 +145,7 @@ def print_step_ran(step):
     if step.table:
         print step.represent_hashes(cell_wrap=color)
 
-    if step.failed:
+    if True: #step.failed:
         sys.stdout.write(stdout)
         sys.stderr.write(term.red(stderr))
 
@@ -192,6 +192,12 @@ def print_feature_running(feature):
 
     for line in feature.represent_description().splitlines():
         print_(line, color=term.white)
+
+
+@after.harvest
+def print_note(total):
+    print
+    print "Summary for all applications tested:"
 
 
 @after.harvest

@@ -141,12 +141,9 @@ def call_hook(situation, kind, *args, **kw):
     for callback in CALLBACK_REGISTRY[kind][situation]:
         try:
             callback(*args, **kw)
-        except UnicodeEncodeError:
-            # why is this back?
-            pass
         except Exception as e:
+            print "Exception in hook %s:" % callback.__name__
             traceback.print_exc(e)
-            raise
 
 
 def clear():

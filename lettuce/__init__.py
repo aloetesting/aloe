@@ -161,7 +161,7 @@ class Runner(object):
         # that we don't even want to test.
         try:
             self.loader.find_and_load_step_definitions()
-        except StepLoadingError, e:
+        except StepLoadingError as e:
             print "Error loading step definitions:\n", e
             raise SystemExit(3)
 
