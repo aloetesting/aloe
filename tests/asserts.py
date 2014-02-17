@@ -78,6 +78,13 @@ def assert_equals(original, expected, stream=real_stdout):
     expected = expected.replace('\s', ' ')
 
     try:
+        # replace \s with space, this makes literal trailing space visible
+        # in the expected results
+        expected = expected.replace('\s', ' ')
+    except AttributeError:
+        pass
+
+    try:
         assert original == expected
     except AssertionError:
         diff = ndiff(expected.splitlines(), original.splitlines())
