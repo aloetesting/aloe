@@ -18,6 +18,7 @@ import re
 import sys
 from difflib import ndiff
 from itertools import tee, izip_longest
+# Important: cannot use cStringIO because it does not support unicode!
 from StringIO import StringIO
 
 from blessings import Terminal
