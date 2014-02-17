@@ -51,7 +51,7 @@ def test_StepDict_can_load_a_step_composed_of_a_regex_and_a_function():
     step = "a step to test"
     steps.load(step, func)
 
-    step = re.compile(step, re.I)
+    step = re.compile(step, re.I | re.U)
     assert (step in steps)
     assert_equal(steps[step], func)
 
@@ -84,7 +84,7 @@ def test_StepDict_can_load_a_step_from_a_function():
 
     steps.load_func(a_step_to_test)
 
-    expected_sentence = re.compile("A step to test", re.I)
+    expected_sentence = re.compile("A step to test", re.I | re.U)
     assert (expected_sentence in steps)
     assert_equal(steps[expected_sentence], a_step_to_test)
 
@@ -101,8 +101,8 @@ def test_StepDict_can_load_steps_from_an_object():
     step_list = LotsOfSteps()
     steps.load_steps(step_list)
 
-    expected_sentence1 = re.compile("Step 1", re.I)
-    expected_sentence2 = re.compile("Doing something", re.I)
+    expected_sentence1 = re.compile("Step 1", re.I | re.U)
+    expected_sentence2 = re.compile("Doing something", re.I | re.U)
     assert (expected_sentence1 in steps)
     assert (expected_sentence2 in steps)
     assert_equal(steps[expected_sentence1], step_list.step_1)
@@ -122,8 +122,8 @@ def test_StepDict_can_exclude_methods_when_load_steps():
     step_list = LotsOfSteps()
     steps.load_steps(step_list)
 
-    expected_sentence1 = re.compile("Step 1", re.I)
-    expected_sentence2 = re.compile("Doing something", re.I)
+    expected_sentence1 = re.compile("Step 1", re.I | re.U)
+    expected_sentence2 = re.compile("Doing something", re.I | re.U)
     assert (expected_sentence1 not in steps)
     assert (expected_sentence2 in steps)
 
