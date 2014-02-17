@@ -166,39 +166,42 @@ class Command(BaseCommand):
 
         failed = False
 
-        registry.call_hook('before', 'harvest', locals())
         results = []
+
         try:
+            registry.call_hook('before', 'harvest', locals())
+
             for path in paths:
                 app_module = None
                 if isinstance(path, tuple) and len(path) is 2:
                     path, app_module = path
 
-                if app_module is not None:
-                    registry.call_hook('before_each', 'app', app_module)
+                try:
+                    if app_module is not None:
+                        registry.call_hook('before_each', 'app', app_module)
 
-                runner = Runner(path, options.get('scenarios'), verbosity,
-                                enable_xunit=options.get('enable_xunit'),
-                                enable_subunit=options.get('enable_subunit'),
-                                xunit_filename=options.get('xunit_file'),
-                                subunit_filename=options.get('subunit_file'),
-                                tags=tags, failfast=failfast, auto_pdb=auto_pdb,
-                                smtp_queue=smtp_queue)
+                    runner = Runner(path, options.get('scenarios'), verbosity,
+                                    enable_xunit=options.get('enable_xunit'),
+                                    enable_subunit=options.get('enable_subunit'),
+                                    xunit_filename=options.get('xunit_file'),
+                                    subunit_filename=options.get('subunit_file'),
+                                    tags=tags, failfast=failfast, auto_pdb=auto_pdb,
+                                    smtp_queue=smtp_queue)
 
-                result = runner.run()
-                if app_module is not None:
-                    registry.call_hook('after_each', 'app', app_module, result)
+                    result = runner.run()
 
-                results.append(result)
-                if not result or result.steps_ran != result.steps_passed:
-                    failed = True
-        except SystemExit, e:
+                finally:
+                    if app_module is not None:
+                        registry.call_hook('after_each', 'app', app_module, result)
+
+                    results.append(result)
+
+                    if not result or result.steps_ran != result.steps_passed:
+                        failed = True
+
+        except SystemExit as e:
+            # FIXME: this will always failfast
             failed = e.code
-
-        except Exception, e:
-            failed = True
-            import traceback
-            traceback.print_exc(e)
 
         finally:
             summary = SummaryTotalResults(results)
