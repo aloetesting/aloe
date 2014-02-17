@@ -156,7 +156,7 @@ def print_step_ran(step):
 @before.each_scenario
 def print_scenario_running(scenario):
     print
-    print u"  #%d " % (scenario.feature.scenarios.index(scenario) + 1), \
+    print u"  #%d" % (scenario.feature.scenarios.index(scenario) + 1), \
         term.cyan(scenario.represent_tags())
     print_(scenario.represented(), color=term.bold)
 
