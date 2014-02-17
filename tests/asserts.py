@@ -73,9 +73,12 @@ def assert_equals(original, expected, stream=real_stdout):
     A new version of assert_equals that does coloured differences
     """
 
-    # replace \s with space, this makes literal trailing space visible
-    # in the expected results
-    expected = expected.replace('\s', ' ')
+    try:
+        # replace \s with space, this makes literal trailing space visible
+        # in the expected results
+        expected = expected.replace('\s', ' ')
+    except AttributeError:
+        pass
 
     try:
         assert original == expected
