@@ -163,12 +163,12 @@ class Runner(object):
             self.loader.find_and_load_step_definitions()
         except StepLoadingError, e:
             print "Error loading step definitions:\n", e
-            return
-
-        call_hook('before', 'all')
+            raise SystemExit(3)
 
         failed = False
+
         try:
+            call_hook('before', 'all')
             for filename in features_files:
                 feature = Feature.from_file(filename)
                 results.append(
@@ -177,24 +177,25 @@ class Runner(object):
                                 random=self.random,
                                 failfast=self.failfast))
 
-        except exceptions.LettuceSyntaxError, e:
+        except exceptions.LettuceSyntaxError as e:
             sys.stderr.write(e.msg)
             failed = True
-        except:
-            if not self.failfast:
-                e = sys.exc_info()[1]
-                print "Died with %s" % str(e)
-                traceback.print_exc()
-            else:
-                print
-                print ("Lettuce aborted running any more tests "
-                       "because was called with the `--failfast` option")
+
+        except exceptions.FailFast:
+            print
+            print ("Lettuce aborted running any more tests "
+                   "because was called with the `--failfast` option")
 
             failed = True
+
+        except Exception:
+            print "Exception in Lettuce itself!"
+            raise
 
         finally:
             total = TotalResult(results)
             total.output_format()
+
             call_hook('after', 'all', total)
 
             if failed:

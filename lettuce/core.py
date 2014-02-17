@@ -443,9 +443,6 @@ class Feature(parser.Feature):
                 try:
                     scenario.run(failfast=failfast)
 
-                except FailFast:
-                    break
-
                 finally:
                     results += scenario.results
 
