@@ -33,45 +33,46 @@ def test_output_with_success_colorless():
     runner = Runner(join_path('fr', 'success', 'dumb.feature'), verbosity=3)
     runner.run()
 
-    assert_stdout_lines(
-        u"\n"
-        u"Fonctionnalité: Test complet # tests/functional/language_specific_features/fr/success/dumb.feature:3\n"
-        u"  En tant que programmeur    # tests/functional/language_specific_features/fr/success/dumb.feature:4\n"
-        u"  Je veux valider les tests  # tests/functional/language_specific_features/fr/success/dumb.feature:5\n"
-        u"\n"
-        u"  Scénario: On ne fait rien  # tests/functional/language_specific_features/fr/success/dumb.feature:7\n"
-        u"    Quand je ne fait rien    # tests/functional/language_specific_features/fr/success/dumb_steps.py:6\n"
-        u"\n"
-        u"1 feature (1 passed)\n"
-        u"1 scenario (1 passed)\n"
-        u"1 step (1 passed)\n"
-    )
+    assert_stdout_lines(u"""
+Fonctionnalité: Test complet # tests/functional/language_specific_features/fr/success/dumb.feature:3
+  En tant que programmeur    # tests/functional/language_specific_features/fr/success/dumb.feature:4
+  Je veux valider les tests  # tests/functional/language_specific_features/fr/success/dumb.feature:5
+
+  #1\s
+  Scénario: On ne fait rien  # tests/functional/language_specific_features/fr/success/dumb.feature:7
+    Quand je ne fait rien    # tests/functional/language_specific_features/fr/success/dumb_steps.py:6
+
+  ----------------------------------------------------------------------------
+
+1 feature (1 passed)
+1 scenario (1 passed)
+1 step (1 passed)
+""")
+
 
 @with_setup(prepare_stdout)
 def test_output_of_table_with_success_colorless():
-    "Language: fr -> sucess table colorless"
+    """Language: fr -> sucess table colorless"""
 
     runner = Runner(join_path('fr', 'success', 'table.feature'), verbosity=3)
     runner.run()
 
-    assert_stdout_lines(
-        u"\n"
-        u"Fonctionnalité: Test des sorties, avec table        # tests/functional/language_specific_features/fr/success/table.feature:4\n"
-        u"  En tant que programmeur                           # tests/functional/language_specific_features/fr/success/table.feature:5\n"
-        u"  Je veux tester les sorties de scénario avec table # tests/functional/language_specific_features/fr/success/table.feature:6\n"
-        u"\n"
-        u"  Scénario: NE rien faire, mais avec des tables     # tests/functional/language_specific_features/fr/success/table.feature:8\n"
-        u"    Soit les éléments suivant                       # tests/functional/language_specific_features/fr/success/table_steps.py:6\n"
-        u"      | id | élément |\n"
-        u"      | 50 | Un      |\n"
-        u"      | 59 | 42      |\n"
-        u"      | 29 | sieste  |\n"
-        u"\n"
-        u"1 feature (1 passed)\n"
-        u"1 scenario (1 passed)\n"
-        u"1 step (1 passed)\n"
+    assert_stdout_lines(u"""
+Fonctionnalité: Test des sorties, avec table        # tests/functional/language_specific_features/fr/success/table.feature:4
+  En tant que programmeur                           # tests/functional/language_specific_features/fr/success/table.feature:5
+  Je veux tester les sorties de scénario avec table # tests/functional/language_specific_features/fr/success/table.feature:6
+\n"
+  Scénario: NE rien faire, mais avec des tables     # tests/functional/language_specific_features/fr/success/table.feature:8
+    Soit les éléments suivant                       # tests/functional/language_specific_features/fr/success/table_steps.py:6
+      | id | élément |
+      | 50 | Un      |
+      | 59 | 42      |
+      | 29 | sieste  |
 
-    )
+1 feature (1 passed)
+1 scenario (1 passed)
+1 step (1 passed)""")
+
 
 @with_setup(prepare_stdout)
 def test_output_outlines_success_colorless():
@@ -103,6 +104,7 @@ def test_output_outlines_success_colorless():
         u'3 scenarios (3 passed)\n'
         u'9 steps (9 passed)\n'
     )
+
 
 @with_setup(prepare_stdout)
 def test_output_outlines_success_colorful():

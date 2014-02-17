@@ -72,6 +72,10 @@ def assert_equals(original, expected, stream=real_stdout):
     A new version of assert_equals that does coloured differences
     """
 
+    # replace \s with space, this makes literal trailing space visible
+    # in the expected results
+    expected = expected.replace('\s', ' ')
+
     try:
         assert original == expected
     except AssertionError:
@@ -159,6 +163,8 @@ def assert_stdout(expected):
 
 
 def assert_stdout_lines(other):
+    real_stdout.write(sys.stdout.getvalue())
+
     assert_equals(sys.stdout.getvalue(), other)
 
 

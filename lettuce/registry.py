@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import re
+import sys
 import threading
 import traceback
 
@@ -23,6 +24,8 @@ from lettuce.exceptions import StepLoadingError
 
 world = threading.local()
 world._set = False
+
+real_stdout = sys.stdout
 
 
 def _function_matches(one, other):
@@ -142,8 +145,9 @@ def call_hook(situation, kind, *args, **kw):
         try:
             callback(*args, **kw)
         except Exception as e:
-            print "Exception in hook %s:" % callback.__name__
-            traceback.print_exc(e)
+            print >> real_stdout, "Exception in hook %s:" % callback.__name__
+            traceback.print_exc(e, file=real_stdout)
+            raise
 
 
 def clear():

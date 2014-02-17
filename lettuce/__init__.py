@@ -68,6 +68,8 @@ __all__ = [
     'call_hook',
 ]
 
+real_stdout = sys.stdout
+
 try:
     terrain = fs.FileSystem._import("terrain")
     reload(terrain)
@@ -189,6 +191,8 @@ class Runner(object):
             failed = True
 
         except Exception:
+            # ensure our output is undiverted
+            sys.stdout = real_stdout
             print "Exception in Lettuce itself!"
             raise
 
