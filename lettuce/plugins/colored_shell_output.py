@@ -20,7 +20,8 @@ import os
 import re
 import sys
 from contextlib import contextmanager
-from cStringIO import StringIO
+# Important: cannot use cStringIO because it does not support unicode!
+from StringIO import StringIO
 from gettext import (gettext as _,
                      ngettext as N_)
 from itertools import groupby
@@ -101,18 +102,15 @@ def print_(string, color=term.white, comment_color=term.color(8)):
         print string
         return
 
-    try:
-        left, right = string.rsplit(u'#')
+    left, right = string.rsplit(u'#')
 
-        right = u'#' + right
+    right = u'#' + right
 
-        if len(string) > term.width:
-            print color(left.rstrip())
-            print comment_color(right.rjust(term.width))
-        else:
-            print color(left) + comment_color(right)
-    except ValueError:
-        print color(string)
+    if len(string) > term.width:
+        print color(left.rstrip())
+        print comment_color(right.rjust(term.width))
+    else:
+        print color(left) + comment_color(right)
 
 
 @before.each_step
