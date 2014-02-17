@@ -580,7 +580,7 @@ def test_undefined_behave_as_step_doesnt_pass():
                           'step" step with behave_as')
     runnable_step = feature.scenarios[0].steps[0]
 
-    assert_raises(NoDefinitionFound, runnable_step.run, True)
+    assert_raises(NoDefinitionFound, runnable_step.run)
     assert_false(runnable_step.passed)
 
 
@@ -595,7 +595,7 @@ def test_undefined_behave_as_step_fails():
                           'step" step with behave_as')
     runnable_step = feature.scenarios[0].steps[0]
 
-    assert_raises(NoDefinitionFound, runnable_step.run, True)
+    assert_raises(NoDefinitionFound, runnable_step.run)
     assert runnable_step.failed
 
 
