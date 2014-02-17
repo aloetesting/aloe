@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # <Lettuce - Behaviour Driven Development for python>
 # Copyright (C) <2010-2012>  Gabriel Falcão <gabriel@nacaolivre.org>
+# Copyright (C) <2014>  Danielle Madeley <danielle@madeley.id.au>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,165 +16,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import sys
-from gettext import gettext as _
-from itertools import groupby
+"""
+Uncoloured output is the same as coloured output but with blessings
+turned off.
+"""
 
-from lettuce import core, strings
-from lettuce.terrain import after, before, world
+from blessings import Terminal
 
+# share the code with coloured shell output
+from . import colored_shell_output
 
-def wrt(what):
-    sys.stdout.write(what)
-
-
-@after.each_step
-def print_step_running(step):
-    wrt(step.represented())
-    if not step.defined_at:
-        wrt(" (undefined)")
-
-    wrt('\n')
-    if step.hashes:
-        wrt(step.represent_hashes())
-        wrt('\n')
-
-    if step.failed:
-        wrt(step.represent_traceback())
-        wrt('\n')
-
-
-@before.each_scenario
-def print_scenario_running(scenario):
-    if scenario.background:
-        # Only print the background on the first scenario run
-        # So, we determine if this was called previously with the attached background.
-        # If so, skip the print_scenario() since we'll call it again in the after_background.
-        if not hasattr(world, 'background_scenario_holder'):
-            world.background_scenario_holder = {}
-        if scenario.background not in world.background_scenario_holder:
-            # We haven't seen this background before, add our 1st scenario
-            world.background_scenario_holder[scenario.background] = scenario
-            return
-    wrt('\n')
-    wrt(scenario.represented())
-    wrt('\n')
-
-
-@before.each_background
-def print_background_running(background):
-    wrt('\n')
-    wrt(background.represented())
-    wrt('\n')
-
-
-@after.each_background
-def print_first_scenario_running(background):
-    scenario = world.background_scenario_holder[background]
-    print_scenario_running(scenario)
-
-
-@after.outline
-def print_outline(scenario, order, outline, reasons_to_fail):
-    wrt("\n  %s:\n" % _("Examples"))
-    wrt(scenario.represent_outlines())
-    wrt('\n')
-
-
-@before.each_feature
-def print_feature_running(feature):
-    wrt("\n")
-    wrt(feature.represented())
-    wrt('\n')
-
-@after.harvest
-@after.all
-def print_end(total=None):
-    wrt("\n")
-    if isinstance(total, core.SummaryTotalResults):
-        wrt("Test Suite Summary:\n")
-        word = total.features_ran_overall > 1 and "features" or "feature"
-        wrt("%d %s (%d passed)\n" % (
-            total.features_ran_overall,
-            word,
-            total.features_passed_overall))
-    else:
-        word = total.features_ran > 1 and "features" or "feature"
-        wrt("%d %s (%d passed)\n" % (
-            total.features_ran,
-            word,
-            total.features_passed))
-
-    word = total.scenarios_ran > 1 and "scenarios" or "scenario"
-    wrt("%d %s (%d passed)\n" % (
-        total.scenarios_ran,
-        word,
-        total.scenarios_passed))
-
-    steps_details = []
-    for kind in ("failed","skipped",  "undefined"):
-        attr = 'steps_%s' % kind
-        stotal = getattr(total, attr)
-        if stotal:
-            steps_details.append("%d %s" % (stotal, kind))
-
-    steps_details.append("%d passed" % total.steps_passed)
-    word = total.steps_ran > 1 and "steps" or "step"
-    wrt("%d %s (%s)\n" % (
-        total.steps_ran,
-        word,
-        ", ".join(steps_details)))
-
-    if total.proposed_definitions:
-        # print a list of undefined sentences
-        print
-        print u"You can implement step definitions for undefined steps " \
-            u"with these snippets:"
-
-        print """
-# -*- coding: utf-8 -*-
-from lettuce import step
-        """
-
-        for step in total.proposed_definitions:
-            step_defn, method_name, n_params = step.proposed_sentence
-
-            params = [u'self'] + [
-                u'param%d' % (i + 1) for i in xrange(n_params)
-            ]
-
-            print u'''@step(ur'%s')''' % step_defn
-            print u'''def %s(%s):''' % (
-                method_name,
-                u', '.join(params))
-            print u'''    raise NotImplementedError()'''
-            print
-
-
-    if total.failed_scenarios:
-        # print list of failed scenarios, with their file and line number
-        print
-        print _("List of failed scenarios:")
-        print
-
-        for feature, scenarios in groupby(total.failed_scenarios,
-                                          lambda s: s.feature):
-            print u' * ' + feature.represented(indent=0, annotate=False,
-                                               description=False)
-
-            for scenario in scenarios:
-                print u'    - ' + scenario.represented(
-                    indent=0, annotate=False)
-                print u'      (%s:%d)' % (
-                    scenario.described_at.file, scenario.described_at.line)
-
-        print
-
-def print_no_features_found(where):
-    where = core.fs.relpath(where)
-    if not where.startswith(os.sep):
-        where = '.%s%s' % (os.sep, where)
-
-    wrt('Oops!\n')
-    wrt('could not find features at %s\n' % where)
+# run with stylings disabled
+colored_shell_output.term = Terminal(force_styling=None)

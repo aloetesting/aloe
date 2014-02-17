@@ -35,7 +35,7 @@ from lettuce.terrain import after, before, world
 term = Terminal()
 
 
-_ansi = re.compile(r'\x1b[^m]*m')
+_ansi = re.compile(ur'\x1b[^m]*m', re.U)
 strip_ansi = lambda s: _ansi.sub(u'', s)
 
 
@@ -72,6 +72,10 @@ class OutputManager(object):
         Capture the output, then count how many lines were rendered
         """
 
+        if not term.does_styling:
+            yield
+            return
+
         self.divert()
 
         yield
@@ -80,9 +84,6 @@ class OutputManager(object):
 
         lines = 0
         for line in stdout.splitlines():
-            # print line
-            # print "LEN", len(strip_ansi(line))
-            # FIXME: I need to strip escape sequences here
             lines += (len(strip_ansi(line)) // (term.width + 1) + 1)
 
         sys.stdout.write(stdout)
@@ -95,6 +96,10 @@ output = OutputManager()
 
 def print_(string, color=term.white, comment_color=term.color(8)):
     # print a string in the given colour, with the reference in grey
+
+    if not term.does_styling:
+        print string
+        return
 
     try:
         left, right = string.rsplit(u'#')
@@ -140,12 +145,14 @@ def print_step_ran(step):
 
     stdout, stderr = output.undivert()
 
-    print_(step.represented(), color=color)
+    if term.does_styling:
+        # don't repeat ourselves
+        print_(step.represented(), color=color)
 
-    if step.table:
-        print step.represent_hashes(cell_wrap=color)
+        if step.table:
+            print step.represent_hashes(cell_wrap=color)
 
-    if True: #step.failed:
+    if step.failed:
         sys.stdout.write(stdout)
         sys.stderr.write(term.red(stderr))
 
