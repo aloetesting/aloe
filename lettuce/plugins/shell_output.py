@@ -23,6 +23,7 @@ turned off.
 
 from blessings import Terminal
 
+
 # share the code with coloured shell output
 from . import colored_shell_output
 
