@@ -16,65 +16,77 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from os.path import dirname, abspath, join
 from nose.tools import with_setup
-from tests.asserts import prepare_stdout
-from tests.asserts import assert_stdout_lines
+from tests.asserts import capture_output, assert_equals
 
 from lettuce import Runner
+
 
 current_dir = abspath(dirname(__file__))
 join_path = lambda *x: join(current_dir, *x)
 
-@with_setup(prepare_stdout)
+
 def test_output_with_success_colorless():
-    "Language: ja -> sucess colorless"
+    """Language: ja -> success colorless"""
 
-    runner = Runner(join_path('ja', 'success', 'dumb.feature'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(join_path('ja', 'success', 'dumb.feature'),
+                        verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(
+    assert_equals(out.getvalue(),
         u"\n"
         u"フィーチャ: ダムフィーチャ           # tests/functional/language_specific_features/ja/success/dumb.feature:3\n"
         u"  テストをグリーンになればテスト成功 # tests/functional/language_specific_features/ja/success/dumb.feature:4\n"
         u"\n"
+        u"  #1\s\n"
         u"  シナリオ: 何もしない               # tests/functional/language_specific_features/ja/success/dumb.feature:6\n"
         u"    前提 何もしない                  # tests/functional/language_specific_features/ja/success/dumb_steps.py:6\n"
+        u"\n"
+        u"  ----------------------------------------------------------------------------\n"
         u"\n"
         u"1 feature (1 passed)\n"
         u"1 scenario (1 passed)\n"
         u"1 step (1 passed)\n"
     )
 
-@with_setup(prepare_stdout)
+
 def test_output_of_table_with_success_colorless():
-    "Language: ja -> sucess table colorless"
+    """Language: ja -> success table colorless"""
 
-    runner = Runner(join_path('ja', 'success', 'table.feature'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(join_path('ja', 'success', 'table.feature'),
+                        verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(
+    assert_equals(out.getvalue(),
         u"\n"
         u"フィーチャ: テーブル記法                     # tests/functional/language_specific_features/ja/success/table.feature:3\n"
         u"  日本語でのテーブル記法がパスするかのテスト # tests/functional/language_specific_features/ja/success/table.feature:4\n"
         u"\n"
+        u"  #1\s\n"
         u"  シナリオ: 何もしないテーブル               # tests/functional/language_specific_features/ja/success/table.feature:6\n"
         u"    前提 データは以下:                       # tests/functional/language_specific_features/ja/success/table_steps.py:6\n"
         u"      | id | 定義       |\n"
         u"      | 12 | 何かの定義 |\n"
         u"      | 64 | 別の定義   |\n"
         u"\n"
+        u"  ----------------------------------------------------------------------------\n"
+        u"\n"
         u"1 feature (1 passed)\n"
         u"1 scenario (1 passed)\n"
         u"1 step (1 passed)\n"
     )
 
-@with_setup(prepare_stdout)
+
 def test_output_outlines_success_colorless():
     """Language: ja -> success outlines colorless"""
 
-    runner = Runner(join_path('ja', 'success', 'outlines.feature'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(join_path('ja', 'success', 'outlines.feature'),
+                        verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(u"""
+    assert_equals(out.getvalue(), u"""
 フィーチャ: アウトラインを日本語で書く       # tests/functional/language_specific_features/ja/success/outlines.feature:3
   図表のテストをパスすること                 # tests/functional/language_specific_features/ja/success/outlines.feature:4
 
@@ -94,7 +106,7 @@ def test_output_outlines_success_colorless():
 9 steps (9 passed)
     """)
 
-@with_setup(prepare_stdout)
+
 def test_output_outlines_success_colorful():
     "Language: ja -> sucess outlines colorful"
 
