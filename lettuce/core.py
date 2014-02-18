@@ -259,7 +259,7 @@ class Scenario(parser.Scenario):
             for outline, steps in generator:
                 try:
                     # before/after examples applies to a single example
-                    call_hook('before_each', 'example', self, outline)
+                    call_hook('before_each', 'example', self, outline, steps)
 
                     if self.background:
                         try:
@@ -311,7 +311,7 @@ class Scenario(parser.Scenario):
                         call_hook('outline', 'scenario', self,
                                   None, outline, None)
 
-                    call_hook('after_each', 'example', self, outline)
+                    call_hook('after_each', 'example', self, outline, steps)
 
                     steps_passed = [step for step in steps if step.passed]
                     steps_failed = [step for step in steps if step.failed]

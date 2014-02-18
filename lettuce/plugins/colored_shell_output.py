@@ -22,8 +22,7 @@ import sys
 from contextlib import contextmanager
 # Important: cannot use cStringIO because it does not support unicode!
 from StringIO import StringIO
-from gettext import (gettext as _,
-                     ngettext as N_)
+from gettext import gettext as _
 from itertools import groupby
 
 from blessings import Terminal
@@ -31,6 +30,8 @@ from blessings import Terminal
 from lettuce import core, strings
 
 from lettuce.terrain import after, before, world
+
+from .common_output import *
 
 
 term = Terminal()
@@ -197,129 +198,6 @@ def print_feature_running(feature):
 
     for line in feature.represent_description().splitlines():
         print_(line, color=term.white)
-
-
-@after.harvest
-def print_note(total):
-    print
-    print "Summary for all applications tested:"
-
-
-@after.harvest
-@after.all
-def print_summary(total):
-    """
-    Print the summary
-    """
-
-    def print_breakdown(klass):
-        """
-        Create the breakdown of passes and fails
-        """
-
-        breakdown = []
-
-        for outcome, color in (
-            ('passed', term.bold_green),
-            ('undefined', term.yellow),
-            ('skipped', term.cyan)
-        ):
-            n = getattr(total, '%s_%s' % (klass, outcome), 0)
-
-            if n < 1:
-                continue
-
-            breakdown.append(color(_(u"{n} {outcome}".format(
-                n=n, outcome=outcome))))
-
-        ran = getattr(total, '%s_ran' % klass, 0)
-        passed = getattr(total, '%s_passed' % klass, 0)
-
-        try:
-            # only steps has a failed attribute
-            failed = getattr(total, '%s_failed' % klass)
-        except AttributeError:
-            failed = ran - passed
-
-        if failed:
-            breakdown.append(term.bold_red(
-                _(u"{n} failed".format(n=failed))
-            ))
-
-        return u', '.join(breakdown)
-
-    print
-
-    print u"{total} ({breakdown})".format(
-        total=term.bold(N_(u"%d feature",
-                           u"%d features",
-                           total.features_ran) % total.features_ran),
-        breakdown=print_breakdown('features'))
-
-    print u"{total} ({breakdown})".format(
-        total=term.bold(N_(u"%d scenario",
-                           u"%d scenarios",
-                           total.scenarios_ran) % total.scenarios_ran),
-        breakdown=print_breakdown('scenarios'))
-
-    print u"{total} ({breakdown})".format(
-        total=term.bold(N_(u"%d step",
-                           u"%d steps",
-                           total.steps_ran) % total.steps_ran),
-        breakdown=print_breakdown('steps'))
-
-    if total.proposed_definitions:
-        # print a list of undefined sentences
-        print
-        print u"You can implement step definitions for undefined steps " \
-            u"with these snippets:"
-
-        print term.yellow(u"""
-# -*- coding: utf-8 -*-
-from lettuce import step
-        """)
-
-        for step in total.proposed_definitions:
-            step_defn, method_name, n_params = step.proposed_sentence
-
-            params = [u'self'] + [
-                u'param%d' % (i + 1) for i in xrange(n_params)
-            ]
-
-            print term.yellow(u'''@step(ur'%s')''' % step_defn)
-            print term.yellow(u'''def %s(%s):''' % (
-                method_name,
-                u', '.join(params)))
-            print term.yellow(u'''    raise NotImplementedError()''')
-            print
-
-    if total.failed_scenarios:
-        # print list of failed scenarios, with their file and line number
-        print
-        print term.bold(_(u"List of failed scenarios:"))
-        print
-
-        for feature, scenarios in groupby(total.failed_scenarios,
-                                          lambda s: s.feature):
-            print u' * ' + feature.represented(indent=0, annotate=False,
-                                               description=False)
-
-            for scenario in scenarios:
-                print term.bright_red(u'    - ' + scenario.represented(
-                    indent=0, annotate=False))
-                print term.dim_red(u'      (%s:%d)' % (
-                    scenario.described_at.file, scenario.described_at.line))
-
-        print
-
-
-def print_no_features_found(where):
-    where = core.fs.relpath(where)
-    if not where.startswith(os.sep):
-        where = '.%s%s' % (os.sep, where)
-
-    print _(u"Oops!")
-    print _(u"Could not find features at %s" % where)
 
 
 @before.each_background

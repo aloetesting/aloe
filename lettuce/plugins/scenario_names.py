@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # <Lettuce - Behaviour Driven Development for python>
 # Copyright (C) <2010-2012>  Gabriel Falcão <gabriel@nacaolivre.org>
+# Copyright (C) <2014>  Danielle Madeley <danielle@madeley.id.au>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,39 +16,65 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-from lettuce import core
-from lettuce.terrain import after
-from lettuce.terrain import before
-from lettuce.plugins.reporter import Reporter
+from __future__ import print_function
 
-class NameReporter(Reporter):
-    def print_scenario_running(self, scenario):
-        self.wrt('%s ... ' % scenario.name)
+from gettext import (gettext as _,
+                     ngettext as N_)
 
-    def print_scenario_ran(self, scenario):
-        if scenario.passed:
-            self.wrt("OK")
-        elif scenario.failed:
-            reason = self.scenarios_and_its_fails[scenario]
-            if isinstance(reason.exception, AssertionError):
-                self.wrt("FAILED")
-            else:
-                self.wrt("ERROR")
-        self.wrt("\n")
+from blessings import Terminal
 
-reporter = NameReporter()
+from lettuce.terrain import after, before
 
-before.each_scenario(reporter.print_scenario_running)
-after.each_scenario(reporter.print_scenario_ran)
-after.each_step(reporter.store_failed_step)
-after.all(reporter.print_end)
+from .common_output import *
 
 
-def print_no_features_found(where):
-    where = core.fs.relpath(where)
-    if not where.startswith(os.sep):
-        where = '.%s%s' % (os.sep, where)
+term = Terminal()
 
-    reporter.wrt('Oops!\n')
-    reporter.wrt('could not find features at %s\n' % where)
+
+@before.each_feature
+def before_each_feature(feature):
+    """
+    Print the feature name
+    """
+
+    print(term.bold(feature.represented(annotate=False, description=False)))
+
+
+@before.each_scenario
+def before_each_scenario(scenario):
+    """
+    Print the scenario name
+    """
+
+    if scenario.outlines:
+        print(scenario.name,
+              N_("(%d example)", "(%d examples)", len(scenario.outlines)) %
+              len(scenario.outlines), end="... ")
+    else:
+        print(scenario.name, end="... ")
+
+
+@after.each_example
+def after_each_example(scenario, outline, steps):
+    """
+    Print the result
+    """
+    if all(step.passed for step in steps):
+        print(term.green(_("OK")), end=' ')
+    elif any(not step.has_definition for step in steps):
+        print(term.yellow(_("UNDEF")), end=' ')
+    else:
+        print(term.red(_("FAILED")), end=' ')
+
+        for step in steps:
+            if step.failed:
+                print(term.bold_red(step.represented(indent=0)))
+                print(term.red(step.represent_traceback()))
+
+
+@after.each_scenario
+def after_each_scenario(scenario):
+    """
+    Print a terminator
+    """
+    print()
