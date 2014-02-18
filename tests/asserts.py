@@ -16,36 +16,39 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import re
 import sys
+from contextlib import contextmanager
 from difflib import ndiff
 from itertools import tee, izip_longest
 # Important: cannot use cStringIO because it does not support unicode!
 from StringIO import StringIO
 
+from nose.tools import assert_equals as nose_assert_equals
 from blessings import Terminal
+
 from lettuce import registry
 
 
 term = Terminal()
 
 
-real_stdout = sys.stdout
-real_stderr = sys.stderr
+@contextmanager
+def capture_output():
+    """
+    Capture stdout and stderr for asserting their values
+    """
 
+    old_stdout = sys.stdout
+    old_stderr = sys.stderr
 
-def prepare_stdout():
-    registry.clear()
-    if isinstance(sys.stdout, StringIO):
-        del sys.stdout
-    std = StringIO()
-    sys.stdout = std
+    try:
+        sys.stdout = StringIO()
+        sys.stderr = StringIO()
 
+        yield sys.stdout, sys.stderr
 
-def prepare_stderr():
-    registry.clear()
-    if isinstance(sys.stderr, StringIO):
-        del sys.stderr
-    std = StringIO()
-    sys.stderr = std
+    finally:
+        sys.stdout = old_stdout
+        sys.stderr = old_stderr
 
 
 def yield_transitions(iterable):
@@ -68,19 +71,15 @@ def yield_transitions(iterable):
     yield (last_index, i + 1, register)
 
 
-def assert_equals(original, expected, stream=real_stdout):
+def assert_equals(original, expected, stream=sys.stdout):
     """
     A new version of assert_equals that does coloured differences
     """
 
-    # replace \s with space, this makes literal trailing space visible
-    # in the expected results
-    expected = expected.replace('\s', ' ')
-
     try:
         # replace \s with space, this makes literal trailing space visible
         # in the expected results
-        expected = expected.replace('\s', ' ')
+        expected = expected.replace(u'\s', u' ')
     except AttributeError:
         pass
 
@@ -130,14 +129,6 @@ def assert_equals(original, expected, stream=real_stdout):
         raise
 
 
-def assert_lines(original, expected):
-    assert_equals(original, expected)
-
-
-def assert_lines_unicode(original, expected):
-    assert_equals(original, expected)
-
-
 def assert_lines_with_traceback(one, other):
     lines_one = one.splitlines()
     lines_other = other.splitlines()
@@ -154,35 +145,3 @@ def assert_lines_with_traceback(one, other):
 
         else:
             assert_equals(line1, line2)
-
-
-def assert_unicode_equals(original, expected):
-    assert_equals(original, expected)
-
-
-def assert_stderr(expected):
-    string = sys.stderr.getvalue()
-    assert_equals(string, expected)
-
-
-def assert_stdout(expected):
-    string = sys.stdout.getvalue()
-    assert_equals(string, expected)
-
-
-def assert_stdout_lines(other):
-    real_stdout.write(sys.stdout.getvalue())
-
-    assert_equals(sys.stdout.getvalue(), other)
-
-
-def assert_stderr_lines(other):
-    assert_equals(sys.stderr.getvalue(), other)
-
-
-def assert_stdout_lines_with_traceback(other):
-    assert_lines_with_traceback(sys.stdout.getvalue(), other)
-
-
-def assert_stderr_lines_with_traceback(other):
-    assert_lines_with_traceback(sys.stderr.getvalue(), other)

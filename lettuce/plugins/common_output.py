@@ -47,7 +47,7 @@ def print_no_features_found(where):
 @after.harvest
 def print_note(total):
     print
-    print "Summary for all applications tested:"
+    print u"Summary for all applications tested:"
 
 
 @after.harvest

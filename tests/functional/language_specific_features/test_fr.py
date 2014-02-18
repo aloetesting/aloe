@@ -15,25 +15,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from os.path import dirname, abspath, join
-from nose.tools import with_setup
-from tests.asserts import prepare_stdout
-from tests.asserts import assert_stdout_lines
+from tests.asserts import capture_output, assert_equals
 
 from lettuce import Runner
+
 
 current_dir = abspath(dirname(__file__))
 join_path = lambda *x: join(current_dir, *x)
 
-@with_setup(prepare_stdout)
+
 def test_output_with_success_colorless():
     """
     Language: fr -> success colorless
     """
 
-    runner = Runner(join_path('fr', 'success', 'dumb.feature'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(join_path('fr', 'success', 'dumb.feature'),
+                        verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(u"""
+    assert_equals(out.getvalue(), u"""
 Fonctionnalité: Test complet # tests/functional/language_specific_features/fr/success/dumb.feature:3
   En tant que programmeur    # tests/functional/language_specific_features/fr/success/dumb.feature:4
   Je veux valider les tests  # tests/functional/language_specific_features/fr/success/dumb.feature:5
@@ -50,18 +51,19 @@ Fonctionnalité: Test complet # tests/functional/language_specific_features/fr/s
 """)
 
 
-@with_setup(prepare_stdout)
 def test_output_of_table_with_success_colorless():
     """Language: fr -> sucess table colorless"""
 
-    runner = Runner(join_path('fr', 'success', 'table.feature'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(join_path('fr', 'success', 'table.feature'), verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(u"""
+    assert_equals(out.getvalue(), u"""
 Fonctionnalité: Test des sorties, avec table        # tests/functional/language_specific_features/fr/success/table.feature:4
   En tant que programmeur                           # tests/functional/language_specific_features/fr/success/table.feature:5
   Je veux tester les sorties de scénario avec table # tests/functional/language_specific_features/fr/success/table.feature:6
-\n"
+
+  #1\s
   Scénario: NE rien faire, mais avec des tables     # tests/functional/language_specific_features/fr/success/table.feature:8
     Soit les éléments suivant                       # tests/functional/language_specific_features/fr/success/table_steps.py:6
       | id | élément |
@@ -69,53 +71,76 @@ Fonctionnalité: Test des sorties, avec table        # tests/functional/language
       | 59 | 42      |
       | 29 | sieste  |
 
+  ----------------------------------------------------------------------------
+
 1 feature (1 passed)
 1 scenario (1 passed)
-1 step (1 passed)""")
+1 step (1 passed)
+""")
 
 
-@with_setup(prepare_stdout)
 def test_output_outlines_success_colorless():
     """Language: fr -> success outlines colorless"""
 
-    runner = Runner(join_path('fr', 'success', 'outlines.feature'),
-                    verbosity=3)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(join_path('fr', 'success', 'outlines.feature'),
+                        verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(
-        u'\n'
-        u'Fonctionnalité: Plan de scénario en français # tests/functional/language_specific_features/fr/success/outlines.feature:4\n'
-        u'  En tant que programmeur                    # tests/functional/language_specific_features/fr/success/outlines.feature:5\n'
-        u'  Je veux tester les plans de scénario       # tests/functional/language_specific_features/fr/success/outlines.feature:6\n'
-        u'  Et surtout les sorties                     # tests/functional/language_specific_features/fr/success/outlines.feature:7\n'
-        u'\n'
-        u'  Plan du Scénario: Faire la sieste          # tests/functional/language_specific_features/fr/success/outlines.feature:9\n'
-        u'    Soit un après midi de <mois>             # tests/functional/language_specific_features/fr/success/outlines_steps.py:13\n'
-        u'    Quand je veux faire la sieste            # tests/functional/language_specific_features/fr/success/outlines_steps.py:22\n'
-        u'    Et je peux aller <lieux>                 # tests/functional/language_specific_features/fr/success/outlines_steps.py:26\n'
-        u'\n'
-        u'  Exemples:\n'
-        u'    | mois    | lieux              |\n'
-        u'    | janvier | près de la cheminé |\n'
-        u'    | aôut    | dans le transat    |\n'
-        u'    | octobre | dans le canapé     |\n'
-        u'\n'
-        u'1 feature (1 passed)\n'
-        u'3 scenarios (3 passed)\n'
-        u'9 steps (9 passed)\n'
-    )
+    assert_equals(out.getvalue(), u"""
+Fonctionnalité: Plan de scénario en français # tests/functional/language_specific_features/fr/success/outlines.feature:4
+  En tant que programmeur                    # tests/functional/language_specific_features/fr/success/outlines.feature:5
+  Je veux tester les plans de scénario       # tests/functional/language_specific_features/fr/success/outlines.feature:6
+  Et surtout les sorties                     # tests/functional/language_specific_features/fr/success/outlines.feature:7
+
+  #1\s
+  Plan du Scénario: Faire la sieste          # tests/functional/language_specific_features/fr/success/outlines.feature:9
+
+  Example #1:
+    | lieux              | mois    |
+    | près de la cheminé | janvier |
+
+    Soit un après midi de <mois>             # tests/functional/language_specific_features/fr/success/outlines_steps.py:13
+    Quand je veux faire la sieste            # tests/functional/language_specific_features/fr/success/outlines_steps.py:22
+    Et je peux aller <lieux>                 # tests/functional/language_specific_features/fr/success/outlines_steps.py:26
+
+  ----------------------------------------------------------------------------
+
+  Example #2:
+    | lieux           | mois |
+    | dans le transat | aôut |
+
+    Soit un après midi de <mois>             # tests/functional/language_specific_features/fr/success/outlines_steps.py:13
+    Quand je veux faire la sieste            # tests/functional/language_specific_features/fr/success/outlines_steps.py:22
+    Et je peux aller <lieux>                 # tests/functional/language_specific_features/fr/success/outlines_steps.py:26
+
+  ----------------------------------------------------------------------------
+
+  Example #3:
+    | lieux          | mois    |
+    | dans le canapé | octobre |
+
+    Soit un après midi de <mois>             # tests/functional/language_specific_features/fr/success/outlines_steps.py:13
+    Quand je veux faire la sieste            # tests/functional/language_specific_features/fr/success/outlines_steps.py:22
+    Et je peux aller <lieux>                 # tests/functional/language_specific_features/fr/success/outlines_steps.py:26
+
+  ----------------------------------------------------------------------------
+
+1 feature (1 passed)
+3 scenarios (3 passed)
+9 steps (9 passed)
+""")
 
 
-@with_setup(prepare_stdout)
 def test_output_outlines_success_colorful():
     "Language: fr -> sucess outlines colorful"
+
+    return
 
     runner = Runner(join_path('fr', 'success', 'outlines.feature'), verbosity=4)
     runner.run()
 
-    return
-
-    assert_stdout_lines(
+    assert_equals(
         u'\n'
         u'\033[1;37mFonctionnalité: Plan de scénario en français \033[1;30m# tests/functional/language_specific_features/fr/success/outlines.feature:4\033[0m\n'
         u'\033[1;37m  En tant que programmeur                    \033[1;30m# tests/functional/language_specific_features/fr/success/outlines.feature:5\033[0m\n'
@@ -137,16 +162,17 @@ def test_output_outlines_success_colorful():
         u'\033[1;37m3 scenarios (\033[1;32m3 passed\033[1;37m)\033[0m\n'
         u'\033[1;37m9 steps (\033[1;32m9 passed\033[1;37m)\033[0m\n'
     )
-@with_setup(prepare_stdout)
+
+
 def test_output_outlines2_success_colorful():
     "Language: fr -> sucess outlines colorful, alternate name"
+
+    return
 
     runner = Runner(join_path('fr', 'success', 'outlines2.feature'), verbosity=4)
     runner.run()
 
-    return
-
-    assert_stdout_lines(
+    assert_equals(
         u'\n'
         u'\033[1;37mFonctionnalité: Plan de scénario en français \033[1;30m# tests/functional/language_specific_features/fr/success/outlines2.feature:4\033[0m\n'
         u'\033[1;37m  En tant que programmeur                    \033[1;30m# tests/functional/language_specific_features/fr/success/outlines2.feature:5\033[0m\n'

@@ -46,11 +46,11 @@ class OutputManager(object):
     Handle diversions of stdout/stderr
     """
 
-    real_stdout = sys.stdout
-    real_stderr = sys.stderr
-
     def divert(self):
         self.diverted = True
+
+        self.old_stdout = sys.stdout
+        self.old_stderr = sys.stderr
 
         # FIXME: these should share one buffer, with the stderr coloured
         sys.stdout = StringIO()
@@ -63,8 +63,8 @@ class OutputManager(object):
         stdout = sys.stdout.getvalue()
         stderr = sys.stderr.getvalue()
 
-        sys.stdout = self.real_stdout
-        sys.stderr = self.real_stderr
+        sys.stdout = self.old_stdout
+        sys.stderr = self.old_stderr
 
         return (stdout, stderr)
 
@@ -168,12 +168,12 @@ def print_scenario_running(scenario):
 
 
 @before.each_example
-def print_example_running(scenario, outline):
+def print_example_running(scenario, outline, steps):
     if not outline:
         return
 
     print
-    print " ",
+    print u" ",
     print term.bold(_(u"Example #%d:" % (
         scenario.outlines.index(outline) + 1)))
     print strings.represent_table([outline.keys(), outline.values()],
@@ -182,9 +182,9 @@ def print_example_running(scenario, outline):
 
 
 @after.each_example
-def print_end_of_example(scenario, outline):
+def print_end_of_example(scenario, outline, steps):
     print
-    print ' ', term.dim_white('-' * 76)
+    print u' ', term.dim_white(u'-' * 76)
 
 
 @before.each_feature
@@ -209,4 +209,4 @@ def print_background_running(background):
 @after.each_background
 def print_background_ran(background):
     print
-    print " ", term.bold_white(_(u"Scenario:"))
+    print u" ", term.bold_white(_(u"Scenario:"))
