@@ -48,6 +48,7 @@ setup(
     author='Gabriel Falcao',
     author_email='gabriel@nacaolivre.org',
     url='http://lettuce.it',
+    data_files=[(r'lettuce', [r'lettuce/i18n.json'])],
     packages=get_packages(),
     install_requires=required_modules,
     entry_points={
