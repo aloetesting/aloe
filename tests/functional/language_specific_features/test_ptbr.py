@@ -15,98 +15,134 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from os.path import dirname, abspath, join
-from nose.tools import with_setup
-from tests.asserts import prepare_stdout
-from tests.asserts import assert_stdout_lines
+from tests.asserts import capture_output, assert_equals
+
+from nose.exc import SkipTest
 
 from lettuce import Runner
 
 current_dir = abspath(dirname(__file__))
 join_path = lambda *x: join(current_dir, *x)
 
-@with_setup(prepare_stdout)
+
 def test_output_with_success_colorless():
-    "Language: pt-br -> sucess colorless"
+    """Language: pt-br -> success colorless"""
 
-    runner = Runner(join_path('pt-br', 'success', 'dumb.feature'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(join_path('pt-br', 'success', 'dumb.feature'),
+                        verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(
+    assert_equals(out.getvalue(),
         u"\n"
         u"Funcionalidade: feature burra       # tests/functional/language_specific_features/pt-br/success/dumb.feature:3\n"
         u"  Como um programador               # tests/functional/language_specific_features/pt-br/success/dumb.feature:4\n"
         u"  Eu quero que este teste passe     # tests/functional/language_specific_features/pt-br/success/dumb.feature:5\n"
         u"  Para testar um cenário de sucesso # tests/functional/language_specific_features/pt-br/success/dumb.feature:6\n"
         u"\n"
-        u"  Cenário: Fazer nada               # tests/functional/language_specific_features/pt-br/success/dumb.feature:8\n"
+        u"  #1\s\n"
+        u"  Cenario: Fazer nada               # tests/functional/language_specific_features/pt-br/success/dumb.feature:8\n"
         u"    Dado que eu faço nada           # tests/functional/language_specific_features/pt-br/success/dumb_steps.py:6\n"
+        u"\n"
+        u"  ----------------------------------------------------------------------------\n"
         u"\n"
         u"1 feature (1 passed)\n"
         u"1 scenario (1 passed)\n"
         u"1 step (1 passed)\n"
     )
 
-@with_setup(prepare_stdout)
+
 def test_output_of_table_with_success_colorless():
-    "Language: pt-br -> sucess table colorless"
+    """Language: pt-br -> success table colorless"""
 
-    runner = Runner(join_path('pt-br', 'success', 'table.feature'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(join_path('pt-br', 'success', 'table.feature'),
+                        verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(
+    assert_equals(out.getvalue(),
         u"\n"
         u"Funcionalidade: feature burra, com tabela      # tests/functional/language_specific_features/pt-br/success/table.feature:3\n"
         u"  Como um programador                          # tests/functional/language_specific_features/pt-br/success/table.feature:4\n"
         u"  Eu quero testar steps com tabelas            # tests/functional/language_specific_features/pt-br/success/table.feature:5\n"
         u"  Para ver o output em pt-br                   # tests/functional/language_specific_features/pt-br/success/table.feature:6\n"
         u"\n"
-        u"  Cenário: Fazer nada, com tabelas :)          # tests/functional/language_specific_features/pt-br/success/table.feature:8\n"
+        u"  #1\s\n"
+        u"  Cenario: Fazer nada, com tabelas :)          # tests/functional/language_specific_features/pt-br/success/table.feature:8\n"
         u"    Dado que eu brinco com os seguintes itens: # tests/functional/language_specific_features/pt-br/success/table_steps.py:6\n"
         u"      | id | description  |\n"
         u"      | 12 | some desc    |\n"
         u"      | 64 | another desc |\n"
+        u"\n"
+        u"  ----------------------------------------------------------------------------\n"
         u"\n"
         u"1 feature (1 passed)\n"
         u"1 scenario (1 passed)\n"
         u"1 step (1 passed)\n"
     )
 
-@with_setup(prepare_stdout)
+
 def test_output_outlines_success_colorless():
-    "Language: pt-br -> sucess outlines colorless"
+    """Language: pt-br -> success outlines colorless"""
 
-    runner = Runner(join_path('pt-br', 'success', 'outlines.feature'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(join_path('pt-br', 'success', 'outlines.feature'),
+                        verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(
+    assert_equals(out.getvalue(),
         u'\n'
         u'Funcionalidade: outlines em português                                  # tests/functional/language_specific_features/pt-br/success/outlines.feature:3\n'
         u'  Como um programador                                                  # tests/functional/language_specific_features/pt-br/success/outlines.feature:4\n'
         u'  Eu quero testar cenários esquemáticos                                # tests/functional/language_specific_features/pt-br/success/outlines.feature:5\n'
         u'  Para ver o output em pt-br                                           # tests/functional/language_specific_features/pt-br/success/outlines.feature:6\n'
         u'\n'
+        u'  #1\s\n'
         u'  Esquema do Cenário: Fazer nada, repetidas vezes, através de esquemas # tests/functional/language_specific_features/pt-br/success/outlines.feature:8\n'
+        u'\n'
+        u'  Example #1:\n'
+        u'    | isso  | aquilo    | dado1 |\n'
+        u'    | assim | funcional | algo  |\n'
+        u'\n'
         u'    Dado que tenho o <dado1>                                           # tests/functional/language_specific_features/pt-br/success/outlines_steps.py:13\n'
         u'    Quando eu faço algo com <isso>                                     # tests/functional/language_specific_features/pt-br/success/outlines_steps.py:22\n'
         u'    Então eu fico feliz em ver <aquilo>                                # tests/functional/language_specific_features/pt-br/success/outlines_steps.py:31\n'
         u'\n'
-        u'  Exemplos:\n'
-        u'    | dado1 | isso        | aquilo        |\n'
-        u'    | algo  | assim       | funcional     |\n'
-        u'    | outro | aqui        | também        |\n'
-        u'    | dados | funcionarão | com unicode ! |\n'
+        u"  ----------------------------------------------------------------------------\n"
+        u'\n'
+        u'  Example #2:\n'
+        u'    | isso | aquilo | dado1 |\n'
+        u'    | aqui | também | outro |\n'
+        u'\n'
+        u'    Dado que tenho o <dado1>                                           # tests/functional/language_specific_features/pt-br/success/outlines_steps.py:13\n'
+        u'    Quando eu faço algo com <isso>                                     # tests/functional/language_specific_features/pt-br/success/outlines_steps.py:22\n'
+        u'    Então eu fico feliz em ver <aquilo>                                # tests/functional/language_specific_features/pt-br/success/outlines_steps.py:31\n'
+        u'\n'
+        u"  ----------------------------------------------------------------------------\n"
+        u'\n'
+        u'  Example #3:\n'
+        u'    | isso        | aquilo        | dado1 |\n'
+        u'    | funcionarão | com unicode ! | dados |\n'
+        u'\n'
+        u'    Dado que tenho o <dado1>                                           # tests/functional/language_specific_features/pt-br/success/outlines_steps.py:13\n'
+        u'    Quando eu faço algo com <isso>                                     # tests/functional/language_specific_features/pt-br/success/outlines_steps.py:22\n'
+        u'    Então eu fico feliz em ver <aquilo>                                # tests/functional/language_specific_features/pt-br/success/outlines_steps.py:31\n'
+        u'\n'
+        u"  ----------------------------------------------------------------------------\n"
         u'\n'
         u'1 feature (1 passed)\n'
         u'3 scenarios (3 passed)\n'
         u'9 steps (9 passed)\n'
     )
 
-@with_setup(prepare_stdout)
+
 def test_output_outlines_success_colorful():
     "Language: pt-br -> sucess outlines colorful"
 
     runner = Runner(join_path('pt-br', 'success', 'outlines.feature'), verbosity=4)
     runner.run()
+
+    raise SkipTest("Coloured output")
 
     assert_stdout_lines(
         u'\n'

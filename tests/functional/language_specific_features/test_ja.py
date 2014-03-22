@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from os.path import dirname, abspath, join
-from nose.tools import with_setup
 from tests.asserts import capture_output, assert_equals
+
+from nose.exc import SkipTest
 
 from lettuce import Runner
 
@@ -90,21 +91,43 @@ def test_output_outlines_success_colorless():
 フィーチャ: アウトラインを日本語で書く       # tests/functional/language_specific_features/ja/success/outlines.feature:3
   図表のテストをパスすること                 # tests/functional/language_specific_features/ja/success/outlines.feature:4
 
+  #1\s
   シナリオテンプレ: 全てのテストで何もしない # tests/functional/language_specific_features/ja/success/outlines.feature:6
+
+  Example #1:
+    | データ1 | 方法 | 結果 |
+    | 何か    | これ | 機能 |
+
     前提 入力値を <データ1> とし             # tests/functional/language_specific_features/ja/success/outlines_steps.py:13
     もし 処理 <方法> を使って                # tests/functional/language_specific_features/ja/success/outlines_steps.py:22
     ならば 表示は <結果> である              # tests/functional/language_specific_features/ja/success/outlines_steps.py:31
 
-  例:
+  ----------------------------------------------------------------------------
+
+  Example #2:
+    | データ1 | 方法 | 結果 |
+    | その他  | ここ | 同じ |
+
+    前提 入力値を <データ1> とし             # tests/functional/language_specific_features/ja/success/outlines_steps.py:13
+    もし 処理 <方法> を使って                # tests/functional/language_specific_features/ja/success/outlines_steps.py:22
+    ならば 表示は <結果> である              # tests/functional/language_specific_features/ja/success/outlines_steps.py:31
+
+  ----------------------------------------------------------------------------
+
+  Example #3:
     | データ1 | 方法 | 結果       |
-    | 何か    | これ | 機能       |
-    | その他  | ここ | 同じ       |
     | データ  | 動く | unicodeで! |
+
+    前提 入力値を <データ1> とし             # tests/functional/language_specific_features/ja/success/outlines_steps.py:13
+    もし 処理 <方法> を使って                # tests/functional/language_specific_features/ja/success/outlines_steps.py:22
+    ならば 表示は <結果> である              # tests/functional/language_specific_features/ja/success/outlines_steps.py:31
+
+  ----------------------------------------------------------------------------
 
 1 feature (1 passed)
 3 scenarios (3 passed)
 9 steps (9 passed)
-    """)
+""")
 
 
 def test_output_outlines_success_colorful():
@@ -113,7 +136,7 @@ def test_output_outlines_success_colorful():
     runner = Runner(join_path('ja', 'success', 'outlines.feature'), verbosity=4)
     runner.run()
 
-    return
+    raise SkipTest("Coloured output not being tested")
 
     assert_stdout_lines(
         u'\n'
