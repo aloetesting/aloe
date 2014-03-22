@@ -21,6 +21,7 @@ from lettuce import core
 from sure import expect
 from nose.tools import assert_equals
 from nose.tools import assert_not_equals
+from nose.exc import SkipTest
 
 from .test_step_parsing import parse_steps
 
@@ -50,47 +51,51 @@ def test_step_definition():
     assert_equals(definition.line, line + 2)
 
 
-# def test_step_represent_string_when_not_defined():
-#     """Step.represent_string behaviour when not defined"""
-#
-#     class FakeFeature:
-#         max_length = 10
-#
-#     class FakeScenario:
-#         feature = FakeFeature
-#
-#     relative_path = core.fs.relpath(__file__)
-#     step = core.Step('some sentence', '', 239, __file__)
-#     step.scenario = FakeScenario
-#
-#     assert_equals(
-#         step.represent_string('test'),
-#         "    test   # %s:239\n" % relative_path,
-#     )
-#
-#
-# def test_step_represent_string_when_defined():
-#     "Step.represent_string behaviour when defined"
-#
-#     class FakeFeature:
-#         max_length = 10
-#
-#     class FakeScenario:
-#         feature = FakeFeature
-#
-#     class FakeScenarioDefinition:
-#         line = 421
-#         file = 'should/be/filename'
-#
-#     step = core.Step('some sentence', '', 239, "not a file")
-#     step.scenario = FakeScenario
-#     step.defined_at = FakeScenarioDefinition
-#     assert_equals(
-#         step.represent_string('foobar'),
-#         "    foobar # should/be/filename:421\n",
-#     )
-#
-#
+def test_step_represent_string_when_not_defined():
+    """Step.represent_string behaviour when not defined"""
+
+    raise SkipTest("FIXME")
+
+    class FakeFeature:
+        max_length = 10
+
+    class FakeScenario:
+        feature = FakeFeature
+
+    relative_path = core.fs.relpath(__file__)
+    step = core.Step('some sentence', '', 239, __file__)
+    step.scenario = FakeScenario
+
+    assert_equals(
+        step.represent_string('test'),
+        "    test   # %s:239\n" % relative_path,
+    )
+
+
+def test_step_represent_string_when_defined():
+    "Step.represent_string behaviour when defined"
+
+    raise SkipTest("FIXME")
+
+    class FakeFeature:
+        max_length = 10
+
+    class FakeScenario:
+        feature = FakeFeature
+
+    class FakeScenarioDefinition:
+        line = 421
+        file = 'should/be/filename'
+
+    step = core.Step('some sentence', '', 239, "not a file")
+    step.scenario = FakeScenario
+    step.defined_at = FakeScenarioDefinition
+    assert_equals(
+        step.represent_string('foobar'),
+        "    foobar # should/be/filename:421\n",
+    )
+
+
 def test_step_represent_table():
     """
     Step.represent_hashes
@@ -130,25 +135,27 @@ def test_step_represent_matrix():
     '      |   | 67 |'
     )
 
-# SCENARIO_OUTLINE = u'''
-# Scenario: Regular numbers
-#                                Given I do fill description with '<value_one>'
-#                                And then, age with with '<and_other>'
-# Examples:
-#          |     value_one       | and_other                   |
-#          | first| primeiro |
-#          |second |segundo|
-# '''
-#
-#
-# def test_scenario_outline_represent_examples():
-#     "Step.represent_hashes"
-#
-#     step = core.Scenario.from_string(SCENARIO_OUTLINE)
-#
-#     assert_equals(
-#         step.represent_examples(),
-#         '    | value_one | and_other |\n'
-#         '    | first     | primeiro  |\n'
-#         '    | second    | segundo   |\n'
-#     )
+SCENARIO_OUTLINE = u'''
+Scenario: Regular numbers
+                               Given I do fill description with '<value_one>'
+                               And then, age with with '<and_other>'
+Examples:
+         |     value_one       | and_other                   |
+         | first| primeiro |
+         |second |segundo|
+'''
+
+
+def test_scenario_outline_represent_examples():
+    "Step.represent_hashes"
+
+    raise SkipTest("not implemented")
+
+    step = core.Scenario.from_string(SCENARIO_OUTLINE)
+
+    assert_equals(
+        step.represent_examples(),
+        '    | value_one | and_other |\n'
+        '    | first     | primeiro  |\n'
+        '    | second    | segundo   |\n'
+    )

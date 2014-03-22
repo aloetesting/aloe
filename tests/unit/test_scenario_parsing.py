@@ -20,6 +20,7 @@ from lettuce.exceptions import LettuceSyntaxError
 
 from nose.tools import assert_equals
 from nose.tools import assert_raises
+from nose.exc import SkipTest
 
 
 SCENARIO1 = """
@@ -582,16 +583,18 @@ def test_scenario_matches_tags_excluding_fuzzywuzzy():
     assert not scenario.matches_tags(['-~anothertag'])
 
 
-# def test_scenario_show_tags_in_its_representation():
-#     ("Scenario#represented should show its tags")
-#
-#     scenario = parse_scenario(
-#         SCENARIO1,
-#         tags=['slow', 'firefox', 'chrome'])
-#
-#     expect(scenario.represented()).to.equal(
-#         u'  @slow @firefox @chrome\n  '
-#         'Scenario: Adding some students to my university database')
+def test_scenario_show_tags_in_its_representation():
+    ("Scenario#represented should show its tags")
+
+    raise SkipTest("FIXME")
+
+    scenario = parse_scenario(
+        SCENARIO1,
+        tags=['slow', 'firefox', 'chrome'])
+
+    expect(scenario.represented()).to.equal(
+        u'  @slow @firefox @chrome\n  '
+        'Scenario: Adding some students to my university database')
 
 
 def test_scenario_with_inline_comments():

@@ -15,9 +15,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from os.path import dirname, abspath, join
-from tests.asserts import capture_output, assert_equals
+
+from nose.exc import SkipTest
 
 from lettuce import Runner
+from tests.asserts import capture_output, assert_equals
 
 
 current_dir = abspath(dirname(__file__))
@@ -135,10 +137,10 @@ Fonctionnalité: Plan de scénario en français # tests/functional/language_spec
 def test_output_outlines_success_colorful():
     "Language: fr -> sucess outlines colorful"
 
-    return
-
     runner = Runner(join_path('fr', 'success', 'outlines.feature'), verbosity=4)
     runner.run()
+
+    raise SkipTest("coloured output")
 
     assert_equals(
         u'\n'
@@ -167,10 +169,10 @@ def test_output_outlines_success_colorful():
 def test_output_outlines2_success_colorful():
     "Language: fr -> sucess outlines colorful, alternate name"
 
-    return
-
     runner = Runner(join_path('fr', 'success', 'outlines2.feature'), verbosity=4)
     runner.run()
+
+    raise SkipTest("coloured output")
 
     assert_equals(
         u'\n'

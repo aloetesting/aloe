@@ -22,6 +22,7 @@ from lettuce.core import Step, Feature
 from lettuce.exceptions import StepLoadingError, NoDefinitionFound
 
 from nose.tools import *
+from nose.exc import SkipTest
 
 
 FEATURE1 = """
@@ -241,18 +242,19 @@ def test_ignore_case_on_step_definitions():
     assert all([s.has_definition for s in scenario_result.scenario.steps])
 
 
-# FIXME: broken -- need to do this when we compile the steps
-# @with_setup(step_runner_environ)
-# def test_doesnt_ignore_case():
-#     "Lettuce can, optionally consider case on step definitions"
-#
-#     f = Feature.from_string(FEATURE3)
-#     feature_result = f.run(ignore_case=False)
-#     scenario_result = feature_result.scenario_results[0]
-#     assert_equals(len(scenario_result.steps_passed), 1)
-#     assert_equals(len(scenario_result.steps_undefined), 2)
-#     assert_equals(scenario_result.total_steps, 3)
-#     assert not all([s.has_definition for s in scenario_result.scenario.steps])
+@with_setup(step_runner_environ)
+def test_doesnt_ignore_case():
+    """Lettuce can, optionally consider case on step definitions"""
+
+    raise SkipTest("broken, need to do this when we compile the steps")
+
+    f = Feature.from_string(FEATURE3)
+    feature_result = f.run(ignore_case=False)
+    scenario_result = feature_result.scenario_results[0]
+    assert_equals(len(scenario_result.steps_passed), 1)
+    assert_equals(len(scenario_result.steps_undefined), 2)
+    assert_equals(scenario_result.total_steps, 3)
+    assert not all([s.has_definition for s in scenario_result.scenario.steps])
 
 
 @with_setup(step_runner_environ)
@@ -401,20 +403,21 @@ def test_scenarios_inherit_feature_tags():
     assert_equals(scenarios_ran, ['1st one', '2nd one'])
 
 
-# FIXME: do we want all exceptions or just assertion?
-# @with_setup(step_runner_environ)
-# def test_count_raised_exceptions_as_failing_steps():
-#     """
-#     When a step definition raises an exception, it is marked as a failed step
-#     """
-#
-#     try:
-#         f = Feature.from_string(FEATURE8)
-#         feature_result = f.run()
-#         scenario_result = feature_result.scenario_results[0]
-#         assert_equals(len(scenario_result.steps_failed), 1)
-#     finally:
-#         registry.clear()
+@with_setup(step_runner_environ)
+def test_count_raised_exceptions_as_failing_steps():
+    """
+    When a step definition raises an exception, it is marked as a failed step
+    """
+
+    raise SkipTest("do we want all exceptions or just assertion?")
+
+    try:
+        f = Feature.from_string(FEATURE8)
+        feature_result = f.run()
+        scenario_result = feature_result.scenario_results[0]
+        assert_equals(len(scenario_result.steps_failed), 1)
+    finally:
+        registry.clear()
 
 
 def test_step_runs_subordinate_step_with_given():

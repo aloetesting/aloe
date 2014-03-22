@@ -708,21 +708,6 @@ def test_single_scenario_many_scenarios():
     last_scenario = feature.scenarios[3]
     assert that(last_scenario.tags).equals([])
 
-    # result = feature.run()
-    # print
-    # print
-    # for sr in result.scenario_results:
-    #     for failed in sr.steps_failed:
-    #         print "+" * 10
-    #         print
-    #         print failed.why.cause
-    #         print
-    #         print "+" * 10
-
-    # print
-    # print
-    # assert result.passed
-
 
 def test_scenarios_with_extra_whitespace():
     "Make sure that extra leading whitespace is ignored"

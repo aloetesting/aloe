@@ -6,6 +6,7 @@ import sys
 from cStringIO import StringIO
 
 from nose.tools import assert_equals, assert_raises, with_setup
+from nose.exc import SkipTest
 
 from blessings import Terminal
 
@@ -28,31 +29,33 @@ def test_yield_transitions():
                   ])
 
 
-# def test_assert_equals_fails_as_expected():
-#     """
-#     Test assert_equals fails as expected
-#     """
-#
-#     original = """1234
-# 1234
-# 456790"""
-#
-#     expected = """1234
-# 1234
-# 4567890"""
-#
-#     with assert_raises(AssertionError):
-#         stream = StringIO()
-#         asserts.assert_equals(original, expected, stream=stream)
-#
-#     print stream.getvalue()
-#
-#     expected = """{t.white}  {t.normal}{t.white}1234{t.normal}
-# {t.white}  {t.normal}{t.white}1234{t.normal}
-# {t.red}- {t.normal}{t.red}456790{t.normal}
-# {t.green}+ {t.normal}{t.green}4567{t.normal}{t.black_on_green}8{t.normal}{t.green}90{t.normal}
-# """.format(t=term)
-#
-#     print expected
-#
-#     asserts.assert_equals(stream.getvalue(), expected)
+def test_assert_equals_fails_as_expected():
+    """
+    Test assert_equals fails as expected
+    """
+
+    raise SkipTest("broken")
+
+    original = """1234
+1234
+456790"""
+
+    expected = """1234
+1234
+4567890"""
+
+    with assert_raises(AssertionError):
+        stream = StringIO()
+        asserts.assert_equals(original, expected, stream=stream)
+
+    print stream.getvalue()
+
+    expected = """{t.white}  {t.normal}{t.white}1234{t.normal}
+{t.white}  {t.normal}{t.white}1234{t.normal}
+{t.red}- {t.normal}{t.red}456790{t.normal}
+{t.green}+ {t.normal}{t.green}4567{t.normal}{t.black_on_green}8{t.normal}{t.green}90{t.normal}
+""".format(t=term)
+
+    print expected
+
+    asserts.assert_equals(stream.getvalue(), expected)

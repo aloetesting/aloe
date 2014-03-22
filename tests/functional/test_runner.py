@@ -25,6 +25,7 @@ from os.path import dirname, join, abspath
 from inspect import currentframe
 
 from nose.tools import assert_equals, with_setup, assert_raises
+from nose.exc import SkipTest
 from lettuce.fs import FeatureLoader
 from lettuce.core import Feature, fs, StepDefinition
 from lettuce.terrain import world
@@ -225,10 +226,10 @@ def test_output_with_success_colorless():
 def test_output_with_success_colorful():
     "Testing the output of a successful feature"
 
-    return # FIXME -- come back to this
-
     runner = Runner(join(abspath(dirname(__file__)), 'output_features', 'runner_features'), verbosity=4)
     runner.run()
+
+    raise SkipTest("coloured output")
 
     assert_stdout_lines(
         "\n"
@@ -251,10 +252,10 @@ def test_output_with_success_colorful():
 def test_output_with_success_colorful_newline():
     "A feature with two scenarios should separate the two scenarios with a new line (in color mode)."
 
-    return  # FIXME: come back to this
-
     runner = Runner(join(abspath(dirname(__file__)), 'output_features', 'many_successful_scenarios'), verbosity=4)
     runner.run()
+
+    raise SkipTest("coloured output")
 
     assert_stdout_lines(
         "\n"
@@ -316,7 +317,8 @@ def test_output_with_success_colorful_many_features():
                          'many_successful_features'), verbosity=4)
     runner.run()
 
-    return # FIXME: come back to this
+    raise SkipTest("coloured output")
+
     assert_stdout_lines(
         "\n"
         "\033[1;37mFeature: First feature, of many              \033[1;30m# tests/functional/output_features/many_successful_features/one.feature:1\033[0m\n"
@@ -354,7 +356,7 @@ def test_output_when_could_not_find_features():
     runner = Runner(path, verbosity=4)
     runner.run()
 
-    return
+    raise SkipTest("coloured output")
 
     assert_stdout_lines(
         '\033[1;31mOops!\033[0m\n'
@@ -425,10 +427,10 @@ def test_output_with_success_colorless_with_table():
 def test_output_with_success_colorful_with_table():
     "Testing the colorful output of success with table"
 
-    return  # FIXME: come back to this
-
     runner = Runner(feature_name('success_table'), verbosity=4)
     runner.run()
+
+    raise SkipTest("coloured output")
 
     assert_stdout_lines(
         '\n'
@@ -514,10 +516,10 @@ def test_output_with_failed_colorless_with_table():
 def test_output_with_failed_colorful_with_table():
     "Testing the colorful output of failed with table"
 
-    return  # FIXME: come back to coloured output
-
     runner = Runner(feature_name('failed_table'), verbosity=4)
     runner.run()
+
+    raise SkipTest("coloured output")
 
     assert_stdout_lines_with_traceback(
         "\n"
@@ -607,7 +609,7 @@ def test_output_with_successful_outline_colorful():
     runner = Runner(feature_name('success_outline'), verbosity=4)
     runner.run()
 
-    return
+    raise SkipTest("coloured output")
 
     assert_stdout_lines_with_traceback(
         '\n'
@@ -695,7 +697,7 @@ def test_output_with_failful_outline_colorful():
     runner = Runner(feature_name('fail_outline'), verbosity=4)
     runner.run()
 
-    return
+    raise SkipTest("coloured output")
 
     assert_stdout_lines_with_traceback(
         '\n'
@@ -1326,7 +1328,8 @@ def test_output_background_with_success_colorful():
 
     runner.run()
 
-    return
+    raise SkipTest("coloured output")
+
     assert_stdout_lines(
         '\n'
         '\033[1;37mFeature: Simple and successful                \033[1;30m# tests/functional/bg_features/simple/simple.feature:1\033[0m\n'
@@ -1442,7 +1445,7 @@ def test_output_with_undefined_steps_colorful():
     runner = Runner(feature_name('undefined_steps'), verbosity=4)
     runner.run()
 
-    return
+    raise SkipTest("coloured output")
 
     assert_stdout_lines_with_traceback(
         '\n'
