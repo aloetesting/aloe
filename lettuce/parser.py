@@ -336,7 +336,7 @@ class TaggedBlock(Block):
 
     def matches_tags(self, tags):
         """
-        Return true of the TaggedBlock contains all of the tags specified
+        Return true if the TaggedBlock contains all of the tags specified
         by tags AND does not contain any of the excluded tags AND
         matches any 'fuzzy' tags
         """

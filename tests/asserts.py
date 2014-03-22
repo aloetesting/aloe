@@ -79,7 +79,7 @@ def assert_equals(original, expected, stream=sys.stdout):
     try:
         # replace \s with space, this makes literal trailing space visible
         # in the expected results
-        expected = expected.replace(u'\s', u' ')
+        expected = expected.replace(ur'\s', u' ')
     except AttributeError:
         pass
 
@@ -88,7 +88,7 @@ def assert_equals(original, expected, stream=sys.stdout):
     except AssertionError:
         diff = ndiff(expected.splitlines(), original.splitlines())
 
-        # consider each line along with it's next line
+        # consider each line along with its next line
         #
         # if the next line is a '? ' line we combine this into the line to
         # indicate where the change has occured

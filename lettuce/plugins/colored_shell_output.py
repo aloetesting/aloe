@@ -47,6 +47,9 @@ class OutputManager(object):
     """
 
     def divert(self):
+        if self.diverted:
+            raise RuntimeError("Already diverted!")
+
         self.diverted = True
 
         self.old_stdout = sys.stdout

@@ -46,7 +46,7 @@ class StepDefinition(object):
 
     def __call__(self, *args, **kw):
         """
-        Method that actually wrapps the call to step definition
+        Method that actually wraps the call to step definition
         callback. Sends step object as first argument
         """
         try:
@@ -426,8 +426,7 @@ class Feature(parser.Feature):
         scenarios = [scenario for scenario in scenarios
                      if scenario.matches_tags(tags)]
 
-        # If no scenarios in this feature will run,
-        # but don't run the feature hooks.
+        # If no scenarios in this feature doesn't run
         if not scenarios:
             return FeatureResult(self)
 

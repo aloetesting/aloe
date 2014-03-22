@@ -54,17 +54,6 @@ class Language(object):
         print u'EXAMPLES', unicode(self.EXAMPLES)
         print u'STATEMENT', unicode(self.STATEMENT)
 
-    @classmethod
-    def guess_from_string(cls, string):
-        # match = re.search(REP.language, string)
-        # if match:
-        #     instance = cls(match.group(1))
-        # else:
-        if True:
-            instance = cls()
-
-        return instance
-
     def __implement_me__(self):
         raise NotImplementedError("Language isn't complete")
 
