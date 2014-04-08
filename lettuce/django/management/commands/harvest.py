@@ -209,10 +209,11 @@ class Command(BaseCommand):
             summary.summarize_all()
             registry.call_hook('after', 'harvest', summary)
 
+            server.stop(failed)
+
             if test_database:
                 self._testrunner.teardown_databases(self._old_db_config)
 
             teardown_test_environment()
-            server.stop(failed)
 
             raise SystemExit(int(failed))
