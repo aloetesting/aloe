@@ -106,7 +106,7 @@ def print_(string, color=term.white, comment_color=term.color(8)):
         print string
         return
 
-    left, right = string.rsplit(u'#')
+    left, right = string.rsplit(u'#', 1)
 
     right = u'#' + right
 
