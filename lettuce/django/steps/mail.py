@@ -43,6 +43,18 @@ def mail_sent_content(step, text, part):
                ), "An email contained expected text in the {0}".format(part)
 
 
+@step(CHECK_PREFIX + (r'I have not sent an email with "([^"]*)" in the ({0})'
+                      '').format('|'.join(EMAIL_PARTS)))
+def mail_sent_content(step, text, part):
+    """
+    Then I have sent an email with "pandas" in the body
+    """
+    assert all(text not in getattr(email, part)
+               for email
+               in mail.outbox
+               ), "An email contained unexpected text in the {0}".format(part)
+
+
 @step(CHECK_PREFIX + r'I have sent an email with the following in the body:')
 def mail_sent_content_multiline(step):
     """
