@@ -11,6 +11,9 @@ from nose.tools import assert_equals
 from lettuce import step
 
 
+assert_equals.__self__.maxDiff = None
+
+
 STEP_PREFIX = r'(?:Given|And|Then|When) '
 CHECK_PREFIX = r'(?:And|Then) '
 EMAIL_PARTS = ('subject', 'body', 'from_email', 'to', 'bcc', 'cc')
