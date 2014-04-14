@@ -61,12 +61,19 @@ def mail_sent_content(step, text, part):
 @step(CHECK_PREFIX + r'I have sent an email with the following in the body:')
 def mail_sent_content_multiline(step):
     """
-    I have sent an email with the following in the body:
-    \"""
-    Name: Mr. Panda
-    \"""
+    Check whether an email contains the following text
     """
-    return mail_sent_content(step, step.multiline, 'body')
+    for email in mail.outbox:
+        try:
+            assert_equals(email.body.strip(), step.multiline.strip())
+
+        except AssertionError as e:
+            print(e)
+            continue
+
+        return True
+
+    raise AssertionError("No email contained the content")
 
 
 @step(CHECK_PREFIX + r'I have sent an email with the following HTML alternative:')
