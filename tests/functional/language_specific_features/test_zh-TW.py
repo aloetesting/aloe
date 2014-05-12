@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from os.path import dirname, abspath, join
 from nose.exc import SkipTest
+from nose.tools import with_setup
 
 from tests.asserts import capture_output, assert_equals
 

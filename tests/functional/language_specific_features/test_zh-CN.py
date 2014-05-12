@@ -17,6 +17,7 @@
 from os.path import dirname, abspath, join
 
 from nose.exc import SkipTest
+from nose.tools import with_setup
 
 from tests.asserts import capture_output, assert_equals
 from lettuce import Runner
