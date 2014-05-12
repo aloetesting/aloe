@@ -29,83 +29,115 @@ join_path = lambda *x: join(current_dir, *x)
 def test_output_with_success_colorless():
     "Language: zh-TW -> sucess colorless"
 
-    runner = Runner(join_path('zh-TW', 'success', 'dumb.feature'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, _):
+        runner = Runner(join_path('zh-TW', 'success', 'dumb.feature'), verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(
-        u"\n"
-        u"功能: 簡單測試           # tests/functional/language_specific_features/zh-TW/success/dumb.feature:3\n"
-        u"  什麽都不做應該運行成功 # tests/functional/language_specific_features/zh-TW/success/dumb.feature:4\n"
-        u"\n"
-        u"  場景: 什麽都不做       # tests/functional/language_specific_features/zh-TW/success/dumb.feature:6\n"
-        u"    假如 什麽都不做      # tests/functional/language_specific_features/zh-TW/success/dumb_steps.py:6\n"
-        u"\n"
-        u"1 feature (1 passed)\n"
-        u"1 scenario (1 passed)\n"
-        u"1 step (1 passed)\n"
-    )
+    assert_equals(out.getvalue(), u"""
+功能: 簡單測試           # tests/functional/language_specific_features/zh-TW/success/dumb.feature:3
+  什麽都不做應該運行成功 # tests/functional/language_specific_features/zh-TW/success/dumb.feature:4
+
+  #1\s
+  場景: 什麽都不做       # tests/functional/language_specific_features/zh-TW/success/dumb.feature:6
+    假如 什麽都不做      # tests/functional/language_specific_features/zh-TW/success/dumb_steps.py:6
+
+  ----------------------------------------------------------------------------
+
+1 feature (1 passed)
+1 scenario (1 passed)
+1 step (1 passed)
+""")
 
 
 def test_output_of_table_with_success_colorless():
     "Language: zh-TW -> sucess table colorless"
 
-    runner = Runner(join_path('zh-TW', 'success', 'table.feature'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, _):
+        runner = Runner(join_path('zh-TW', 'success', 'table.feature'), verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(
-        u"\n"
-        u"功能: 步驟中包含表格             # tests/functional/language_specific_features/zh-TW/success/table.feature:3\n"
-        u"  繁體中文表格步驟的成功測試     # tests/functional/language_specific_features/zh-TW/success/table.feature:4\n"
-        u"\n"
-        u"  場景: 什麽都不做的表格步驟測試 # tests/functional/language_specific_features/zh-TW/success/table.feature:6\n"
-        u"    假如 輸入數據如下:           # tests/functional/language_specific_features/zh-TW/success/table_steps.py:6\n"
-        u"      | id | 名稱   |\n"
-        u"      | 12 | 名稱一 |\n"
-        u"      | 64 | 名稱二 |\n"
-        u"\n"
-        u"1 feature (1 passed)\n"
-        u"1 scenario (1 passed)\n"
-        u"1 step (1 passed)\n"
-    )
+    assert_equals(out.getvalue(), u"""
+功能: 步驟中包含表格             # tests/functional/language_specific_features/zh-TW/success/table.feature:3
+  繁體中文表格步驟的成功測試     # tests/functional/language_specific_features/zh-TW/success/table.feature:4
+
+  #1\s
+  場景: 什麽都不做的表格步驟測試 # tests/functional/language_specific_features/zh-TW/success/table.feature:6
+    假如 輸入數據如下:           # tests/functional/language_specific_features/zh-TW/success/table_steps.py:6
+      | id | 名稱   |
+      | 12 | 名稱一 |
+      | 64 | 名稱二 |
+
+  ----------------------------------------------------------------------------
+
+1 feature (1 passed)
+1 scenario (1 passed)
+1 step (1 passed)
+""")
 
 
 def test_output_outlines_success_colorless():
     """Language: zh-TW -> success outlines colorless"""
 
-    runner = Runner(join_path('zh-TW', 'success', 'outlines.feature'),
-                    verbosity=3)
-    runner.run()
+    with capture_output() as (out, _):
+        runner = Runner(join_path('zh-TW', 'success', 'outlines.feature'),
+                        verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(u"""
+    assert_equals(
+        out.getvalue(),
+        u"""
 功能: 中文場景模板                 # tests/functional/language_specific_features/zh-TW/success/outlines.feature:3
   中文場景模板圖表測試             # tests/functional/language_specific_features/zh-TW/success/outlines.feature:4
 
+  #1\s
   場景大綱: 用表格描述場景         # tests/functional/language_specific_features/zh-TW/success/outlines.feature:6
+
+  Example #1:
+    | 處理 | 結果 | 輸入 |
+    | 這個 | 功能 | 什麽 |
+
     假如 輸入是<輸入>              # tests/functional/language_specific_features/zh-TW/success/outlines_steps.py:13
     當 執行<處理>時                # tests/functional/language_specific_features/zh-TW/success/outlines_steps.py:22
     那麼 得到<結果>                # tests/functional/language_specific_features/zh-TW/success/outlines_steps.py:31
 
-  例如
-    | 輸入 | 處理 | 結果         |
-    | 什麽 | 這個 | 功能         |
-    | 其他 | 這裏 | 一樣         |
-    | 數據 | 動作 | unicode輸出! |
+  ----------------------------------------------------------------------------
+
+  Example #2:
+    | 處理 | 結果 | 輸入 |
+    | 這裏 | 一樣 | 其他 |
+
+    假如 輸入是<輸入>              # tests/functional/language_specific_features/zh-TW/success/outlines_steps.py:13
+    當 執行<處理>時                # tests/functional/language_specific_features/zh-TW/success/outlines_steps.py:22
+    那麼 得到<結果>                # tests/functional/language_specific_features/zh-TW/success/outlines_steps.py:31
+
+  ----------------------------------------------------------------------------
+
+  Example #3:
+    | 處理 | 結果         | 輸入 |
+    | 動作 | unicode輸出! | 數據 |
+
+    假如 輸入是<輸入>              # tests/functional/language_specific_features/zh-TW/success/outlines_steps.py:13
+    當 執行<處理>時                # tests/functional/language_specific_features/zh-TW/success/outlines_steps.py:22
+    那麼 得到<結果>                # tests/functional/language_specific_features/zh-TW/success/outlines_steps.py:31
+
+  ----------------------------------------------------------------------------
 
 1 feature (1 passed)
 3 scenarios (3 passed)
 9 steps (9 passed)
-    """)
+""")
 
-@with_setup(prepare_stdout)
 def test_output_outlines_success_colorful():
     "Language: zh-TW -> sucess outlines colorful"
 
-    runner = Runner(join_path('zh-TW', 'success', 'outlines.feature'), verbosity=4)
-    runner.run()
+    with capture_output() as (out, _):
+        runner = Runner(join_path('zh-TW', 'success', 'outlines.feature'), verbosity=4)
+        runner.run()
 
     raise SkipTest("coloured output")
 
-    assert_stdout_lines(
+    assert_equals(
+        out.getvalue(),
         u'\n'
         u"\033[1;37m特性: 中文場景模板           \033[1;30m# tests/functional/language_specific_features/zh-TW/success/outlines.feature:3\033[0m\n"
         u"\033[1;37m  中文場景模板圖表測試       \033[1;30m# tests/functional/language_specific_features/zh-TW/success/outlines.feature:4\033[0m\n"
