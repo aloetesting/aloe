@@ -20,6 +20,8 @@
 Common output functions
 """
 
+from itertools import groupby
+
 from gettext import (gettext as _,
                      ngettext as N_)
 

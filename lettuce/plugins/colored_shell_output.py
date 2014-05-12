@@ -23,7 +23,6 @@ from contextlib import contextmanager
 # Important: cannot use cStringIO because it does not support unicode!
 from StringIO import StringIO
 from gettext import gettext as _
-from itertools import groupby
 
 from blessings import Terminal
 
