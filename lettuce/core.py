@@ -488,7 +488,7 @@ class ScenarioResult(object):
 class TotalResult(object):
 
     def __init__(self, feature_results=None):
-        self.feature_results = feature_results
+        self.feature_results = feature_results or []
         self.scenario_results = []
         self.steps_passed = 0
         self.steps_failed = 0
