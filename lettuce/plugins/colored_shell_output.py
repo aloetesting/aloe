@@ -46,6 +46,9 @@ class OutputManager(object):
     Handle diversions of stdout/stderr
     """
 
+    def __init__(self):
+        self.diverted = False
+
     def divert(self):
         if self.diverted:
             raise RuntimeError("Already diverted!")
@@ -69,6 +72,8 @@ class OutputManager(object):
         sys.stdout = self.old_stdout
         sys.stderr = self.old_stderr
 
+        self.diverted = False
+
         return (stdout, stderr)
 
     @contextmanager
@@ -83,18 +88,20 @@ class OutputManager(object):
 
         self.divert()
 
-        yield
+        try:
+            yield
 
-        stdout, _ = self.undivert()
+        finally:
+            stdout, _ = self.undivert()
 
-        lines = 0
-        for line in stdout.splitlines():
-            lines += (len(strip_ansi(line)) // (term.width + 1) + 1)
+            lines = 0
+            for line in stdout.splitlines():
+                lines += (len(strip_ansi(line)) // (term.width + 1) + 1)
 
-        sys.stdout.write(stdout)
+            sys.stdout.write(stdout)
 
-        for _ in xrange(lines):
-            sys.stdout.write(term.move_up)
+            for _ in xrange(lines):
+                sys.stdout.write(term.move_up)
 
 output = OutputManager()
 
