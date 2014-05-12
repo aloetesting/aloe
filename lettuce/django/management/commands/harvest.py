@@ -49,7 +49,7 @@ class Command(BaseCommand):
 
         make_option('-S', '--no-server', action='store_true', dest='no_server', default=False,
             help="will not run django's builtin HTTP server"),
-            
+
         make_option('--nothreading', action='store_false', dest='use_threading', default=True,
             help='Tells Django to NOT use threading.'),
 
@@ -180,6 +180,7 @@ class Command(BaseCommand):
                 if isinstance(path, tuple) and len(path) is 2:
                     path, app_module = path
 
+                result = None
                 try:
                     if app_module is not None:
                         registry.call_hook('before_each', 'app', app_module)
@@ -198,7 +199,8 @@ class Command(BaseCommand):
                     if app_module is not None:
                         registry.call_hook('after_each', 'app', app_module, result)
 
-                    results.append(result)
+                    if result is not None:
+                        results.append(result)
 
                     if not result or result.steps_ran != result.steps_passed:
                         failed = True

@@ -194,6 +194,7 @@ class Runner(object):
             # ensure our output is undiverted
             sys.stdout = real_stdout
             print "Exception in Lettuce itself!"
+            failed = True
             raise
 
         finally:
