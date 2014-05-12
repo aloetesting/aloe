@@ -228,8 +228,7 @@ def test_cannot_start_with_multiline():
     It should raise an error when a step starts with a multiline string
     """
 
-    with assert_raises(LettuceSyntaxError):
-        step = parse_steps(INVALID_MULTI_LINE)
+    assert_raises(LettuceSyntaxError, lambda: parse_steps(INVALID_MULTI_LINE))
 
 
 def test_multiline_is_part_of_previous_step():

@@ -44,9 +44,11 @@ def test_assert_equals_fails_as_expected():
 1234
 4567890"""
 
-    with assert_raises(AssertionError):
+    def assert_with_stream():
         stream = StringIO()
         asserts.assert_equals(original, expected, stream=stream)
+
+    assert_raises(AssertionError, assert_with_stream):
 
     print stream.getvalue()
 
