@@ -39,7 +39,8 @@ def test_model_update():
 
     status, out = run_scenario('leaves', 'update', 2)
     assert_not_equals(status, 0, out)
-    assert "IntegrityError: PRIMARY KEY must be unique" in out
+    assert "IntegrityError" in out
+    assert "UNIQUE" in out
 
     status, out = run_scenario('leaves', 'update', 3)
     assert_not_equals(status, 0, out)
