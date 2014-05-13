@@ -128,10 +128,10 @@ class Step(Node):
         # the optional data can either be a table or a multiline string
         token = tokens[0]
 
-        self.sentence = ' '.join(token.sentence)
+        self.sentence = u' '.join(token.sentence)
         self.table = map(list, token.table) \
             if token.table else None
-        self.multiline = dedent(str(token.multiline)).strip() \
+        self.multiline = dedent(token.multiline).strip() \
             if token.multiline else None
 
     def __unicode__(self):
