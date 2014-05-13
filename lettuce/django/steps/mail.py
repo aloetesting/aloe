@@ -4,8 +4,14 @@ Step definitions for working with Django email.
 from smtplib import SMTPException
 
 from django.core import mail
+from django.test.html import parse_html
+
+from nose.tools import assert_equals
 
 from lettuce import step
+
+
+assert_equals.__self__.maxDiff = None
 
 
 STEP_PREFIX = r'(?:Given|And|Then|When) '
@@ -43,15 +49,58 @@ def mail_sent_content(step, text, part):
                ), "An email contained expected text in the {0}".format(part)
 
 
+@step(CHECK_PREFIX + (r'I have not sent an email with "([^"]*)" in the ({0})'
+                      '').format('|'.join(EMAIL_PARTS)))
+def mail_sent_content(step, text, part):
+    """
+    Then I have sent an email with "pandas" in the body
+    """
+    assert all(text not in getattr(email, part)
+               for email
+               in mail.outbox
+               ), "An email contained unexpected text in the {0}".format(part)
+
+
 @step(CHECK_PREFIX + r'I have sent an email with the following in the body:')
 def mail_sent_content_multiline(step):
     """
-    I have sent an email with the following in the body:
-    \"""
-    Name: Mr. Panda
-    \"""
+    Check whether an email contains the following text
     """
-    return mail_sent_content(step, step.multiline, 'body')
+    for email in mail.outbox:
+        try:
+            assert_equals(email.body.strip(), step.multiline.strip())
+
+        except AssertionError as e:
+            print(e)
+            continue
+
+        return True
+
+    raise AssertionError("No email contained the content")
+
+
+@step(CHECK_PREFIX + r'I have sent an email with the following HTML alternative:')
+def mail_sent_contains_html(step):
+    """
+    Check whether an email contains the following HTML
+    """
+
+    for email in mail.outbox:
+        try:
+            html = next(content for content, mime in email.alternatives
+                        if mime == 'text/html')
+            dom1 = parse_html(html)
+            dom2 = parse_html(step.multiline)
+
+            assert_equals(dom1, dom2)
+
+        except AssertionError as e:
+            print(e)
+            continue
+
+        return True
+
+    raise AssertionError("No email contained the HTML")
 
 
 @step(STEP_PREFIX + r'I clear my email outbox')

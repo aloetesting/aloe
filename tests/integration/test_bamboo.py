@@ -46,7 +46,7 @@ def test_mail_content():
 
     status, out = run_scenario('leaves', 'content', 3)
     assert_not_equals(status, 0)
-    assert "An email contained expected text in the body" in out
+    assert "AssertionError: No email contained the content" in out
 
 
 @FileSystem.in_directory(current_directory, 'django', 'bamboo')
