@@ -252,6 +252,7 @@ def test_table_escaping():
         | Column 1                 |
         | This is a column         |
         | This is \| also a column |
+        | This is \\\\ a backslash |
     """
 
     steps = parse_steps(STEPS)
@@ -264,6 +265,7 @@ def test_table_escaping():
         ['Column 1'],
         ['This is a column'],
         ['This is | also a column'],
+        ['This is \\ a backslash'],
     ])
 
 
