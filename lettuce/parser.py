@@ -718,6 +718,8 @@ def parse(string=None, filename=None, token=None, lang=None):
             return u'|'
         elif token == r'\n':
             return u'\n'
+        elif token == r'\\':
+            return u'\\'
 
         raise NotImplementedError(u"Unknown token: %s" % token)
 
