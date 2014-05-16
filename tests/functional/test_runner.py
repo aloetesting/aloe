@@ -31,9 +31,11 @@ from lettuce.core import Feature, fs, StepDefinition
 from lettuce.terrain import world
 from lettuce import Runner
 
-from tests.asserts import capture_output, assert_equals
-from tests.asserts import assert_stderr_lines_with_traceback
-from tests.asserts import assert_stdout_lines_with_traceback
+from tests.asserts import (
+    assert_equals,
+    assert_lines_with_traceback,
+    capture_output,
+)
 
 current_dir = abspath(dirname(__file__))
 lettuce_dir = abspath(dirname(lettuce.__file__))
@@ -57,7 +59,6 @@ tag_feature_name = lambda name: joiner(tjoin, name)
 bg_feature_name = lambda name: joiner(bjoin, name)
 
 
-@with_setup(prepare_stderr)
 def test_try_to_import_terrain():
     "Runner tries to import terrain, but has a nice output when it fail"
     sandbox_path = ojoin('..', 'sandbox')
@@ -65,11 +66,13 @@ def test_try_to_import_terrain():
     os.chdir(sandbox_path)
 
     try:
-        import lettuce
-        reload(lettuce)
-        raise AssertionError('The runner should raise ImportError !')
+        with capture_output() as (_, err):
+            import lettuce
+            reload(lettuce)
+            raise AssertionError('The runner should raise ImportError !')
     except SystemExit:
-        assert_stderr_lines_with_traceback(
+        assert_lines_with_traceback(
+            err.getvalue(),
             'Lettuce has tried to load the conventional environment module '
             '"terrain"\nbut it has errors, check its contents and '
             'try to run lettuce again.\n\nOriginal traceback below:\n\n'
@@ -97,7 +100,7 @@ def test_feature_representation_without_colors():
     feature_file = ojoin('..', 'simple_features', '1st_feature_dir', 'some.feature')
 
     feature = Feature.from_file(feature_file)
-    assert_lines(
+    assert_equals(
         feature.represented(),
         "Feature: Addition                                      # tests/functional/simple_features/1st_feature_dir/some.feature:5\n"
         "  In order to avoid silly mistakes                     # tests/functional/simple_features/1st_feature_dir/some.feature:6\n"
@@ -161,7 +164,7 @@ def test_defined_step_represent_string():
 
     feature = Feature.from_file(feature_file)
     step = feature.scenarios[0].steps[0]
-    step.run(True)
+    step.run()
 
     assert_equals(
         step.represented(),
@@ -185,8 +188,11 @@ def test_output_with_success_colorless2():
         "  As a programmer                        # tests/functional/output_features/runner_features/first.feature:3\n"
         "  I want to see that the output is green # tests/functional/output_features/runner_features/first.feature:4\n"
         "\n"
+        "  #1 \n"
         "  Scenario: Do nothing                   # tests/functional/output_features/runner_features/first.feature:6\n"
         "    Given I do nothing                   # tests/functional/output_features/runner_features/dumb_steps.py:6\n"
+        "\n"
+        "  ----------------------------------------------------------------------------\n"
         "\n"
         "1 feature (1 passed)\n"
         "1 scenario (1 passed)\n"
@@ -210,11 +216,17 @@ def test_output_with_success_colorless():
         "  As a programmer                        # tests/functional/output_features/many_successful_scenarios/first.feature:3\n"
         "  I want to see that the output is green # tests/functional/output_features/many_successful_scenarios/first.feature:4\n"
         "\n"
+        "  #1 \n"
         "  Scenario: Do nothing                   # tests/functional/output_features/many_successful_scenarios/first.feature:6\n"
         "    Given I do nothing                   # tests/functional/output_features/many_successful_scenarios/dumb_steps.py:6\n"
         "\n"
+        "  ----------------------------------------------------------------------------\n"
+        "\n"
+        "  #2 \n"
         "  Scenario: Do nothing (again)           # tests/functional/output_features/many_successful_scenarios/first.feature:9\n"
         "    Given I do nothing (again)           # tests/functional/output_features/many_successful_scenarios/dumb_steps.py:6\n"
+        "\n"
+        "  ----------------------------------------------------------------------------\n"
         "\n"
         "1 feature (1 passed)\n"
         "2 scenarios (2 passed)\n"
@@ -292,16 +304,22 @@ def test_output_with_success_colorless_many_features():
         "  As a programmer                            # tests/functional/output_features/many_successful_features/one.feature:3\n"
         "  I want to test its output on many features # tests/functional/output_features/many_successful_features/one.feature:4\n"
         "\n"
+        "  #1 \n"
         "  Scenario: Do nothing                       # tests/functional/output_features/many_successful_features/one.feature:6\n"
         "    Given I do nothing                       # tests/functional/output_features/many_successful_features/dumb_steps.py:6\n"
         "    Then I see that the test passes          # tests/functional/output_features/many_successful_features/dumb_steps.py:8\n"
         "\n"
+        "  ----------------------------------------------------------------------------\n"
+        "\n"
         "Feature: Second feature, of many    # tests/functional/output_features/many_successful_features/two.feature:1\n"
         "  I just want to see it green :)    # tests/functional/output_features/many_successful_features/two.feature:2\n"
         "\n"
+        "  #1 \n"
         "  Scenario: Do nothing              # tests/functional/output_features/many_successful_features/two.feature:4\n"
         "    Given I do nothing              # tests/functional/output_features/many_successful_features/dumb_steps.py:6\n"
         "    Then I see that the test passes # tests/functional/output_features/many_successful_features/dumb_steps.py:8\n"
+        "\n"
+        "  ----------------------------------------------------------------------------\n"
         "\n"
         "2 features (2 passed)\n"
         "2 scenarios (2 passed)\n"
@@ -359,7 +377,7 @@ def test_output_when_could_not_find_features():
 
     assert_stdout_lines(
         '\033[1;31mOops!\033[0m\n'
-        '\033[1;37mcould not find features at \033[1;33m./%s\033[0m\n' % path
+        '\033[1;37mCould not find features at \033[1;33m./%s\033[0m\n' % path
     )
 
 
@@ -375,7 +393,7 @@ def test_output_when_could_not_find_features_colorless():
 
     assert_equals(out.getvalue(),
         'Oops!\n'
-        'could not find features at ./%s\n' % path
+        'Could not find features at ./%s\n' % path
     )
 
 
@@ -391,7 +409,7 @@ def test_output_when_could_not_find_features_verbosity_level_2():
 
     assert_equals(out.getvalue(),
         'Oops!\n'
-        'could not find features at ./%s\n' % path
+        'Could not find features at ./%s\n' % path
     )
 
 
@@ -403,24 +421,27 @@ def test_output_with_success_colorless_with_table():
         runner.run()
 
     assert_equals(out.getvalue(),
-        '\n'
-        'Feature: Table Success           # tests/functional/output_features/success_table/success_table.feature:1\n'
-        '\n'
-        '  Scenario: Add two numbers ♥    # tests/functional/output_features/success_table/success_table.feature:2\n'
-        '    Given I have 0 bucks         # tests/functional/output_features/success_table/success_table_steps.py:28\n'
-        '    And that I have these items: # tests/functional/output_features/success_table/success_table_steps.py:32\n'
-        '      | name    | price  |\n'
-        '      | Porsche | 200000 |\n'
-        '      | Ferrari | 400000 |\n'
-        '    When I sell the "Ferrari"    # tests/functional/output_features/success_table/success_table_steps.py:42\n'
-        '    Then I have 400000 bucks     # tests/functional/output_features/success_table/success_table_steps.py:28\n'
-        '    And my garage contains:      # tests/functional/output_features/success_table/success_table_steps.py:47\n'
-        '      | name    | price  |\n'
-        '      | Porsche | 200000 |\n'
-        '\n'
-        '1 feature (1 passed)\n'
-        '1 scenario (1 passed)\n'
-        '5 steps (5 passed)\n'
+        u'\n'
+        u'Feature: Table Success           # tests/functional/output_features/success_table/success_table.feature:1\n'
+        u'\n'
+        u'  #1 \n'
+        u'  Scenario: Add two numbers ♥    # tests/functional/output_features/success_table/success_table.feature:2\n'
+        u'    Given I have 0 bucks         # tests/functional/output_features/success_table/success_table_steps.py:28\n'
+        u'    And that I have these items: # tests/functional/output_features/success_table/success_table_steps.py:32\n'
+        u'      | name    | price  |\n'
+        u'      | Porsche | 200000 |\n'
+        u'      | Ferrari | 400000 |\n'
+        u'    When I sell the "Ferrari"    # tests/functional/output_features/success_table/success_table_steps.py:42\n'
+        u'    Then I have 400000 bucks     # tests/functional/output_features/success_table/success_table_steps.py:28\n'
+        u'    And my garage contains:      # tests/functional/output_features/success_table/success_table_steps.py:47\n'
+        u'      | name    | price  |\n'
+        u'      | Porsche | 200000 |\n'
+        u'\n'
+        u'  ----------------------------------------------------------------------------\n'
+        u'\n'
+        u'1 feature (1 passed)\n'
+        u'1 scenario (1 passed)\n'
+        u'5 steps (5 passed)\n'
     )
 
 

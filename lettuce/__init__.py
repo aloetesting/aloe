@@ -197,11 +197,18 @@ class Runner(object):
             failed = True
             raise
 
+        except BaseException:
+            failed = True
+            raise
+
         finally:
             total = TotalResult(results)
             total.output_format()
 
             call_hook('after', 'all', total)
+
+            if not total.passed:
+                failed = True
 
             if failed:
                 raise SystemExit(2)
