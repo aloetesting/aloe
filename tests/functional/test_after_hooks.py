@@ -2,7 +2,7 @@
 after_each feature hooks are invoked, regardless of whether a test passes.
 """
 
-from mock import MagicMock
+from mock import MagicMock, patch
 from lettuce import Runner, after
 from nose.tools import assert_equals, assert_raises
 from os.path import dirname, join, abspath
@@ -50,13 +50,14 @@ def run_feature(feature, feature_will_fail, failfast,
              after_each_feature_count, after_each_scenario_count,
              after_each_step_count, after_outline_count):
     mock = get_after_hook_mock()
-    define_hooks(mock)
+    # Mocks look all the same, force adding this new one
+    with patch('lettuce.registry._function_matches', lambda one, other: False):
+        define_hooks(mock)
 
     runner = Runner(feature_name(feature), failfast=failfast,
                     verbosity=3)
     if feature_will_fail:
-        # with assert_raises(SystemExit):
-        runner.run()
+        assert_raises(SystemExit, runner.run)
     else:
         runner.run()
 
@@ -148,7 +149,7 @@ def test_fail_non_outline_failfast():
 
 def test_fail_system_exiting_non_outline():
     run_feature('system_exiting_error',
-                feature_will_fail=True,
+                feature_will_fail=KeyboardInterrupt,
                 failfast=False,
                 after_each_feature_count=1,
                 after_each_scenario_count=1,
@@ -158,7 +159,7 @@ def test_fail_system_exiting_non_outline():
 
 def test_fail_system_exiting_failfast_non_outline():
     run_feature('system_exiting_error',
-                feature_will_fail=True,
+                feature_will_fail=KeyboardInterrupt,
                 failfast=True,
                 after_each_feature_count=1,
                 after_each_scenario_count=1,

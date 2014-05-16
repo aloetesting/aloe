@@ -52,7 +52,7 @@ class StepDefinition(object):
         try:
             ret = self.function(self.step, *args, **kw)
             self.step.passed = True
-        except Exception as e:
+        except BaseException as e:
             self.step.failed = True
             self.step.why = ReasonToFail(self.step, e)
             raise e
@@ -531,6 +531,10 @@ class TotalResult(object):
     @property
     def scenarios_passed(self):
         return len([result for result in self.scenario_results if result.passed])
+
+    @property
+    def passed(self):
+        return all(result.passed for result in self.feature_results)
 
 
 
