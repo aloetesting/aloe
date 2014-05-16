@@ -14,16 +14,18 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from nose.tools import with_setup
+from nose.tools import assert_raises
 from os.path import dirname, join, abspath
 
 from lettuce import Runner
 import lettuce
 from lettuce.core import fs, StepDefinition
 
-from tests.asserts import prepare_stdout
-from tests.asserts import assert_stdout_lines
-from tests.asserts import assert_stdout_lines_with_traceback
+from tests.asserts import (
+    assert_equals,
+    assert_lines_with_traceback,
+    capture_output,
+)
 
 
 current_dir = abspath(dirname(__file__))
@@ -37,14 +39,15 @@ def path_to_feature(name):
     return join(abspath(dirname(__file__)), 'behave_as_features', name, "%s.feature" % name)
 
 
-@with_setup(prepare_stdout)
 def test_simple_behave_as_feature():
     """
     Basic step.behave_as behaviour is working
     """
 
-    Runner(path_to_feature('1st_normal_steps'), verbosity=3).run()
-    assert_stdout_lines(
+    with capture_output() as (out, _):
+        Runner(path_to_feature('1st_normal_steps'), verbosity=3).run()
+
+    assert_equals(out.getvalue(),
         "\n"
         "Feature: Multiplication                            # tests/functional/behave_as_features/1st_normal_steps/1st_normal_steps.feature:2\n"
         "  In order to avoid silly mistakes                 # tests/functional/behave_as_features/1st_normal_steps/1st_normal_steps.feature:3\n"
@@ -71,11 +74,13 @@ def test_simple_behave_as_feature():
         "6 steps (6 passed)\n"
     )
 
-@with_setup(prepare_stdout)
 def test_simple_tables_behave_as_feature():
     "Basic step.behave_as behaviour is working"
-    Runner(path_to_feature('2nd_table_steps'), verbosity=3).run()
-    assert_stdout_lines(
+
+    with capture_output() as (out, _):
+        Runner(path_to_feature('2nd_table_steps'), verbosity=3).run()
+
+    assert_equals(out.getvalue(),
         "\n"
         "Feature: Multiplication                            # tests/functional/behave_as_features/2nd_table_steps/2nd_table_steps.feature:2\n"
         "  In order to avoid silly mistakes                 # tests/functional/behave_as_features/2nd_table_steps/2nd_table_steps.feature:3\n"
@@ -103,11 +108,16 @@ def test_simple_tables_behave_as_feature():
         "4 steps (4 passed)\n"
     )
 
-@with_setup(prepare_stdout)
 def test_failing_tables_behave_as_feature():
     "Basic step.behave_as behaviour is working"
-    Runner(path_to_feature('3rd_failing_steps'), verbosity=3).run()
-    assert_stdout_lines_with_traceback(
+
+    with capture_output() as (out, _):
+        assert_raises(
+            SystemExit,
+            Runner(path_to_feature('3rd_failing_steps'), verbosity=3).run
+        )
+
+    assert_lines_with_traceback(out.getvalue(),
     '\n'
     'Feature: Multiplication                            # tests/functional/behave_as_features/3rd_failing_steps/3rd_failing_steps.feature:2\n'
     '  In order to avoid silly mistakes                 # tests/functional/behave_as_features/3rd_failing_steps/3rd_failing_steps.feature:3\n'
@@ -164,4 +174,3 @@ def test_failing_tables_behave_as_feature():
             'call_line':call_line,
         }
 )
-

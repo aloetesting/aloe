@@ -27,6 +27,7 @@ from blessings import Terminal
 # share the code with coloured shell output
 from . import colored_shell_output
 from . import common_output
+from common_output import print_no_features_found
 
 # run with stylings disabled
 colored_shell_output.term = common_output.term = Terminal(force_styling=None)

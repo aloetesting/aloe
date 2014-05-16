@@ -20,6 +20,7 @@
 Common output functions
 """
 
+import os
 from itertools import groupby
 
 from gettext import (gettext as _,
@@ -27,6 +28,7 @@ from gettext import (gettext as _,
 
 from blessings import Terminal
 
+from lettuce import core
 from lettuce.terrain import after
 
 
