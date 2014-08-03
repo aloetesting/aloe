@@ -25,10 +25,11 @@ from blessings import Terminal
 
 from lettuce.terrain import after, before
 
+from . import common_output
 from .common_output import *
 
 
-term = Terminal()
+term = common_output.term = Terminal(force_styling=None)
 
 
 @before.each_feature('output')
@@ -60,11 +61,11 @@ def after_each_example(scenario, outline, steps):
     Print the result
     """
     if all(step.passed for step in steps):
-        print(term.green(_("OK")), end=' ')
+        print(term.green(_("OK")), end='')
     elif any(not step.has_definition for step in steps):
-        print(term.yellow(_("UNDEF")), end=' ')
+        print(term.yellow(_("UNDEF")), end='')
     else:
-        print(term.red(_("FAILED")), end=' ')
+        print(term.red(_("FAILED")), end='')
 
         for step in steps:
             if step.failed:

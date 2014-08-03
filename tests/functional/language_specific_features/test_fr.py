@@ -41,7 +41,7 @@ Fonctionnalité: Test complet # tests/functional/language_specific_features/fr/s
   En tant que programmeur    # tests/functional/language_specific_features/fr/success/dumb.feature:4
   Je veux valider les tests  # tests/functional/language_specific_features/fr/success/dumb.feature:5
 
-  #1\s
+  #1
   Scénario: On ne fait rien  # tests/functional/language_specific_features/fr/success/dumb.feature:7
     Quand je ne fait rien    # tests/functional/language_specific_features/fr/success/dumb_steps.py:6
 
@@ -65,7 +65,7 @@ Fonctionnalité: Test des sorties, avec table        # tests/functional/language
   En tant que programmeur                           # tests/functional/language_specific_features/fr/success/table.feature:5
   Je veux tester les sorties de scénario avec table # tests/functional/language_specific_features/fr/success/table.feature:6
 
-  #1\s
+  #1
   Scénario: NE rien faire, mais avec des tables     # tests/functional/language_specific_features/fr/success/table.feature:8
     Soit les éléments suivant                       # tests/functional/language_specific_features/fr/success/table_steps.py:6
       | id | élément |
@@ -95,7 +95,7 @@ Fonctionnalité: Plan de scénario en français # tests/functional/language_spec
   Je veux tester les plans de scénario       # tests/functional/language_specific_features/fr/success/outlines.feature:6
   Et surtout les sorties                     # tests/functional/language_specific_features/fr/success/outlines.feature:7
 
-  #1\s
+  #1
   Plan du Scénario: Faire la sieste          # tests/functional/language_specific_features/fr/success/outlines.feature:9
 
   Example #1:

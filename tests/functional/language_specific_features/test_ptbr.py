@@ -40,7 +40,7 @@ def test_output_with_success_colorless():
         u"  Eu quero que este teste passe     # tests/functional/language_specific_features/pt-br/success/dumb.feature:5\n"
         u"  Para testar um cenário de sucesso # tests/functional/language_specific_features/pt-br/success/dumb.feature:6\n"
         u"\n"
-        u"  #1\s\n"
+        u"  #1\n"
         u"  Cenario: Fazer nada               # tests/functional/language_specific_features/pt-br/success/dumb.feature:8\n"
         u"    Dado que eu faço nada           # tests/functional/language_specific_features/pt-br/success/dumb_steps.py:6\n"
         u"\n"
@@ -67,7 +67,7 @@ def test_output_of_table_with_success_colorless():
         u"  Eu quero testar steps com tabelas            # tests/functional/language_specific_features/pt-br/success/table.feature:5\n"
         u"  Para ver o output em pt-br                   # tests/functional/language_specific_features/pt-br/success/table.feature:6\n"
         u"\n"
-        u"  #1\s\n"
+        u"  #1\n"
         u"  Cenario: Fazer nada, com tabelas :)          # tests/functional/language_specific_features/pt-br/success/table.feature:8\n"
         u"    Dado que eu brinco com os seguintes itens: # tests/functional/language_specific_features/pt-br/success/table_steps.py:6\n"
         u"      | id | description  |\n"
@@ -97,7 +97,7 @@ def test_output_outlines_success_colorless():
         u'  Eu quero testar cenários esquemáticos                                # tests/functional/language_specific_features/pt-br/success/outlines.feature:5\n'
         u'  Para ver o output em pt-br                                           # tests/functional/language_specific_features/pt-br/success/outlines.feature:6\n'
         u'\n'
-        u'  #1\s\n'
+        u'  #1\n'
         u'  Esquema do Cenário: Fazer nada, repetidas vezes, através de esquemas # tests/functional/language_specific_features/pt-br/success/outlines.feature:8\n'
         u'\n'
         u'  Example #1:\n'

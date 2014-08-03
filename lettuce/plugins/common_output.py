@@ -126,10 +126,18 @@ def print_summary(total):
         print term.yellow(u"""
 # -*- coding: utf-8 -*-
 from lettuce import step
-        """)
+""")
 
-        for step in total.proposed_definitions:
+        definitions = sorted(
+            total.proposed_definitions,
+            key = lambda defn: defn.proposed_sentence[1]
+        )
+        seen_defns = set()
+        for step in definitions:
             step_defn, method_name, n_params = step.proposed_sentence
+
+            if step_defn in seen_defns:
+                continue
 
             params = [u'self'] + [
                 u'param%d' % (i + 1) for i in xrange(n_params)
@@ -141,6 +149,8 @@ from lettuce import step
                 u', '.join(params)))
             print term.yellow(u'''    raise NotImplementedError()''')
             print
+
+            seen_defns.add(step_defn)
 
     if total.failed_scenarios:
         # print list of failed scenarios, with their file and line number

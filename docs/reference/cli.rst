@@ -198,12 +198,12 @@ Your output will look like:
     # -*- coding: utf-8 -*-
     from lettuce import step
 
-    @step(u'When I put it in upper case')
-    def when_i_put_it_in_upper_case(step):
-        assert False, 'This step must be implemented'
-    @step(u'Then I see the string is "(.*)"')
-    def then_i_see_the_string_is_group1(step, group1):
-        assert False, 'This step must be implemented'
+    @step(ur'I put it in upper case')
+    def i_put_it_in_upper_case(self):
+        raise NotImplementedError()
+    @step(ur'I see the string is "(.*)"')
+    def i_see_the_string_is_group1(self, param1):
+        raise NotImplementedError()
 
 level 4 - full feature print, but colorful
 ------------------------------------------

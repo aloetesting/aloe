@@ -37,7 +37,7 @@ def test_output_with_success_colorless():
 功能: 简单测试           # tests/functional/language_specific_features/zh-CN/success/dumb.feature:3
   什么都不做应该运行成功 # tests/functional/language_specific_features/zh-CN/success/dumb.feature:4
 
-  #1\s
+  #1
   场景: 什么都不做       # tests/functional/language_specific_features/zh-CN/success/dumb.feature:6
     假如 如果 什么都不做 # tests/functional/language_specific_features/zh-CN/success/dumb_steps.py:6
 
@@ -60,7 +60,7 @@ def test_output_of_table_with_success_colorless():
 功能: 步骤中包含表格             # tests/functional/language_specific_features/zh-CN/success/table.feature:3
   简体中文表格步骤的成功测试     # tests/functional/language_specific_features/zh-CN/success/table.feature:4
 
-  #1\s
+  #1
   场景: 什么都不做的表格步骤测试 # tests/functional/language_specific_features/zh-CN/success/table.feature:6
     假如 如果 输入数据如下:      # tests/functional/language_specific_features/zh-CN/success/table_steps.py:6
       | id | 名称   |
@@ -86,7 +86,7 @@ def test_output_outlines_success_colorless():
 功能: 中文场景模板                 # tests/functional/language_specific_features/zh-CN/success/outlines.feature:3
   中文场景模板图表测试             # tests/functional/language_specific_features/zh-CN/success/outlines.feature:4
 
-  #1\s
+  #1
   场景大纲: 用表格描述场景         # tests/functional/language_specific_features/zh-CN/success/outlines.feature:6
 
   Example #1:

@@ -40,7 +40,7 @@ def test_output_with_success_colorless():
         u'  Как программист                     # tests/functional/language_specific_features/ru/success/dumb.feature:5\n'
         u'  Я хочу что бы тест был зеленый      # tests/functional/language_specific_features/ru/success/dumb.feature:6\n'
         u'\n'
-        u'  #1\s\n'
+        u'  #1\n'
         u'  Сценарий: Ничего не делать          # tests/functional/language_specific_features/ru/success/dumb.feature:8\n'
         u'    Когда Пуская я ничего не делаю    # tests/functional/language_specific_features/ru/success/dumb_steps.py:6\n'
         u'    Тогда я вижу что тест выполняется # tests/functional/language_specific_features/ru/success/dumb_steps.py:10\n'
@@ -68,7 +68,7 @@ def test_output_of_table_with_success_colorless():
         u"  Как программист                                                # tests/functional/language_specific_features/ru/success/table.feature:5\n"
         u"  Я хочу, что бы тесты с таблицами работали отлично и на русском # tests/functional/language_specific_features/ru/success/table.feature:6\n"
         u"\n"
-        u"  #1\s\n"
+        u"  #1\n"
         u"  Сценарий: Проверить таблички                                   # tests/functional/language_specific_features/ru/success/table.feature:8\n"
         u"    Когда Пускай имеем таблицу пациентов:                        # tests/functional/language_specific_features/ru/success/table_steps.py:5\n"
         u"      | ФИО        | Диагноз             |\n"
