@@ -16,27 +16,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import re
 
-from lettuce.registry import _function_matches, StepDict
+from lettuce.registry import StepDict
 from lettuce.exceptions import StepLoadingError
 
 from nose.tools import assert_raises, assert_equal
 
-
-def test_function_matches_compares_with_abs_path():
-    u"lettuce.registry._function_matches() should compare callback filenames with abspath"
-
-    class fakecallback1:
-        class func_code:
-            co_filename = "/some/path/to/some/../file.py"
-            co_firstlineno = 1
-
-    class fakecallback2:
-        class func_code:
-            co_filename = "/some/path/to/file.py"
-            co_firstlineno = 1
-
-    assert _function_matches(fakecallback1, fakecallback2), \
-        'the callbacks should have matched'
 
 def test_StepDict_raise_StepLoadingError_if_load_first_argument_is_not_a_regex():
     u"lettuce.STEP_REGISTRY.load(step, func) should raise an error if step is not a regex"

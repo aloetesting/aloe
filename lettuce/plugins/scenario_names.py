@@ -31,7 +31,7 @@ from .common_output import *
 term = Terminal()
 
 
-@before.each_feature
+@before.each_feature('output')
 def before_each_feature(feature):
     """
     Print the feature name
@@ -40,7 +40,7 @@ def before_each_feature(feature):
     print(term.bold(feature.represented(annotate=False, description=False)))
 
 
-@before.each_scenario
+@before.each_scenario('output')
 def before_each_scenario(scenario):
     """
     Print the scenario name
@@ -54,7 +54,7 @@ def before_each_scenario(scenario):
         print(scenario.name, end="... ")
 
 
-@after.each_example
+@after.each_example('output')
 def after_each_example(scenario, outline, steps):
     """
     Print the result
@@ -72,7 +72,7 @@ def after_each_example(scenario, outline, steps):
                 print(term.red(step.represent_traceback()))
 
 
-@after.each_scenario
+@after.each_scenario('output')
 def after_each_scenario(scenario):
     """
     Print a terminator

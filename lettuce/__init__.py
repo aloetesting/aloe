@@ -117,6 +117,8 @@ class Runner(object):
 
         sys.path.remove(base_path)
 
+        CALLBACK_REGISTRY.clear(name='output')
+
         if verbosity is 0:
             from lettuce.plugins import non_verbose as output
         elif verbosity is 1:

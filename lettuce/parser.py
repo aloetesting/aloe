@@ -83,6 +83,8 @@ class ParseLocation(object):
         if self._file:
             return fs.relpath(self._file)
         elif self.parent:
+            if self.parent.feature.described_at is self:
+                return None
             return self.parent.feature.described_at.file
         else:
             return None

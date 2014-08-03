@@ -123,7 +123,7 @@ def print_(string, color=term.white, comment_color=term.color(8)):
         print color(left) + comment_color(right)
 
 
-@before.each_step
+@before.each_step('output')
 def print_step_running(step):
 
     with output.capture_and_count():
@@ -134,7 +134,7 @@ def print_step_running(step):
     output.divert()
 
 
-@after.each_step
+@after.each_step('output')
 def print_step_ran(step):
     if step.failed:
         color = term.bold_red
@@ -168,7 +168,7 @@ def print_step_ran(step):
         print term.bright_red(step.represent_traceback())
 
 
-@before.each_scenario
+@before.each_scenario('output')
 def print_scenario_running(scenario):
     print
     print u"  #%d" % (scenario.feature.scenarios.index(scenario) + 1), \
@@ -176,7 +176,7 @@ def print_scenario_running(scenario):
     print_(scenario.represented(), color=term.bold)
 
 
-@before.each_example
+@before.each_example('output')
 def print_example_running(scenario, outline, steps):
     if not outline:
         return
@@ -190,13 +190,13 @@ def print_example_running(scenario, outline, steps):
     print
 
 
-@after.each_example
+@after.each_example('output')
 def print_end_of_example(scenario, outline, steps):
     print
     print u' ', term.dim_white(u'-' * 76)
 
 
-@before.each_feature
+@before.each_feature('output')
 def print_feature_running(feature):
     print
 
@@ -209,13 +209,13 @@ def print_feature_running(feature):
         print_(line, color=term.white)
 
 
-@before.each_background
+@before.each_background('output')
 def print_background_running(background):
     print
     print_(background.represented(), color=term.bold_white)
 
 
-@after.each_background
+@after.each_background('output')
 def print_background_ran(background):
     print
     print u" ", term.bold_white(_(u"Scenario:"))

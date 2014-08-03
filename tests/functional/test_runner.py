@@ -439,6 +439,7 @@ def test_output_with_success_colorless_with_table():
         u'\n'
         u'  ----------------------------------------------------------------------------\n'
         u'\n'
+        u'\n'
         u'1 feature (1 passed)\n'
         u'1 scenario (1 passed)\n'
         u'5 steps (5 passed)\n'
@@ -489,7 +490,7 @@ def test_output_with_failed_colorless_with_table():
     "Testing the colorless output of failed with table"
 
     runner = Runner(feature_name('failed_table'), verbosity=3)
-    runner.run()
+    assert_raises(SystemExit, runner.run)
 
     assert_stdout_lines_with_traceback(
         ("\n"

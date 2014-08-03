@@ -28,20 +28,23 @@ world._set = False
 real_stdout = sys.stdout
 
 
-def _function_matches(one, other):
-    return (os.path.abspath(one.func_code.co_filename) == os.path.abspath(other.func_code.co_filename) and
-            one.func_code.co_firstlineno == other.func_code.co_firstlineno)
+def _function_id(func):
+    return (func.func_code.co_filename, func.func_code.co_firstlineno)
 
 
 class CallbackDict(dict):
-    def append_to(self, where, when, function):
-        if not any(_function_matches(o, function) for o in self[where][when]):
-            self[where][when].append(function)
+    def append_to(self, where, when, function, name=None):
+        if name is None:
+            name = _function_id(function)
+        self[where][when].setdefault(name, function)
 
-    def clear(self):
+    def clear(self, name=None):
         for name, action_dict in self.items():
             for callback_list in action_dict.values():
-                callback_list[:] = []
+                if name is None:
+                    callback_list.clear()
+                else:
+                    callback_list.pop(name, None)
 
 class StepDict(dict):
     def load(self, step, func):
@@ -90,58 +93,58 @@ STEP_REGISTRY = StepDict()
 CALLBACK_REGISTRY = CallbackDict(
     {
         'all': {
-            'before': [],
-            'after': [],
+            'before': {},
+            'after': {},
         },
         'step': {
-            'before_each': [],
-            'after_each': [],
-            'before_output': [],
-            'after_output': [],
+            'before_each': {},
+            'after_each': {},
+            'before_output': {},
+            'after_output': {},
         },
         'scenario': {
-            'before_each': [],
-            'after_each': [],
-            'outline': [],  # an example
+            'before_each': {},
+            'after_each': {},
+            'outline': {},  # an example
         },
         'background': {
-            'before_each': [],
-            'after_each': [],
+            'before_each': {},
+            'after_each': {},
         },
         'feature': {
-            'before_each': [],
-            'after_each': [],
+            'before_each': {},
+            'after_each': {},
         },
         'scenario_outline': {
-            'before_each': [],
-            'after_each': [],
+            'before_each': {},
+            'after_each': {},
         },
         'example': {
-            'before_each': [],
-            'after_each': [],
+            'before_each': {},
+            'after_each': {},
         },
         'app': {
-            'before_each': [],
-            'after_each': [],
+            'before_each': {},
+            'after_each': {},
         },
         'harvest': {
-            'before': [],
-            'after': [],
+            'before': {},
+            'after': {},
         },
         'handle_request': {
-            'before': [],
-            'after': [],
+            'before': {},
+            'after': {},
         },
         'runserver': {
-            'before': [],
-            'after': [],
+            'before': {},
+            'after': {},
         },
     },
 )
 
 
 def call_hook(situation, kind, *args, **kw):
-    for callback in CALLBACK_REGISTRY[kind][situation]:
+    for callback in CALLBACK_REGISTRY[kind][situation].values():
         try:
             callback(*args, **kw)
         except Exception as e:

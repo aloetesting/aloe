@@ -21,29 +21,29 @@ from lettuce.terrain import after
 from lettuce.terrain import before
 
 
-@before.each_step
+@before.each_step('output')
 def print_step_running(step):
     logging.info(step.represented())
 
 
-@after.each_step
+@after.each_step('output')
 def print_step_ran(step):
     logging.info("\033[A" + step.represented())
 
 
-@before.each_scenario
+@before.each_scenario('output')
 def print_scenario_running(scenario):
     logging.info(scenario.represented())
 
 
-@before.each_feature
+@before.each_feature('output')
 def print_feature_running(feature):
     logging.info("\n")
     logging.info(feature.represented())
     logging.info("\n")
 
 
-@after.all
+@after.all('output')
 def print_end(total):
     logging.info("\n")
     word = total.features_ran > 1 and "features" or "feature"
