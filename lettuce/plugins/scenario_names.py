@@ -67,17 +67,20 @@ def after_each_example(scenario, outline, steps):
     """
     Print the result
     """
-    if all(step.passed for step in steps):
-        print(term.green(_("OK")), end='')
-    elif any(not step.has_definition for step in steps):
-        print(term.yellow(_("UNDEF")), end='')
+    for step in steps:
+        if not step.has_definition:
+            print(term.yellow(_("UNDEF")), end='')
+            break
+        elif step.failed:
+            if isinstance(step.why.exception, AssertionError):
+                print(term.red(_("FAILED")))
+            else:
+                print(term.red(_("ERROR")))
+            print(term.bold_red(step.represented(indent=0)))
+            print(term.red(step.represent_traceback()))
+            break
     else:
-        print(term.red(_("FAILED")), end='')
-
-        for step in steps:
-            if step.failed:
-                print(term.bold_red(step.represented(indent=0)))
-                print(term.red(step.represent_traceback()))
+        print(term.green(_("OK")), end='')
 
 
 @after.each_scenario('output')
