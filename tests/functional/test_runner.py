@@ -1182,23 +1182,26 @@ def test_output_level_1_fail():
         assert_raises(SystemExit, runner.run)
 
     assert_equals(out.getvalue(),
-        "F\n"
-        "\n"
-        "<Step: \"And this one fails\">\n"
-        "Traceback (most recent call last):\n"
-        '  File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
-        "    ret = self.function(self.step, *args, **kw)\n"
-        '  File "%(step_file)s", line 25, in tof\n'
-        "    assert False\n"
-        "AssertionError\n"
-        "\n"
-        "1 feature (1 failed)\n"
-        "1 scenario (1 failed)\n"
-        "5 steps (1 failed, 2 skipped, 1 undefined, 1 passed)\n"
-        "\n"
-        "List of failed scenarios:\n"
-        "  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
-        "\n" % {
+        u'F\n'
+        u'\n'
+        u'<Step: "And this one fails">\n'
+        u'Traceback (most recent call last):\n'
+        u'  File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
+        u'    ret = self.function(self.step, *args, **kw)\n'
+        u'  File "%(step_file)s", line 25, in tof\n'
+        u'    assert False\n'
+        u'AssertionError\n'
+        u'\n'
+        u'1 feature (0 passed)\n'
+        u'1 scenario (0 passed)\n'
+        u'5 steps (1 failed, 2 skipped, 1 undefined, 1 passed)\n'
+        u'\n'
+        u'List of failed scenarios:\n'
+        u'\n'
+        u' * Feature: Table Fail\n'
+        u'    - Scenario: See it fail\n'
+        u'      (tests/functional/output_features/failed_table/failed_table.feature:2)\n'
+        u'\n' % {
             'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')),
             'call_line': call_line,
@@ -1214,23 +1217,26 @@ def test_output_level_1_error():
         assert_raises(SystemExit, runner.run)
 
     assert_equals(out.getvalue(),
-        ".E\n"
-        "\n"
-        "<Step: \"Given my step that blows a exception\">\n"
-        "Traceback (most recent call last):\n"
-        '  File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
-        "    ret = self.function(self.step, *args, **kw)\n"
-        '  File "%(step_file)s", line 10, in given_my_step_that_blows_a_exception\n'
-        "    raise RuntimeError\n"
-        "RuntimeError\n"
-        "\n"
-        "1 feature (1 failed)\n"
-        "2 scenarios (1 passed)\n"
-        "2 steps (1 failed, 1 passed)\n"
-        "\n"
-        "List of failed scenarios:\n"
-        "  Scenario: It should raise an exception different of AssertionError # tests/functional/output_features/error_traceback/error_traceback.feature:5\n"
-        "\n" % {
+        u'.E\n'
+        u'\n'
+        u'<Step: \"Given my step that blows a exception\">\n'
+        u'Traceback (most recent call last):\n'
+        u'  File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
+        u'    ret = self.function(self.step, *args, **kw)\n'
+        u'  File "%(step_file)s", line 10, in given_my_step_that_blows_a_exception\n'
+        u'    raise RuntimeError\n'
+        u'RuntimeError\n'
+        u'\n'
+        u'1 feature (0 passed)\n'
+        u'2 scenarios (1 passed)\n'
+        u'2 steps (1 failed, 1 passed)\n'
+        u'\n'
+        u'List of failed scenarios:\n'
+        u'\n'
+        u' * Feature: Error traceback for output testing\n'
+        u'    - Scenario: It should raise an exception different of AssertionError\n'
+        u'      (tests/functional/output_features/error_traceback/error_traceback.feature:5)\n'
+        u'\n' % {
             'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'error_traceback', 'error_traceback_steps.py')),
             'call_line': call_line,
