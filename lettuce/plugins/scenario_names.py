@@ -21,12 +21,19 @@ from __future__ import print_function
 from gettext import (gettext as _,
                      ngettext as N_)
 
+try:
+    from imp import reload
+except ImportError:
+    # python 2.5 fallback
+    pass
+
 from blessings import Terminal
 
 from lettuce.terrain import after, before
 
 from . import common_output
-from .common_output import *
+reload(common_output)
+print_no_features_found = common_output.print_no_features_found
 
 
 term = common_output.term = Terminal(force_styling=None)

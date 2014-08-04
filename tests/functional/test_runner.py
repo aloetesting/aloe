@@ -437,7 +437,6 @@ def test_output_with_success_colorless_with_table():
         u'\n'
         u'  ----------------------------------------------------------------------------\n'
         u'\n'
-        u'\n'
         u'1 feature (1 passed)\n'
         u'1 scenario (1 passed)\n'
         u'5 steps (5 passed)\n'
@@ -511,7 +510,6 @@ def test_output_with_failed_colorless_with_table():
         "    And this one does not even has definition # tests/functional/output_features/failed_table/failed_table.feature:12 (undefined)\n"
         "\n"
         "  ----------------------------------------------------------------------------"
-        "\n"
         "\n"
         "\n"
         "1 feature (1 failed)\n"
@@ -589,7 +587,7 @@ def test_output_with_failed_colorful_with_table():
         "\033[1;31mList of failed scenarios:\n"
         "\033[0;31m  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
         "\033[0m\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
+            'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')),
             'call_line': call_line,
         }
@@ -657,7 +655,6 @@ def test_output_with_successful_outline_colorless():
         u'    Then I see the title of the page is "<title>"                 # tests/functional/output_features/success_outline/success_outline_steps.py:37\n'
         u'\n'
         u'  ----------------------------------------------------------------------------\n'
-        u'\n'
         u'\n'
         u'1 feature (1 passed)\n'
         u'3 scenarios (3 passed)\n'
@@ -771,7 +768,6 @@ def test_output_with_failful_outline_colorless():
         "\n"
         "  ----------------------------------------------------------------------------\n"
         u'\n'
-        u'\n'
         u'1 feature (1 failed)\n'
         u'3 scenarios (2 passed, 1 failed)\n'
         u'24 steps (19 passed, 4 skipped, 1 failed)\n'
@@ -834,7 +830,7 @@ def test_output_with_failful_outline_colorful():
         "\033[1;31mList of failed scenarios:\n"
         "\033[0;31m  Scenario Outline: fill a web form                           # tests/functional/output_features/fail_outline/fail_outline.feature:6\n"
         "\033[0m\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
+            'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'fail_outline', 'fail_outline_steps.py')),
             'call_line': call_line,
         }
@@ -857,7 +853,6 @@ def test_output_snippets_with_groups_within_double_quotes_colorless():
         u'    Given I have "stuff here" and "more @#$%ˆ& bizar sutff h3r3" # tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:3 (undefined)\n'
         u'\n'
         u'  ----------------------------------------------------------------------------\n'
-        u'\n'
         u'\n'
         u'1 feature (1 failed)\n'
         u'1 scenario (1 failed)\n'
@@ -926,7 +921,6 @@ def test_output_snippets_with_groups_within_single_quotes_colorless():
         u'\n'
         u'  ----------------------------------------------------------------------------\n'
         u'\n'
-        u'\n'
         u'1 feature (1 failed)\n'
         u'1 scenario (1 failed)\n'
         u'1 step (1 undefined)\n'
@@ -993,7 +987,6 @@ def test_output_snippets_with_groups_within_redundant_quotes():
         u'\n'
         u'  ----------------------------------------------------------------------------\n'
         u'\n'
-        u'\n'
         u'1 feature (1 failed)\n'
         u'1 scenario (1 failed)\n'
         u'2 steps (2 undefined)\n'
@@ -1031,7 +1024,6 @@ def test_output_snippets_with_normalized_unicode_names():
         u'    Então eu fico felizão                                                                     # tests/functional/output_features/latin-accents/latin-accents.feature:10 (undefined)\n'
         u'\n'
         u'  ----------------------------------------------------------------------------\n'
-        u'\n'
         u'\n'
         u'1 feature (1 failed)\n'
         u'1 scenario (1 failed)\n'
@@ -1087,7 +1079,7 @@ def test_output_level_2_fail():
         assert_raises(SystemExit, runner.run)
 
     assert_equals(out.getvalue(),
-        "See it fail ... FAILED\n"
+        "See it fail... FAILED\n"
         "\n"
         "\n"
         "<Step: \"And this one fails\">\n"
@@ -1105,7 +1097,7 @@ def test_output_level_2_fail():
         "List of failed scenarios:\n"
         "  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
         "\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
+            'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')),
             'call_line': call_line,
         }
@@ -1120,8 +1112,8 @@ def test_output_level_2_error():
         assert_raises(SystemExit, runner.run)
 
     assert_equals(out.getvalue(),
-        "It should pass ... OK\n"
-        "It should raise an exception different of AssertionError ... ERROR\n"
+        "It should pass... OK\n"
+        "It should raise an exception different of AssertionError... ERROR\n"
         "\n"
         "\n"
         "<Step: \"Given my step that blows a exception\">\n"
@@ -1139,7 +1131,7 @@ def test_output_level_2_error():
         "List of failed scenarios:\n"
         "  Scenario: It should raise an exception different of AssertionError # tests/functional/output_features/error_traceback/error_traceback.feature:5\n"
         "\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
+            'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'error_traceback', 'error_traceback_steps.py')),
             'call_line': call_line,
         }
@@ -1191,7 +1183,7 @@ def test_output_level_1_fail():
         "List of failed scenarios:\n"
         "  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
         "\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
+            'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')),
             'call_line': call_line,
         }
@@ -1223,7 +1215,7 @@ def test_output_level_1_error():
         "List of failed scenarios:\n"
         "  Scenario: It should raise an exception different of AssertionError # tests/functional/output_features/error_traceback/error_traceback.feature:5\n"
         "\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
+            'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'error_traceback', 'error_traceback_steps.py')),
             'call_line': call_line,
         }
@@ -1522,7 +1514,7 @@ def test_background_with_scenario_before_hook():
 
     with capture_output() as (out, err):
         runner = Runner(filename, verbosity=1)
-        assert_raises(SystemExit, runner.run)
+        runner.run()
 
     assert_equals(out.getvalue(),
         ".."

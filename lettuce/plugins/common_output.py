@@ -48,14 +48,14 @@ def print_no_features_found(where):
     print _(u"Could not find features at %s" % where)
 
 
-@after.harvest
+@after.harvest('common_output')
 def print_note(total):
     print
     print u"Summary for all applications tested:"
 
 
-@after.harvest
-@after.all
+@after.harvest('common_output')
+@after.all('common_output')
 def print_summary(total):
     """
     Print the summary

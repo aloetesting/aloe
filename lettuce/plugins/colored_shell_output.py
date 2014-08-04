@@ -24,13 +24,21 @@ from contextlib import contextmanager
 from StringIO import StringIO
 from gettext import gettext as _
 
+try:
+    from imp import reload
+except ImportError:
+    # python 2.5 fallback
+    pass
+
 from blessings import Terminal
 
 from lettuce import core, strings
 
 from lettuce.terrain import after, before, world
 
-from .common_output import *
+from . import common_output
+reload(common_output)
+print_no_features_found = common_output.print_no_features_found
 
 
 term = Terminal()

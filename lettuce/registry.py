@@ -39,7 +39,7 @@ class CallbackDict(dict):
         self[where][when].setdefault(name, function)
 
     def clear(self, name=None):
-        for name, action_dict in self.items():
+        for _, action_dict in self.items():
             for callback_list in action_dict.values():
                 if name is None:
                     callback_list.clear()
