@@ -18,14 +18,16 @@
 import sys
 from cStringIO import StringIO
 
-from nose.tools import with_setup, assert_equal
+from nose.tools import with_setup, assert_equal, assert_raises
 from subunit.v2 import ByteStreamToStreamResult
 from testtools import StreamToDict
 
 from lettuce import Runner, registry
 from lettuce.plugins import subunit_output
-from tests.asserts import prepare_stdout
+from lettuce.registry import preserve_registry
+
 from tests.functional.test_runner import feature_name
+
 
 class Includes(object):
 
@@ -95,8 +97,6 @@ class State(object):
         Set up the for the test case
         """
 
-        prepare_stdout()
-
         output = StringIO()
         self.patch = (subunit_output.open_file, subunit_output.close_file)
 
@@ -111,10 +111,10 @@ class State(object):
         subunit_output.open_file, subunit_output.close_file = self.patch
         assert_equal(len(self.expect), 0, "Expected results left")
 
-        registry.clear()
-
 state = State()
 
+
+@preserve_registry
 @with_setup(state.setup, state.teardown)
 def test_subunit_output_with_no_errors():
     """
@@ -133,6 +133,7 @@ def test_subunit_output_with_no_errors():
     runner.run()
 
 
+@preserve_registry
 @with_setup(state.setup, state.teardown)
 def test_subunit_output_with_one_error():
     """
@@ -150,10 +151,12 @@ def test_subunit_output_with_one_error():
         }),
     ]
 
-    runner = Runner(feature_name('error_traceback'), enable_subunit=True)
-    runner.run()
+    with assert_raises(SystemExit):
+        runner = Runner(feature_name('error_traceback'), enable_subunit=True)
+        runner.run()
 
 
+@preserve_registry
 @with_setup(state.setup, state.teardown)
 def test_subunit_output_with_tags():
     """
@@ -183,6 +186,7 @@ def test_subunit_output_with_tags():
     runner.run()
 
 
+@preserve_registry
 @with_setup(state.setup, state.teardown)
 def test_subunit_output_unicode():
     """
@@ -196,15 +200,18 @@ def test_subunit_output_unicode():
         Includes({
             'status': 'fail',
             'details': Includes({
-                'traceback': ContentContains('given_my_daemi_that_blows_a_exception'),
+                'traceback': ContentContains(
+                    'given_my_daemi_that_blows_a_exception'),
             }),
         }),
     ]
 
-    runner = Runner(feature_name('unicode_traceback'), enable_subunit=True)
-    runner.run()
+    with assert_raises(SystemExit):
+        runner = Runner(feature_name('unicode_traceback'), enable_subunit=True)
+        runner.run()
 
 
+@preserve_registry
 @with_setup(state.setup, state.teardown)
 def test_subunit_output_console():
     """
@@ -230,6 +237,7 @@ def test_subunit_output_console():
     runner.run()
 
 
+@preserve_registry
 @with_setup(state.setup, state.teardown)
 def test_subunit_output_undefined_steps():
     """
@@ -240,16 +248,19 @@ def test_subunit_output_undefined_steps():
         Includes({
             'status': 'fail',
             'details': Includes({
-                'steps': ContentContains('? When this test step is undefined\n'),
+                'steps': ContentContains(
+                    '? When this test step is undefined\n'),
             }),
         }),
         Includes({
             'status': 'fail',
             'details': Includes({
-                'steps': ContentContains('? When this test step is undefined\n'),
+                'steps': ContentContains(
+                    '? When this test step is undefined\n'),
             }),
         }),
     ]
 
-    runner = Runner(feature_name('undefined_steps'), enable_subunit=True)
-    runner.run()
+    with assert_raises(SystemExit):
+        runner = Runner(feature_name('undefined_steps'), enable_subunit=True)
+        runner.run()

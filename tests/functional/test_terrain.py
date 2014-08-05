@@ -17,11 +17,12 @@
 import commands
 import os
 import sys
-
 from os.path import dirname, abspath, join, curdir
+
 from nose.tools import assert_equals, with_setup
 
-from tests.asserts import prepare_stdout
+from lettuce.registry import preserve_registry
+
 
 def test_imports_terrain_under_path_that_is_run():
     import lettuce
@@ -29,18 +30,23 @@ def test_imports_terrain_under_path_that_is_run():
     pythonpath = join(dirname(lettuce.__file__), '..')
     old_path = abspath(curdir)
 
-    os.chdir(join(abspath(dirname(__file__)), 'simple_features', '1st_feature_dir'))
+    os.chdir(join(abspath(dirname(__file__)),
+                  'simple_features', '1st_feature_dir'))
 
-    status, output = commands.getstatusoutput('PYTHONPATH={pythonpath} python -c "from lettuce import world;assert hasattr(world, \'works_fine\'); print \'it passed!\'"'.format(pythonpath=pythonpath))
+    status, output = commands.getstatusoutput(
+        'PYTHONPATH={pythonpath} python -c "from lettuce import world;'
+        'assert hasattr(world, \'works_fine\'); print \'it passed!\'"'.format(
+            pythonpath=pythonpath))
 
     assert_equals(status, 0)
     assert_equals(output, "it passed!")
 
     os.chdir(old_path)
 
-@with_setup(prepare_stdout)
+
+@preserve_registry
 def test_after_each_all_is_executed_before_each_all():
-    "terrain.before.each_all and terrain.after.each_all decorators"
+    """terrain.before.each_all and terrain.after.each_all decorators"""
 
     from lettuce import step
     from lettuce import Runner
@@ -69,7 +75,8 @@ def test_after_each_all_is_executed_before_each_all():
     def set_state_to_after(total):
         world.all_steps.append('after')
 
-    runner = Runner(join(abspath(dirname(__file__)), 'simple_features', '2nd_feature_dir'))
+    runner = Runner(join(abspath(dirname(__file__)),
+                         'simple_features', '2nd_feature_dir'))
     runner.run()
 
     assert_equals(
