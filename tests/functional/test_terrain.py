@@ -50,10 +50,11 @@ def test_after_each_all_is_executed_before_each_all():
 
     from lettuce import step
     from lettuce import Runner
-
+    from lettuce.registry import STEP_REGISTRY
     from lettuce.terrain import before, after, world
 
     world.all_steps = []
+    STEP_REGISTRY.clear()
 
     @before.all
     def set_state_to_before():

@@ -17,17 +17,23 @@
 from os.path import dirname, abspath, join
 from nose.tools import assert_equals
 
-from lettuce import Runner
+from lettuce import Runner, step
+from lettuce.registry import STEP_REGISTRY
 from lettuce.terrain import before, world, after
 
 def test_loads_sum_steps():
     "Can load step definitions from step_definitions folder"
 
     world.ran = False
+    STEP_REGISTRY.clear()
 
     @before.each_step
     def assert_is_fine(step):
         world.ran = True
+
+    @step('append .+')
+    def indifferent_step(self):
+        pass
 
     runner = Runner(join(abspath(dirname(__file__)), 'simple_features', '2nd_feature_dir'), verbosity=0)
     runner.run()
