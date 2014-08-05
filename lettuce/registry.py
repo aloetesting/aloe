@@ -157,6 +157,11 @@ def call_hook(situation, kind, *args, **kw):
             raise
 
 
+def clear():
+    STEP_REGISTRY.clear()
+    CALLBACK_REGISTRY.clear()
+
+
 def preserve_registry(func):
     """
     Create a registry context that will be unwrapped afterwards
