@@ -272,6 +272,7 @@ class Scenario(parser.Scenario):
                     call_hook('before_each', 'example', self, outline, steps)
 
                     if self.background:
+
                         try:
                             self.background.run()
 
@@ -351,6 +352,13 @@ class Background(parser.Background):
     def run(self):
         try:
             call_hook('before_each', 'background', self)
+
+            # pre-run the steps so we have their definitions set
+            for step in self.steps:
+                try:
+                    step.pre_run()
+                except NoDefinitionFound:
+                    pass
 
             for step in self.steps:
                 try:

@@ -28,6 +28,7 @@ from nose.tools import with_setup, assert_raises
 import lettuce
 from lettuce.fs import FeatureLoader
 from lettuce.core import Feature, fs, StepDefinition
+from lettuce.registry import STEP_REGISTRY
 from lettuce.terrain import world
 from lettuce.registry import preserve_registry
 from lettuce import Runner
@@ -902,6 +903,7 @@ def test_commented_scenario():
 def test_blank_step_hash_value():
     """syntax checking: Blank in step hash column = empty string"""
 
+    STEP_REGISTRY.clear()
     from lettuce import step
 
     @step('ignore step')
@@ -933,6 +935,7 @@ def test_blank_step_hash_value():
 def test_run_only_fast_tests():
     "Runner can filter by tags"
 
+    STEP_REGISTRY.clear()
     from lettuce import step
 
     good_one = Mock()
@@ -985,6 +988,7 @@ def test_run_random():
 def test_background_with_header():
     "Running background with header"
 
+    STEP_REGISTRY.clear()
     from lettuce import step, world
 
     @step(ur'the variable "(\w+)" holds (\d+)')
@@ -1020,6 +1024,7 @@ def test_background_with_header():
 def test_background_without_header():
     "Running background without header"
 
+    STEP_REGISTRY.clear()
     from lettuce import step, world, before, after
 
     actions = {}
@@ -1077,6 +1082,7 @@ def test_output_background_with_success_colorless():
     A feature with background should print it accordingly under verbosity 3
     """
 
+    STEP_REGISTRY.clear()
     from lettuce import step
 
     line = currentframe().f_lineno  # get line number
@@ -1109,7 +1115,8 @@ Feature: Simple and successful                # tests/functional/bg_features/sim
 
 1 feature (1 passed)
 1 scenario (1 passed)
-1 step (1 passed)"""
+1 step (1 passed)
+"""
         .format(line=line+2)  # increment is line number of step past line
     )
 
@@ -1117,6 +1124,7 @@ Feature: Simple and successful                # tests/functional/bg_features/sim
 def test_background_with_scenario_before_hook():
     "Running background with before_scenario hook"
 
+    STEP_REGISTRY.clear()
     from lettuce import step, world, before
 
     @before.each_scenario
