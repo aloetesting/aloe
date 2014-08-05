@@ -21,7 +21,7 @@ A Gherkin parser written using pyparsing
 
 from codecs import open
 from copy import deepcopy
-from textwrap import dedent
+from warnings import warn
 
 from pyparsing import (CharsNotIn,
                        col,
@@ -45,7 +45,7 @@ from pyparsing import (CharsNotIn,
 from fuzzywuzzy import fuzz
 
 from lettuce import languages, strings
-from lettuce.exceptions import LettuceSyntaxError
+from lettuce.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
 from lettuce.decorators import memoizedproperty
 
 
@@ -761,6 +761,14 @@ def parse(string=None, filename=None, token=None, lang=None):
             """
 
             for line in multiline.splitlines():
+                if line and not line[:indent].isspace():
+                    warn("%s: %s: under-indented multiline string "
+                         "truncated: '%s'" %
+                         (lineno(loc, s), col(loc, s), line),
+                         LettuceSyntaxWarning)
+
+                # for those who are surprised by this, slicing a string
+                # shorter than indent will yield empty string, not IndexError
                 yield line[indent:]
 
         # determine the indentation offset

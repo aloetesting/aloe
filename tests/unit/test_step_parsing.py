@@ -71,12 +71,16 @@ INVALID_MULTI_LINE = '''
   """
 '''.strip()
 
-import string
+
+import warnings
+
+from nose.tools import assert_equals, assert_raises
+from nose.exc import SkipTest
+
 from lettuce.parser import Feature, Step
 from lettuce.exceptions import LettuceSyntaxError
 from lettuce import strings
-from nose.tools import assert_equals, assert_raises
-from nose.exc import SkipTest
+
 from tests.asserts import *
 
 
@@ -281,7 +285,11 @@ and this is line three
 
 
 def test_multiline_with_whitespace():
-    step, = parse_steps(MULTI_LINE_WHITESPACE)
+    with warnings.catch_warnings(True) as w:
+        step, = parse_steps(MULTI_LINE_WHITESPACE)
+        print len(w)
+        assert len(w) == 3
+
     assert_equals(step.sentence, 'Given I have a string like so:')
     assert_equals(step.multiline, u"""This is line one
 and this is line two
@@ -293,7 +301,8 @@ and spaces at the end   \"""")
 
 
 def test_multiline_larger_indents():
-    step, = parse_steps('''
+    with warnings.catch_warnings(True) as w:
+        step, = parse_steps('''
     Given I have a string line so:
     """
         Extra indented to start with
@@ -301,6 +310,7 @@ def test_multiline_larger_indents():
 And under indented
     """
     ''')
+        assert len(w) == 1
 
     assert_equals(step.multiline, u"""    Extra indented to start with
 And back

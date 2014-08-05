@@ -62,6 +62,11 @@ class LettuceSyntaxError(SyntaxError):
         super(LettuceSyntaxError, self).__init__(msg)
 
 
+
+class LettuceSyntaxWarning(SyntaxWarning):
+    pass
+
+
 class StepLoadingError(Exception):
     """Raised when a step cannot be loaded."""
     pass
