@@ -19,8 +19,10 @@ import re
 import sys
 import threading
 import traceback
+from functools import wraps
 
 from lettuce.exceptions import StepLoadingError
+
 
 world = threading.local()
 world._set = False
@@ -86,7 +88,9 @@ class StepDict(dict):
 
     def _is_func_or_method(self, func):
         func_dir = dir(func)
-        return callable(func) and ("func_name" in func_dir or "__func__" in func_dir)
+        return callable(func) and (
+            "func_name" in func_dir or
+            "__func__" in func_dir)
 
 
 STEP_REGISTRY = StepDict()
@@ -153,6 +157,24 @@ def call_hook(situation, kind, *args, **kw):
             raise
 
 
-def clear():
-    STEP_REGISTRY.clear()
-    CALLBACK_REGISTRY.clear()
+def preserve_registry(func):
+    """
+    Create a registry context that will be unwrapped afterwards
+    """
+
+    @wraps(func)
+    def inner(*args, **kwargs):
+        step_registry = STEP_REGISTRY.copy()
+        call_registry = CALLBACK_REGISTRY.copy()
+
+        ret = func(*args, **kwargs)
+
+        STEP_REGISTRY.clear()
+        STEP_REGISTRY.update(step_registry)
+
+        CALLBACK_REGISTRY.clear()
+        CALLBACK_REGISTRY.update(call_registry)
+
+        return ret
+
+    return inner

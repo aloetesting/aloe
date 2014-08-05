@@ -29,6 +29,7 @@ import lettuce
 from lettuce.fs import FeatureLoader
 from lettuce.core import Feature, fs, StepDefinition
 from lettuce.terrain import world
+from lettuce.registry import preserve_registry
 from lettuce import Runner
 
 from tests.asserts import (
@@ -897,6 +898,7 @@ def test_commented_scenario():
     )
 
 
+@preserve_registry
 def test_blank_step_hash_value():
     """syntax checking: Blank in step hash column = empty string"""
 
@@ -927,6 +929,7 @@ def test_blank_step_hash_value():
     )
 
 
+@preserve_registry
 def test_run_only_fast_tests():
     "Runner can filter by tags"
 
@@ -978,6 +981,7 @@ def test_run_random():
         pshuffle.assert_called_once_with([])
 
 
+@preserve_registry
 def test_background_with_header():
     "Running background with header"
 
@@ -1067,6 +1071,7 @@ def test_background_without_header():
     })
 
 
+@preserve_registry
 def test_output_background_with_success_colorless():
     """
     A feature with background should print it accordingly under verbosity 3
@@ -1076,7 +1081,6 @@ def test_output_background_with_success_colorless():
 
     line = currentframe().f_lineno  # get line number
     @step(ur'the variable "(\w+)" holds (\d+)')
-    @step(ur'the variable "(\w+)" is equal to (\d+)')
     def just_pass(step, *args):
         pass
 
@@ -1095,11 +1099,13 @@ Feature: Simple and successful                # tests/functional/bg_features/sim
   #1
   Scenario: multiplication changing the value # tests/functional/bg_features/simple/simple.feature:9
 
-  Background:                                 # tests/functional/bg_features/simple/simple.feature:6\n'
+  Background:                                 # tests/functional/bg_features/simple/simple.feature:6
     Given the variable "X" holds 2            # tests/functional/test_runner.py:{line}
 
   Scenario:
-    Given the variable "X" is equal to 2      # tests/functional/test_runner.py:{line}
+    Given the variable "X" is equal to 2      # tests/functional/bg_features/simple/steps.py:5
+
+  ----------------------------------------------------------------------------
 
 1 feature (1 passed)
 1 scenario (1 passed)
