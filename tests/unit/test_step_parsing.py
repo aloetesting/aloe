@@ -290,3 +290,18 @@ and this is line three
 
   with spaces at the beginning
 and spaces at the end   \"""")
+
+
+def test_multiline_larger_indents():
+    step, = parse_steps('''
+    Given I have a string line so:
+    """
+        Extra indented to start with
+    And back
+And under indented
+    """
+    ''')
+
+    assert_equals(step.multiline, u"""    Extra indented to start with
+And back
+under indented""")
