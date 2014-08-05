@@ -269,27 +269,24 @@ def test_table_escaping():
     ])
 
 
-# FIXME: I want to have a discussion on what is correct in Gherkin before
-# making the parser work this way
 def test_multiline_is_parsed():
-    raise SkipTest("multiline")
     step, = parse_steps(MULTI_LINE)
     assert_equals(step.sentence, 'Given I have a string like so:')
     assert_equals(step.multiline, u"""This is line one
 and this is line two
 and this is line three
-and this is line four,
-with spaces at the beginning""")
+  and this is line four,
+
+  with spaces at the beginning""")
 
 
 def test_multiline_with_whitespace():
-    raise SkipTest("multiline")
     step, = parse_steps(MULTI_LINE_WHITESPACE)
-    assert_equals(step.sentence, 'I have a string like so:')
+    assert_equals(step.sentence, 'Given I have a string like so:')
     assert_equals(step.multiline, u"""This is line one
 and this is line two
 and this is line three
   and this is line four,
 
   with spaces at the beginning
-and spaces at the end   """)
+and spaces at the end   \"""")

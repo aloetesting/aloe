@@ -133,8 +133,7 @@ class Step(Node):
         self.sentence = u' '.join(token.sentence)
         self.table = map(list, token.table) \
             if token.table else None
-        self.multiline = dedent(token.multiline).strip() \
-            if token.multiline else None
+        self.multiline = token.multiline
 
     def __unicode__(self):
         return u'<Step: "%s">' % self.sentence
@@ -743,7 +742,43 @@ def parse(string=None, filename=None, token=None, lang=None):
     #
     # Multiline string
     #
+    def clean_multiline_string(s, loc, tokens):
+        """
+        Clean a multiline string
+
+        The indent level of a multiline string is the indent level of the
+        triple-". We have to derive this by walking backwards from the
+        location of the quoted string token to the newline before it.
+
+        We also want to remove the leading and trailing newline if they exist.
+
+        FIXME: assumes UNIX newlines
+        """
+
+        def remove_indent(multiline, indent):
+            """
+            Generate the lines removing the indent
+            """
+
+            for line in multiline.splitlines():
+                yield line[indent:]
+
+        # determine the indentation offset
+        indent = loc - s.rfind('\n', 0, loc) - 1
+
+        multiline = '\n'.join(remove_indent(tokens[0], indent))
+
+        # remove leading and trailing newlines
+        if multiline[0] == '\n':
+            multiline = multiline[1:]
+
+        if multiline[-1] == '\n':
+            multiline = multiline[:-1]
+
+        return multiline
+
     MULTILINE = QuotedString('"""', multiline=True)
+    MULTILINE.setParseAction(clean_multiline_string)
 
     # A Step
     #
