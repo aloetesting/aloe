@@ -75,7 +75,6 @@ INVALID_MULTI_LINE = '''
 import warnings
 
 from nose.tools import assert_equals, assert_raises
-from nose.exc import SkipTest
 
 from lettuce.parser import Feature, Step
 from lettuce.exceptions import LettuceSyntaxError

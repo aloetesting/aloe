@@ -51,48 +51,24 @@ def test_step_definition():
     assert_equals(definition.line, line + 2)
 
 
-def test_step_represent_string_when_not_defined():
+def test_step_represented():
     """Step.represent_string behaviour when not defined"""
 
-    raise SkipTest("FIXME")
-
     class FakeFeature:
         max_length = 10
+
+        class described_at:
+            file = __file__
 
     class FakeScenario:
         feature = FakeFeature
 
-    relative_path = core.fs.relpath(__file__)
-    step = core.Step('some sentence', '', 239, __file__)
+    step, = core.Step.parse_steps_from_string('Given some sentence')
     step.scenario = FakeScenario
 
     assert_equals(
-        step.represent_string('test'),
-        "    test   # %s:239\n" % relative_path,
-    )
-
-
-def test_step_represent_string_when_defined():
-    "Step.represent_string behaviour when defined"
-
-    raise SkipTest("FIXME")
-
-    class FakeFeature:
-        max_length = 10
-
-    class FakeScenario:
-        feature = FakeFeature
-
-    class FakeScenarioDefinition:
-        line = 421
-        file = 'should/be/filename'
-
-    step = core.Step('some sentence', '', 239, "not a file")
-    step.scenario = FakeScenario
-    step.defined_at = FakeScenarioDefinition
-    assert_equals(
-        step.represent_string('foobar'),
-        "    foobar # should/be/filename:421\n",
+        step.represented(),
+        u"    Given some sentence# %s:1" % __file__,
     )
 
 
