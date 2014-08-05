@@ -318,8 +318,9 @@ class Scenario(parser.Scenario):
 
                 finally:
                     if outline:
+                        # FIXME: reasons to fail is empty
                         call_hook('outline', 'scenario', self,
-                                  None, outline, None)
+                                  None, outline, ())
 
                     call_hook('after_each', 'example', self, outline, steps)
 
