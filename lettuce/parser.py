@@ -21,6 +21,7 @@ A Gherkin parser written using pyparsing
 
 from codecs import open
 from copy import deepcopy
+from collections import OrderedDict
 from warnings import warn
 
 from pyparsing import (CharsNotIn,
@@ -402,7 +403,7 @@ class Scenario(TaggedBlock):
             keys = outlines[0]
 
             self.outlines += [
-                dict(zip(keys, row))
+                OrderedDict(zip(keys, row))
                 for row in outlines[1:]
             ]
 
@@ -439,13 +440,12 @@ class Scenario(TaggedBlock):
         """
 
         # get the list of column headings
-        headings = set()
+        headings = OrderedDict()
 
         for outline in self.outlines:
-            headings |= set(outline.keys())
+            headings.update(outline)
 
-        headings = list(headings)
-
+        headings = list(headings.keys())
         table = [headings]
 
         # append the data to the table

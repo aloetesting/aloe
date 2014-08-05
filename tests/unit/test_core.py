@@ -17,11 +17,12 @@
 
 from inspect import currentframe
 
-from lettuce import core
 from sure import expect
+
 from nose.tools import assert_equals
 from nose.tools import assert_not_equals
-from nose.exc import SkipTest
+
+from lettuce import core
 
 from .test_step_parsing import parse_steps
 
@@ -125,13 +126,13 @@ Examples:
 def test_scenario_outline_represent_examples():
     "Step.represent_hashes"
 
-    raise SkipTest("not implemented")
+    from .test_scenario_parsing import parse_scenario
 
-    step = core.Scenario.from_string(SCENARIO_OUTLINE)
+    step = parse_scenario(SCENARIO_OUTLINE)
 
     assert_equals(
-        step.represent_examples(),
-        '    | value_one | and_other |\n'
-        '    | first     | primeiro  |\n'
-        '    | second    | segundo   |\n'
+        step.represent_outlines(),
+        u'    | value_one | and_other |\n'
+        u'    | first     | primeiro  |\n'
+        u'    | second    | segundo   |'
     )
