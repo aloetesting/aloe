@@ -195,6 +195,11 @@ class Command(BaseCommand):
 
                     result = runner.run()
 
+                except (ImportError, SyntaxError):
+                    import traceback
+
+                    traceback.print_exc()
+
                 finally:
                     if app_module is not None:
                         registry.call_hook('after_each', 'app', app_module, result)
