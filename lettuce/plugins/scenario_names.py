@@ -18,28 +18,39 @@
 
 from __future__ import print_function
 
+import sys
+from functools import wraps
 from gettext import (gettext as _,
                      ngettext as N_)
-
-try:
-    from imp import reload
-except ImportError:
-    # python 2.5 fallback
-    pass
 
 from blessings import Terminal
 
 from lettuce.terrain import after, before
 
-from . import common_output
-reload(common_output)
-print_no_features_found = common_output.print_no_features_found
+from .common_output import *
 
 
-term = common_output.term = Terminal(force_styling=None)
+def with_flush(func):
+    """
+    Decorate print to flush the output after printing
+    """
+
+    @wraps(func)
+    def inner(*args, **kwargs):
+        file_ = kwargs.get('file', sys.stdout)
+
+        ret = func(*args, **kwargs)
+        file_.flush()
+        return ret
+
+    return inner
 
 
-@before.each_feature('output')
+term = Terminal()
+print = with_flush(print)
+
+
+@before.each_feature
 def before_each_feature(feature):
     """
     Print the feature name
@@ -48,7 +59,7 @@ def before_each_feature(feature):
     print(term.bold(feature.represented(annotate=False, description=False)))
 
 
-@before.each_scenario('output')
+@before.each_scenario
 def before_each_scenario(scenario):
     """
     Print the scenario name
@@ -62,28 +73,25 @@ def before_each_scenario(scenario):
         print(scenario.name, end="... ")
 
 
-@after.each_example('output')
+@after.each_example
 def after_each_example(scenario, outline, steps):
     """
     Print the result
     """
-    for step in steps:
-        if not step.has_definition:
-            print(term.yellow(_("UNDEF")), end='')
-            break
-        elif step.failed:
-            if isinstance(step.why.exception, AssertionError):
-                print(term.red(_("FAILED")))
-            else:
-                print(term.red(_("ERROR")))
-            print(term.bold_red(step.represented(indent=0)))
-            print(term.red(step.represent_traceback()))
-            break
+    if all(step.passed for step in steps):
+        print(term.green(_("OK")), end=' ')
+    elif any(not step.has_definition for step in steps):
+        print(term.yellow(_("UNDEF")), end=' ')
     else:
-        print(term.green(_("OK")), end='')
+        print(term.red(_("FAILED")), end=' ')
+
+        for step in steps:
+            if step.failed:
+                print(term.bold_red(step.represented(indent=0)))
+                print(term.red(step.represent_traceback()))
 
 
-@after.each_scenario('output')
+@after.each_scenario
 def after_each_scenario(scenario):
     """
     Print a terminator
