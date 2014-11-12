@@ -54,14 +54,21 @@ def callback(where, when):
     """
 
     def outer(method):
+
         method.__callback__ = {}
 
         @wraps(method)
-        def inner(self, callback):
+        def inner(self, callback, name=None):
+            if not callable(callback):
+                name = callback
+                return lambda callback: inner(self, callback, name=name)
+
             CALLBACK_REGISTRY.append_to(
                 where,
                 when.format(name=self.name),
-                callback)
+                function=callback,
+                name=name,
+            )
 
             return callback
 

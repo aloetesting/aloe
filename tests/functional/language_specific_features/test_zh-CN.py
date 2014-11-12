@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from os.path import dirname, abspath, join
 
-from nose.exc import SkipTest
 from nose.tools import with_setup
 
 from tests.asserts import capture_output, assert_equals
@@ -37,7 +36,7 @@ def test_output_with_success_colorless():
 功能: 简单测试           # tests/functional/language_specific_features/zh-CN/success/dumb.feature:3
   什么都不做应该运行成功 # tests/functional/language_specific_features/zh-CN/success/dumb.feature:4
 
-  #1\s
+  #1
   场景: 什么都不做       # tests/functional/language_specific_features/zh-CN/success/dumb.feature:6
     假如 如果 什么都不做 # tests/functional/language_specific_features/zh-CN/success/dumb_steps.py:6
 
@@ -60,7 +59,7 @@ def test_output_of_table_with_success_colorless():
 功能: 步骤中包含表格             # tests/functional/language_specific_features/zh-CN/success/table.feature:3
   简体中文表格步骤的成功测试     # tests/functional/language_specific_features/zh-CN/success/table.feature:4
 
-  #1\s
+  #1
   场景: 什么都不做的表格步骤测试 # tests/functional/language_specific_features/zh-CN/success/table.feature:6
     假如 如果 输入数据如下:      # tests/functional/language_specific_features/zh-CN/success/table_steps.py:6
       | id | 名称   |
@@ -86,12 +85,12 @@ def test_output_outlines_success_colorless():
 功能: 中文场景模板                 # tests/functional/language_specific_features/zh-CN/success/outlines.feature:3
   中文场景模板图表测试             # tests/functional/language_specific_features/zh-CN/success/outlines.feature:4
 
-  #1\s
+  #1
   场景大纲: 用表格描述场景         # tests/functional/language_specific_features/zh-CN/success/outlines.feature:6
 
   Example #1:
-    | 处理 | 输入 | 结果 |
-    | 这个 | 什么 | 功能 |
+    | 输入 | 处理 | 结果 |
+    | 什么 | 这个 | 功能 |
 
     假如如果 输入是<输入>          # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:13
     当执行<处理>时                 # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:22
@@ -100,8 +99,8 @@ def test_output_outlines_success_colorless():
   ----------------------------------------------------------------------------
 
   Example #2:
-    | 处理 | 输入 | 结果 |
-    | 这里 | 其他 | 一样 |
+    | 输入 | 处理 | 结果 |
+    | 其他 | 这里 | 一样 |
 
     假如如果 输入是<输入>          # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:13
     当执行<处理>时                 # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:22
@@ -110,8 +109,8 @@ def test_output_outlines_success_colorless():
   ----------------------------------------------------------------------------
 
   Example #3:
-    | 处理 | 输入 | 结果         |
-    | 动作 | 数据 | unicode输出! |
+    | 输入 | 处理 | 结果         |
+    | 数据 | 动作 | unicode输出! |
 
     假如如果 输入是<输入>          # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:13
     当执行<处理>时                 # tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:22
@@ -123,35 +122,3 @@ def test_output_outlines_success_colorless():
 3 scenarios (3 passed)
 9 steps (9 passed)
 """)
-
-def test_output_outlines_success_colorful():
-    "Language: zh-CN -> sucess outlines colorful"
-
-    with capture_output() as (out, _):
-        runner = Runner(join_path('zh-CN', 'success', 'outlines.feature'), verbosity=4)
-        runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_equals(
-        out.getvalue(),
-        u'\n'
-        u"\033[1;37m特性: 中文场景模板           \033[1;30m# tests/functional/language_specific_features/zh-CN/success/outlines.feature:3\033[0m\n"
-        u"\033[1;37m  中文场景模板图表测试       \033[1;30m# tests/functional/language_specific_features/zh-CN/success/outlines.feature:4\033[0m\n"
-        u'\n'
-        u"\033[1;37m  场景模板: 用表格描述场景   \033[1;30m# tests/functional/language_specific_features/zh-CN/success/outlines.feature:6\033[0m\n"
-        u"\033[0;36m    如果 输入是<输入>        \033[1;30m# tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:13\033[0m\n"
-        u"\033[0;36m    当 执行<处理>时          \033[1;30m# tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:22\033[0m\n"
-        u"\033[0;36m    那么 得到<结果>          \033[1;30m# tests/functional/language_specific_features/zh-CN/success/outlines_steps.py:31\033[0m\n"
-        u'\n'
-        u"\033[1;37m  例如:\033[0m\n"
-        u"\033[0;36m   \033[1;37m |\033[0;36m 输入\033[1;37m |\033[0;36m 处理\033[1;37m |\033[0;36m 结果        \033[1;37m |\033[0;36m\033[0m\n"
-        u"\033[1;32m   \033[1;37m |\033[1;32m 什么\033[1;37m |\033[1;32m 这个\033[1;37m |\033[1;32m 功能        \033[1;37m |\033[1;32m\033[0m\n"
-        u"\033[1;32m   \033[1;37m |\033[1;32m 其他\033[1;37m |\033[1;32m 这里\033[1;37m |\033[1;32m 一样        \033[1;37m |\033[1;32m\033[0m\n"
-        u"\033[1;32m   \033[1;37m |\033[1;32m 数据\033[1;37m |\033[1;32m 动作\033[1;37m |\033[1;32m unicode输出!\033[1;37m |\033[1;32m\033[0m\n"
-        u'\n'
-        u"\033[1;37m1 feature (\033[1;32m1 passed\033[1;37m)\033[0m\n"
-        u"\033[1;37m3 scenarios (\033[1;32m3 passed\033[1;37m)\033[0m\n"
-        u"\033[1;37m9 steps (\033[1;32m9 passed\033[1;37m)\033[0m\n"
-    )
-

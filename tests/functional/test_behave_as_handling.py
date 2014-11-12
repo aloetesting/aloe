@@ -53,7 +53,7 @@ def test_simple_behave_as_feature():
         "  In order to avoid silly mistakes                 # tests/functional/behave_as_features/1st_normal_steps/1st_normal_steps.feature:3\n"
         "  Cashiers must be able to multiplicate numbers :) # tests/functional/behave_as_features/1st_normal_steps/1st_normal_steps.feature:4\n"
         "\n"
-        "  #1 \n"
+        "  #1\n"
         "  Scenario: Regular numbers                        # tests/functional/behave_as_features/1st_normal_steps/1st_normal_steps.feature:6\n"
         "    Given I have entered 10 into the calculator    # tests/functional/behave_as_features/1st_normal_steps/simple_step_definitions.py:11\n"
         "    And I have entered 4 into the calculator       # tests/functional/behave_as_features/1st_normal_steps/simple_step_definitions.py:11\n"
@@ -62,7 +62,7 @@ def test_simple_behave_as_feature():
         "\n"
         "  ----------------------------------------------------------------------------\n"
         "\n"
-        "  #2 \n"
+        "  #2\n"
         "  Scenario: Shorter version of the scenario above  # tests/functional/behave_as_features/1st_normal_steps/1st_normal_steps.feature:12\n"
         "    Given I multiply 10 and 4 into the calculator  # tests/functional/behave_as_features/1st_normal_steps/simple_step_definitions.py:23\n"
         "    Then the result should be 40 on the screen     # tests/functional/behave_as_features/1st_normal_steps/simple_step_definitions.py:19\n"
@@ -86,7 +86,7 @@ def test_simple_tables_behave_as_feature():
         "  In order to avoid silly mistakes                 # tests/functional/behave_as_features/2nd_table_steps/2nd_table_steps.feature:3\n"
         "  Cashiers must be able to multiplicate numbers :) # tests/functional/behave_as_features/2nd_table_steps/2nd_table_steps.feature:4\n"
         "\n"
-        "  #1 \n"
+        "  #1\n"
         "  Scenario: Regular numbers                        # tests/functional/behave_as_features/2nd_table_steps/2nd_table_steps.feature:6\n"
         "    Given I multiply these numbers:                # tests/functional/behave_as_features/2nd_table_steps/simple_tables_step_definitions.py:31\n"
         "      | number |\n"
@@ -96,7 +96,7 @@ def test_simple_tables_behave_as_feature():
         "\n"
         "  ----------------------------------------------------------------------------\n"
         "\n"
-        "  #2 \n"
+        "  #2\n"
         "  Scenario: Shorter version of the scenario above  # tests/functional/behave_as_features/2nd_table_steps/2nd_table_steps.feature:13\n"
         "    Given I multiply 55 and 2 into the calculator  # tests/functional/behave_as_features/2nd_table_steps/simple_tables_step_definitions.py:23\n"
         "    Then the result should be 110 on the screen    # tests/functional/behave_as_features/2nd_table_steps/simple_tables_step_definitions.py:19\n"
@@ -123,7 +123,7 @@ def test_failing_tables_behave_as_feature():
     '  In order to avoid silly mistakes                 # tests/functional/behave_as_features/3rd_failing_steps/3rd_failing_steps.feature:3\n'
     '  Cashiers must be able to multiplicate numbers :) # tests/functional/behave_as_features/3rd_failing_steps/3rd_failing_steps.feature:4\n'
     '\n'
-    '  #1 \n'
+    '  #1\n'
     '  Scenario: Regular numbers                        # tests/functional/behave_as_features/3rd_failing_steps/3rd_failing_steps.feature:6\n'
     '    Given I have entered 10 into the calculator    # tests/functional/behave_as_features/3rd_failing_steps/failing_step_definitions.py:11\n'
     '    Traceback (most recent call last):\n'
@@ -138,7 +138,7 @@ def test_failing_tables_behave_as_feature():
     '\n'
     '  ----------------------------------------------------------------------------\n'
     '\n'
-    '  #2 \n'
+    '  #2\n'
     '  Scenario: Shorter version of the scenario above  # tests/functional/behave_as_features/3rd_failing_steps/3rd_failing_steps.feature:12\n'
     '    Given I multiply 10 and 4 into the calculator  # tests/functional/behave_as_features/3rd_failing_steps/failing_step_definitions.py:24\n'
     '    Traceback (most recent call last):\n'

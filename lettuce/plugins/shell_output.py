@@ -21,13 +21,21 @@ Uncoloured output is the same as coloured output but with blessings
 turned off.
 """
 
+try:
+    from imp import reload
+except ImportError:
+    # python 2.5 fallback
+    pass
+
 from blessings import Terminal
 
 
 # share the code with coloured shell output
 from . import colored_shell_output
+reload(colored_shell_output)
 from . import common_output
-from common_output import print_no_features_found
+reload(common_output)
+print_no_features_found = common_output.print_no_features_found
 
 # run with stylings disabled
 colored_shell_output.term = common_output.term = Terminal(force_styling=None)

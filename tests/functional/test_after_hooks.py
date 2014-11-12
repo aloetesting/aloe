@@ -2,26 +2,31 @@
 after_each feature hooks are invoked, regardless of whether a test passes.
 """
 
-from mock import MagicMock, patch
+from random import random
+
+from mock import MagicMock
 from lettuce import Runner, after
 from nose.tools import assert_equals, assert_raises
 from os.path import dirname, join, abspath
 
 
 def define_hooks(mock):
-    @after.each_feature
+    # Ensure hooks are added each time
+    name = random()
+
+    @after.each_feature(name)
     def after_each_feature(feature):
         mock.after_each_feature()
 
-    @after.each_scenario
+    @after.each_scenario(name)
     def after_each_scenario(scenario):
         mock.after_each_scenario()
 
-    @after.each_step
+    @after.each_step(name)
     def after_each_step(step):
         mock.after_each_step()
 
-    @after.outline
+    @after.outline(name)
     def after_outline(scenario, order, outline, reasons_to_fail):
         mock.after_outline()
 
@@ -50,9 +55,7 @@ def run_feature(feature, feature_will_fail, failfast,
              after_each_feature_count, after_each_scenario_count,
              after_each_step_count, after_outline_count):
     mock = get_after_hook_mock()
-    # Mocks look all the same, force adding this new one
-    with patch('lettuce.registry._function_matches', lambda one, other: False):
-        define_hooks(mock)
+    define_hooks(mock)
 
     runner = Runner(feature_name(feature), failfast=failfast,
                     verbosity=3)

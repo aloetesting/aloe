@@ -17,12 +17,11 @@
 
 from inspect import currentframe
 
+from nose.tools import *
+
 from lettuce import step, after, core, registry
 from lettuce.core import Step, Feature
 from lettuce.exceptions import StepLoadingError, NoDefinitionFound
-
-from nose.tools import *
-from nose.exc import SkipTest
 
 
 FEATURE1 = """
@@ -243,21 +242,6 @@ def test_ignore_case_on_step_definitions():
 
 
 @with_setup(step_runner_environ)
-def test_doesnt_ignore_case():
-    """Lettuce can, optionally consider case on step definitions"""
-
-    raise SkipTest("broken, need to do this when we compile the steps")
-
-    f = Feature.from_string(FEATURE3)
-    feature_result = f.run(ignore_case=False)
-    scenario_result = feature_result.scenario_results[0]
-    assert_equals(len(scenario_result.steps_passed), 1)
-    assert_equals(len(scenario_result.steps_undefined), 2)
-    assert_equals(scenario_result.total_steps, 3)
-    assert not all([s.has_definition for s in scenario_result.scenario.steps])
-
-
-@with_setup(step_runner_environ)
 def test_steps_are_aware_of_its_definitions():
     "Steps are aware of its definitions line numbers and file names"
 
@@ -408,8 +392,6 @@ def test_count_raised_exceptions_as_failing_steps():
     """
     When a step definition raises an exception, it is marked as a failed step
     """
-
-    raise SkipTest("do we want all exceptions or just assertion?")
 
     try:
         f = Feature.from_string(FEATURE8)

@@ -71,12 +71,15 @@ INVALID_MULTI_LINE = '''
   """
 '''.strip()
 
-import string
+
+import warnings
+
+from nose.tools import assert_equals, assert_raises
+
 from lettuce.parser import Feature, Step
 from lettuce.exceptions import LettuceSyntaxError
 from lettuce import strings
-from nose.tools import assert_equals, assert_raises
-from nose.exc import SkipTest
+
 from tests.asserts import *
 
 
@@ -269,27 +272,45 @@ def test_table_escaping():
     ])
 
 
-# FIXME: I want to have a discussion on what is correct in Gherkin before
-# making the parser work this way
 def test_multiline_is_parsed():
-    raise SkipTest("multiline")
     step, = parse_steps(MULTI_LINE)
     assert_equals(step.sentence, 'Given I have a string like so:')
     assert_equals(step.multiline, u"""This is line one
 and this is line two
 and this is line three
-and this is line four,
-with spaces at the beginning""")
+  and this is line four,
+
+  with spaces at the beginning""")
 
 
 def test_multiline_with_whitespace():
-    raise SkipTest("multiline")
-    step, = parse_steps(MULTI_LINE_WHITESPACE)
-    assert_equals(step.sentence, 'I have a string like so:')
+    with warnings.catch_warnings(True) as w:
+        step, = parse_steps(MULTI_LINE_WHITESPACE)
+        print len(w)
+        assert len(w) == 3
+
+    assert_equals(step.sentence, 'Given I have a string like so:')
     assert_equals(step.multiline, u"""This is line one
 and this is line two
 and this is line three
   and this is line four,
 
   with spaces at the beginning
-and spaces at the end   """)
+and spaces at the end   \"""")
+
+
+def test_multiline_larger_indents():
+    with warnings.catch_warnings(True) as w:
+        step, = parse_steps('''
+    Given I have a string line so:
+    """
+        Extra indented to start with
+    And back
+And under indented
+    """
+    ''')
+        assert len(w) == 1
+
+    assert_equals(step.multiline, u"""    Extra indented to start with
+And back
+under indented""")

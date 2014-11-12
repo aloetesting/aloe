@@ -117,16 +117,7 @@ class Runner(object):
 
         sys.path.remove(base_path)
 
-        if verbosity is 0:
-            from lettuce.plugins import non_verbose as output
-        elif verbosity is 1:
-            from lettuce.plugins import dots as output
-        elif verbosity is 2:
-            from lettuce.plugins import scenario_names as output
-        elif verbosity is 3:
-            from lettuce.plugins import shell_output as output
-        else:
-            from lettuce.plugins import colored_shell_output as output
+        self.verbosity = verbosity
 
         self.random = random
 
@@ -138,14 +129,29 @@ class Runner(object):
         if enable_subunit:
             subunit_output.enable(filename=subunit_filename)
 
-        reload(output)
-
-        self.output = output
-
     def run(self):
         """ Find and load step definitions, and them find and load
         features under `base_path` specified on constructor
         """
+
+        CALLBACK_REGISTRY.clear(name='output')
+        CALLBACK_REGISTRY.clear(name='common_output')
+
+        if self.verbosity is 0:
+            from lettuce.plugins import non_verbose as output
+        elif self.verbosity is 1:
+            from lettuce.plugins import dots as output
+        elif self.verbosity is 2:
+            from lettuce.plugins import scenario_names as output
+        elif self.verbosity is 3:
+            from lettuce.plugins import shell_output as output
+        else:
+            from lettuce.plugins import colored_shell_output as output
+
+        reload(output)
+
+        self.output = output
+
         results = []
         if self.single_feature:
             features_files = [self.single_feature]

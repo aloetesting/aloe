@@ -39,7 +39,7 @@ def test_output_with_success_colorless():
         u"フィーチャ: ダムフィーチャ           # tests/functional/language_specific_features/ja/success/dumb.feature:3\n"
         u"  テストをグリーンになればテスト成功 # tests/functional/language_specific_features/ja/success/dumb.feature:4\n"
         u"\n"
-        u"  #1\s\n"
+        u"  #1\n"
         u"  シナリオ: 何もしない               # tests/functional/language_specific_features/ja/success/dumb.feature:6\n"
         u"    前提 何もしない                  # tests/functional/language_specific_features/ja/success/dumb_steps.py:6\n"
         u"\n"
@@ -64,7 +64,7 @@ def test_output_of_table_with_success_colorless():
         u"フィーチャ: テーブル記法                     # tests/functional/language_specific_features/ja/success/table.feature:3\n"
         u"  日本語でのテーブル記法がパスするかのテスト # tests/functional/language_specific_features/ja/success/table.feature:4\n"
         u"\n"
-        u"  #1\s\n"
+        u"  #1\n"
         u"  シナリオ: 何もしないテーブル               # tests/functional/language_specific_features/ja/success/table.feature:6\n"
         u"    前提 データは以下:                       # tests/functional/language_specific_features/ja/success/table_steps.py:6\n"
         u"      | id | 定義       |\n"
@@ -91,7 +91,7 @@ def test_output_outlines_success_colorless():
 フィーチャ: アウトラインを日本語で書く       # tests/functional/language_specific_features/ja/success/outlines.feature:3
   図表のテストをパスすること                 # tests/functional/language_specific_features/ja/success/outlines.feature:4
 
-  #1\s
+  #1
   シナリオテンプレ: 全てのテストで何もしない # tests/functional/language_specific_features/ja/success/outlines.feature:6
 
   Example #1:

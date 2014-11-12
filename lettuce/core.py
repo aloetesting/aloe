@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import re
 import unicodedata
 
 from random import shuffle
@@ -114,9 +115,12 @@ class Step(parser.Step):
             annotate=annotate and not self.has_definition)
 
         # steps with definitions return their step definition
-        if annotate and self.has_definition:
-            s = strings.ljust(s, self.feature.max_length + 1) + \
-                u'# ' + unicode(self.defined_at)
+        if annotate:
+            if self.has_definition:
+                s = strings.ljust(s, self.feature.max_length + 1) + \
+                    u'# ' + unicode(self.defined_at)
+            else:
+                s += u" (undefined)"
 
         return s
 
@@ -190,13 +194,13 @@ class Step(parser.Step):
     @memoizedproperty
     def proposed_sentence(self):
         """
-        Something
+        The proposed step definition.
         """
 
         # take the sentence apart with a grammar
         SENTENCE = parser.OneOrMore(
-            parser.Word(parser.unicodePrintables) ^
-            parser.quotedString.setParseAction(lambda t: '-')
+            parser.quotedString.setParseAction(lambda t: '-') ^
+            parser.Word(parser.unicodePrintables)
         )
         tokens = SENTENCE.parseString(self.sentence)
 
@@ -205,6 +209,9 @@ class Step(parser.Step):
 
         method_name = u'_'.join(u'str' if token == '-' else token.lower()
                                 for token in tokens[1:])
+        method_name = unicodedata.normalize('NFKD', method_name) \
+            .encode('ascii', 'ignore')
+        method_name = re.sub(r'\W', '', method_name)
 
         nparams = len([token for token in tokens[1:] if token == '-'])
 
@@ -265,6 +272,7 @@ class Scenario(parser.Scenario):
                     call_hook('before_each', 'example', self, outline, steps)
 
                     if self.background:
+
                         try:
                             self.background.run()
 
@@ -311,8 +319,9 @@ class Scenario(parser.Scenario):
 
                 finally:
                     if outline:
+                        # FIXME: reasons to fail is empty
                         call_hook('outline', 'scenario', self,
-                                  None, outline, None)
+                                  None, outline, ())
 
                     call_hook('after_each', 'example', self, outline, steps)
 
@@ -343,6 +352,13 @@ class Background(parser.Background):
     def run(self):
         try:
             call_hook('before_each', 'background', self)
+
+            # pre-run the steps so we have their definitions set
+            for step in self.steps:
+                try:
+                    step.pre_run()
+                except NoDefinitionFound:
+                    pass
 
             for step in self.steps:
                 try:

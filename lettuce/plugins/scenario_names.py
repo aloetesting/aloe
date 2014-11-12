@@ -18,6 +18,8 @@
 
 from __future__ import print_function
 
+import sys
+from functools import wraps
 from gettext import (gettext as _,
                      ngettext as N_)
 
@@ -28,7 +30,24 @@ from lettuce.terrain import after, before
 from .common_output import *
 
 
+def with_flush(func):
+    """
+    Decorate print to flush the output after printing
+    """
+
+    @wraps(func)
+    def inner(*args, **kwargs):
+        file_ = kwargs.get('file', sys.stdout)
+
+        ret = func(*args, **kwargs)
+        file_.flush()
+        return ret
+
+    return inner
+
+
 term = Terminal()
+print = with_flush(print)
 
 
 @before.each_feature

@@ -14,22 +14,21 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-# REMOVE THIS
+
 import sys
 import os
 import lettuce
 from StringIO import StringIO
 
-from nose.tools import assert_equals, assert_true, with_setup
 from sure import expect
+from lxml import etree
+from nose.tools import assert_equals, assert_true, assert_raises
+
 from lettuce import registry
 from lettuce import Runner
 from lettuce import xunit_output
-from lxml import etree
-from tests.functional.test_runner import feature_name, bg_feature_name
-from tests.asserts import prepare_stdout
 
+from tests.functional.test_runner import feature_name, bg_feature_name
 
 def assert_xsd_valid(filename, content):
 
@@ -39,9 +38,10 @@ def assert_xsd_valid(filename, content):
     xmlschema.assertValid(etree.parse(StringIO(content)))
 
 
-@with_setup(prepare_stdout, registry.clear)
+@registry.preserve_registry
 def test_xunit_output_with_no_errors():
-    'Test xunit output with no errors'
+    """Test xunit output with no errors"""
+
     called = []
 
     def assert_correct_xml(filename, content):
@@ -62,9 +62,10 @@ def test_xunit_output_with_no_errors():
     xunit_output.wrt_output = old
 
 
-@with_setup(prepare_stdout, registry.clear)
+@registry.preserve_registry
 def test_xunit_output_with_one_error():
-    'Test xunit output with one errors'
+    """Test xunit output with one errors"""
+
     called = []
     def assert_correct_xml(filename, content):
         called.append(True)
@@ -83,16 +84,19 @@ def test_xunit_output_with_one_error():
 
     old = xunit_output.wrt_output
     xunit_output.wrt_output = assert_correct_xml
-    runner = Runner(feature_name('error_traceback'), enable_xunit=True)
-    runner.run()
+
+    with assert_raises(SystemExit):
+        runner = Runner(feature_name('error_traceback'), enable_xunit=True)
+        runner.run()
 
     assert_equals(1, len(called), "Function not called")
     xunit_output.wrt_output = old
 
 
-@with_setup(prepare_stdout, registry.clear)
+@registry.preserve_registry
 def test_xunit_output_with_different_filename():
-    'Test xunit output with different filename'
+    """Test xunit output with different filename"""
+
     called = []
     def assert_correct_xml(filename, content):
         called.append(True)
@@ -101,14 +105,17 @@ def test_xunit_output_with_different_filename():
 
     old = xunit_output.wrt_output
     xunit_output.wrt_output = assert_correct_xml
-    runner = Runner(feature_name('error_traceback'), enable_xunit=True,
-                    xunit_filename="custom_filename.xml")
-    runner.run()
+
+    with assert_raises(SystemExit):
+        runner = Runner(feature_name('error_traceback'), enable_xunit=True,
+                        xunit_filename="custom_filename.xml")
+        runner.run()
 
     assert_equals(1, len(called), "Function not called")
     xunit_output.wrt_output = old
 
-@with_setup(prepare_stdout, registry.clear)
+
+@registry.preserve_registry
 def test_xunit_output_with_unicode_characters_in_error_messages():
     called = []
     def assert_correct_xml(filename, content):
@@ -117,30 +124,35 @@ def test_xunit_output_with_unicode_characters_in_error_messages():
 
     old = xunit_output.wrt_output
     xunit_output.wrt_output = assert_correct_xml
-    runner = Runner(feature_name('unicode_traceback'), enable_xunit=True,
-                    xunit_filename="custom_filename.xml")
-    runner.run()
+
+    with assert_raises(SystemExit):
+        runner = Runner(feature_name('unicode_traceback'), enable_xunit=True,
+                        xunit_filename="custom_filename.xml")
+        runner.run()
 
     assert_equals(1, len(called), "Function not called")
     xunit_output.wrt_output = old
 
-@with_setup(prepare_stdout, registry.clear)
+
+@registry.preserve_registry
 def test_xunit_does_not_throw_exception_when_missing_step_definition():
     def dummy_write(filename, content):
         pass
 
     old = xunit_output.wrt_output
     xunit_output.wrt_output = dummy_write
-    runner = Runner(feature_name('missing_steps'), enable_xunit=True,
-                    xunit_filename="mising_steps.xml")
-    runner.run()
+
+    with assert_raises(SystemExit):
+        runner = Runner(feature_name('missing_steps'), enable_xunit=True,
+                        xunit_filename="mising_steps.xml")
+        runner.run()
 
     xunit_output.wrt_output = old
 
 
-@with_setup(prepare_stdout, registry.clear)
+@registry.preserve_registry
 def test_xunit_output_with_no_steps():
-    'Test xunit output with no steps'
+    """Test xunit output with no steps"""
     called = []
     def assert_correct_xml(filename, content):
         print filename
@@ -156,14 +168,16 @@ def test_xunit_output_with_no_steps():
 
     old = xunit_output.wrt_output
     xunit_output.wrt_output = assert_correct_xml
-    runner = Runner(feature_name('no_steps_defined'), enable_xunit=True)
-    runner.run()
+
+    with assert_raises(SystemExit):
+        runner = Runner(feature_name('no_steps_defined'), enable_xunit=True)
+        runner.run()
 
     assert_equals(1, len(called), "Function not called")
     xunit_output.wrt_output = old
 
 
-@with_setup(prepare_stdout, registry.clear)
+@registry.preserve_registry
 def test_xunit_output_with_background_section():
     'Test xunit output with a background section in the feature'
     called = []
@@ -199,9 +213,9 @@ def test_xunit_output_with_background_section():
     xunit_output.wrt_output = old
 
 
-@with_setup(prepare_stdout, registry.clear)
-def test_xunit_xml_output_with_no_errors():
-    'Test xunit doc xml output'
+@registry.preserve_registry
+def test_xunit_xml_output_with_mixed_unicode():
+    """Test xunit doc xml output"""
 
     called = []
 
@@ -211,8 +225,11 @@ def test_xunit_xml_output_with_no_errors():
 
     old = xunit_output.write_xml_doc
     xunit_output.write_xml_doc = assert_correct_xml_output
-    runner = Runner(feature_name('xunit_unicode_and_bytestring_mixing'), enable_xunit=True)
-    try:
+    runner = Runner(feature_name('xunit_unicode_and_bytestring_mixing'),
+                    enable_xunit=True,
+                    verbosity=2)
+
+    with assert_raises(SystemExit):
         runner.run()
-    finally:
-        xunit_output.write_xml_doc = old
+
+    xunit_output.write_xml_doc = old

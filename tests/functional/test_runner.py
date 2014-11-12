@@ -16,19 +16,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import os
 import random
+from inspect import currentframe
+from os.path import dirname, join, abspath
+from StringIO import StringIO
 
-import lettuce
 from mock import Mock, patch
 from sure import expect
-from StringIO import StringIO
-from os.path import dirname, join, abspath
-from inspect import currentframe
 
-from nose.tools import assert_equals, with_setup, assert_raises
-from nose.exc import SkipTest
+from nose.tools import with_setup, assert_raises
+
+import lettuce
 from lettuce.fs import FeatureLoader
 from lettuce.core import Feature, fs, StepDefinition
+from lettuce.registry import STEP_REGISTRY
 from lettuce.terrain import world
+from lettuce.registry import preserve_registry
 from lettuce import Runner
 
 from tests.asserts import (
@@ -46,7 +48,7 @@ bjoin = lambda *x: join(current_dir, 'bg_features', *x)
 
 lettuce_path = lambda *x: fs.relpath(join(lettuce_dir, *x))
 
-call_line = StepDefinition.__call__.im_func.func_code.co_firstlineno + 5
+call_line = StepDefinition.__call__.im_func.func_code.co_firstlineno + 6
 
 
 def joiner(callback, name):
@@ -142,14 +144,8 @@ def test_undefined_step_represent_string():
     step = feature.scenarios[0].steps[0]
     assert_equals(
         step.represented(),
-        "    Given I do nothing                   # tests/functional/output_features/runner_features/first.feature:7"
+        "    Given I do nothing                   # tests/functional/output_features/runner_features/first.feature:7 (undefined)"
     )
-
-    # FIXME: what is this for?
-    # assert_equals(
-    #     step.represent_string("foo bar"),
-    #     "    foo bar                              # tests/functional/output_features/runner_features/first.feature:7\n"
-    # )
 
 
 def test_defined_step_represent_string():
@@ -182,21 +178,21 @@ def test_output_with_success_colorless2():
         runner.run()
 
     assert_equals(out.getvalue(),
-        "\n"
-        "Feature: Dumb feature                    # tests/functional/output_features/runner_features/first.feature:1\n"
-        "  In order to test success               # tests/functional/output_features/runner_features/first.feature:2\n"
-        "  As a programmer                        # tests/functional/output_features/runner_features/first.feature:3\n"
-        "  I want to see that the output is green # tests/functional/output_features/runner_features/first.feature:4\n"
-        "\n"
-        "  #1 \n"
-        "  Scenario: Do nothing                   # tests/functional/output_features/runner_features/first.feature:6\n"
-        "    Given I do nothing                   # tests/functional/output_features/runner_features/dumb_steps.py:6\n"
-        "\n"
-        "  ----------------------------------------------------------------------------\n"
-        "\n"
-        "1 feature (1 passed)\n"
-        "1 scenario (1 passed)\n"
-        "1 step (1 passed)\n"
+        u'\n'
+        u'Feature: Dumb feature                    # tests/functional/output_features/runner_features/first.feature:1\n'
+        u'  In order to test success               # tests/functional/output_features/runner_features/first.feature:2\n'
+        u'  As a programmer                        # tests/functional/output_features/runner_features/first.feature:3\n'
+        u'  I want to see that the output is green # tests/functional/output_features/runner_features/first.feature:4\n'
+        u'\n'
+        u'  #1\n'
+        u'  Scenario: Do nothing                   # tests/functional/output_features/runner_features/first.feature:6\n'
+        u'    Given I do nothing                   # tests/functional/output_features/runner_features/dumb_steps.py:6\n'
+        u'\n'
+        u'  ----------------------------------------------------------------------------\n'
+        u'\n'
+        u'1 feature (1 passed)\n'
+        u'1 scenario (1 passed)\n'
+        u'1 step (1 passed)\n'
     )
 
 
@@ -216,13 +212,13 @@ def test_output_with_success_colorless():
         "  As a programmer                        # tests/functional/output_features/many_successful_scenarios/first.feature:3\n"
         "  I want to see that the output is green # tests/functional/output_features/many_successful_scenarios/first.feature:4\n"
         "\n"
-        "  #1 \n"
+        "  #1\n"
         "  Scenario: Do nothing                   # tests/functional/output_features/many_successful_scenarios/first.feature:6\n"
         "    Given I do nothing                   # tests/functional/output_features/many_successful_scenarios/dumb_steps.py:6\n"
         "\n"
         "  ----------------------------------------------------------------------------\n"
         "\n"
-        "  #2 \n"
+        "  #2\n"
         "  Scenario: Do nothing (again)           # tests/functional/output_features/many_successful_scenarios/first.feature:9\n"
         "    Given I do nothing (again)           # tests/functional/output_features/many_successful_scenarios/dumb_steps.py:6\n"
         "\n"
@@ -231,60 +227,6 @@ def test_output_with_success_colorless():
         "1 feature (1 passed)\n"
         "2 scenarios (2 passed)\n"
         "2 steps (2 passed)\n"
-    )
-
-
-def test_output_with_success_colorful():
-    "Testing the output of a successful feature"
-
-    runner = Runner(join(abspath(dirname(__file__)), 'output_features', 'runner_features'), verbosity=4)
-    runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_stdout_lines(
-        "\n"
-        "\033[1;37mFeature: Dumb feature                    \033[1;30m# tests/functional/output_features/runner_features/first.feature:1\033[0m\n"
-        "\033[1;37m  In order to test success               \033[1;30m# tests/functional/output_features/runner_features/first.feature:2\033[0m\n"
-        "\033[1;37m  As a programmer                        \033[1;30m# tests/functional/output_features/runner_features/first.feature:3\033[0m\n"
-        "\033[1;37m  I want to see that the output is green \033[1;30m# tests/functional/output_features/runner_features/first.feature:4\033[0m\n"
-        "\n"
-        "\033[1;37m  Scenario: Do nothing                   \033[1;30m# tests/functional/output_features/runner_features/first.feature:6\033[0m\n"
-        "\033[1;30m    Given I do nothing                   \033[1;30m# tests/functional/output_features/runner_features/dumb_steps.py:6\033[0m\n"
-        "\033[A\033[1;32m    Given I do nothing                   \033[1;30m# tests/functional/output_features/runner_features/dumb_steps.py:6\033[0m\n"
-        "\n"
-        "\033[1;37m1 feature (\033[1;32m1 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m1 scenario (\033[1;32m1 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m1 step (\033[1;32m1 passed\033[1;37m)\033[0m\n"
-    )
-
-
-def test_output_with_success_colorful_newline():
-    "A feature with two scenarios should separate the two scenarios with a new line (in color mode)."
-
-    runner = Runner(join(abspath(dirname(__file__)), 'output_features', 'many_successful_scenarios'), verbosity=4)
-    runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_stdout_lines(
-        "\n"
-        "\033[1;37mFeature: Dumb feature                    \033[1;30m# tests/functional/output_features/many_successful_scenarios/first.feature:1\033[0m\n"
-        "\033[1;37m  In order to test success               \033[1;30m# tests/functional/output_features/many_successful_scenarios/first.feature:2\033[0m\n"
-        "\033[1;37m  As a programmer                        \033[1;30m# tests/functional/output_features/many_successful_scenarios/first.feature:3\033[0m\n"
-        "\033[1;37m  I want to see that the output is green \033[1;30m# tests/functional/output_features/many_successful_scenarios/first.feature:4\033[0m\n"
-        "\n"
-        "\033[1;37m  Scenario: Do nothing                   \033[1;30m# tests/functional/output_features/many_successful_scenarios/first.feature:6\033[0m\n"
-        "\033[1;30m    Given I do nothing                   \033[1;30m# tests/functional/output_features/many_successful_scenarios/dumb_steps.py:6\033[0m\n"
-        "\033[A\033[1;32m    Given I do nothing                   \033[1;30m# tests/functional/output_features/many_successful_scenarios/dumb_steps.py:6\033[0m\n"
-        "\n"
-        "\033[1;37m  Scenario: Do nothing (again)           \033[1;30m# tests/functional/output_features/many_successful_scenarios/first.feature:9\033[0m\n"
-        "\033[1;30m    Given I do nothing (again)           \033[1;30m# tests/functional/output_features/many_successful_scenarios/dumb_steps.py:6\033[0m\n"
-        "\033[A\033[1;32m    Given I do nothing (again)           \033[1;30m# tests/functional/output_features/many_successful_scenarios/dumb_steps.py:6\033[0m\n"
-        "\n"
-        "\033[1;37m1 feature (\033[1;32m1 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m2 scenarios (\033[1;32m2 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m2 steps (\033[1;32m2 passed\033[1;37m)\033[0m\n"
     )
 
 
@@ -304,7 +246,7 @@ def test_output_with_success_colorless_many_features():
         "  As a programmer                            # tests/functional/output_features/many_successful_features/one.feature:3\n"
         "  I want to test its output on many features # tests/functional/output_features/many_successful_features/one.feature:4\n"
         "\n"
-        "  #1 \n"
+        "  #1\n"
         "  Scenario: Do nothing                       # tests/functional/output_features/many_successful_features/one.feature:6\n"
         "    Given I do nothing                       # tests/functional/output_features/many_successful_features/dumb_steps.py:6\n"
         "    Then I see that the test passes          # tests/functional/output_features/many_successful_features/dumb_steps.py:8\n"
@@ -314,7 +256,7 @@ def test_output_with_success_colorless_many_features():
         "Feature: Second feature, of many    # tests/functional/output_features/many_successful_features/two.feature:1\n"
         "  I just want to see it green :)    # tests/functional/output_features/many_successful_features/two.feature:2\n"
         "\n"
-        "  #1 \n"
+        "  #1\n"
         "  Scenario: Do nothing              # tests/functional/output_features/many_successful_features/two.feature:4\n"
         "    Given I do nothing              # tests/functional/output_features/many_successful_features/dumb_steps.py:6\n"
         "    Then I see that the test passes # tests/functional/output_features/many_successful_features/dumb_steps.py:8\n"
@@ -324,60 +266,6 @@ def test_output_with_success_colorless_many_features():
         "2 features (2 passed)\n"
         "2 scenarios (2 passed)\n"
         "4 steps (4 passed)\n"
-    )
-
-
-def test_output_with_success_colorful_many_features():
-    """Testing the colorful output of many successful features"""
-
-    runner = Runner(join(abspath(dirname(__file__)),
-                         'output_features',
-                         'many_successful_features'), verbosity=4)
-    runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_stdout_lines(
-        "\n"
-        "\033[1;37mFeature: First feature, of many              \033[1;30m# tests/functional/output_features/many_successful_features/one.feature:1\033[0m\n"
-        "\033[1;37m  In order to make lettuce more robust       \033[1;30m# tests/functional/output_features/many_successful_features/one.feature:2\033[0m\n"
-        "\033[1;37m  As a programmer                            \033[1;30m# tests/functional/output_features/many_successful_features/one.feature:3\033[0m\n"
-        "\033[1;37m  I want to test its output on many features \033[1;30m# tests/functional/output_features/many_successful_features/one.feature:4\033[0m\n"
-        "\n"
-        "\033[1;37m  Scenario: Do nothing                       \033[1;30m# tests/functional/output_features/many_successful_features/one.feature:6\033[0m\n"
-        "\033[1;30m    Given I do nothing                       \033[1;30m# tests/functional/output_features/many_successful_features/dumb_steps.py:6\033[0m\n"
-        "\033[A\033[1;32m    Given I do nothing                       \033[1;30m# tests/functional/output_features/many_successful_features/dumb_steps.py:6\033[0m\n"
-        "\033[1;30m    Then I see that the test passes          \033[1;30m# tests/functional/output_features/many_successful_features/dumb_steps.py:8\033[0m\n"
-        "\033[A\033[1;32m    Then I see that the test passes          \033[1;30m# tests/functional/output_features/many_successful_features/dumb_steps.py:8\033[0m\n"
-        "\n"
-        "\033[1;37mFeature: Second feature, of many    \033[1;30m# tests/functional/output_features/many_successful_features/two.feature:1\033[0m\n"
-        "\033[1;37m  I just want to see it green :)    \033[1;30m# tests/functional/output_features/many_successful_features/two.feature:2\033[0m\n"
-        "\n"
-        "\033[1;37m  Scenario: Do nothing              \033[1;30m# tests/functional/output_features/many_successful_features/two.feature:4\033[0m\n"
-        "\033[1;30m    Given I do nothing              \033[1;30m# tests/functional/output_features/many_successful_features/dumb_steps.py:6\033[0m\n"
-        "\033[A\033[1;32m    Given I do nothing              \033[1;30m# tests/functional/output_features/many_successful_features/dumb_steps.py:6\033[0m\n"
-        "\033[1;30m    Then I see that the test passes \033[1;30m# tests/functional/output_features/many_successful_features/dumb_steps.py:8\033[0m\n"
-        "\033[A\033[1;32m    Then I see that the test passes \033[1;30m# tests/functional/output_features/many_successful_features/dumb_steps.py:8\033[0m\n"
-        "\n"
-        "\033[1;37m2 features (\033[1;32m2 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m2 scenarios (\033[1;32m2 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m4 steps (\033[1;32m4 passed\033[1;37m)\033[0m\n"
-    )
-
-
-def test_output_when_could_not_find_features():
-    """Testing the colorful output when unable to find features"""
-
-    path = fs.relpath(join(abspath(dirname(__file__)), 'no_features',
-                           'unexistent-folder'))
-    runner = Runner(path, verbosity=4)
-    runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_stdout_lines(
-        '\033[1;31mOops!\033[0m\n'
-        '\033[1;37mCould not find features at \033[1;33m./%s\033[0m\n' % path
     )
 
 
@@ -424,7 +312,7 @@ def test_output_with_success_colorless_with_table():
         u'\n'
         u'Feature: Table Success           # tests/functional/output_features/success_table/success_table.feature:1\n'
         u'\n'
-        u'  #1 \n'
+        u'  #1\n'
         u'  Scenario: Add two numbers ♥    # tests/functional/output_features/success_table/success_table.feature:2\n'
         u'    Given I have 0 bucks         # tests/functional/output_features/success_table/success_table_steps.py:28\n'
         u'    And that I have these items: # tests/functional/output_features/success_table/success_table_steps.py:32\n'
@@ -445,56 +333,18 @@ def test_output_with_success_colorless_with_table():
     )
 
 
-def test_output_with_success_colorful_with_table():
-    "Testing the colorful output of success with table"
-
-    runner = Runner(feature_name('success_table'), verbosity=4)
-    runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_stdout_lines(
-        '\n'
-        '\033[1;37mFeature: Table Success           \033[1;30m# tests/functional/output_features/success_table/success_table.feature:1\033[0m\n'
-        '\n'
-        '\033[1;37m  Scenario: Add two numbers ♥    \033[1;30m# tests/functional/output_features/success_table/success_table.feature:2\033[0m\n'
-        '\033[1;30m    Given I have 0 bucks         \033[1;30m# tests/functional/output_features/success_table/success_table_steps.py:28\033[0m\n'
-        '\033[A\033[1;32m    Given I have 0 bucks         \033[1;30m# tests/functional/output_features/success_table/success_table_steps.py:28\033[0m\n'
-        '\033[1;30m    And that I have these items: \033[1;30m# tests/functional/output_features/success_table/success_table_steps.py:32\033[0m\n'
-        '\033[1;30m     \033[1;37m |\033[1;30m name   \033[1;37m |\033[1;30m price \033[1;37m |\033[1;30m\033[0m\n'
-        '\033[1;30m     \033[1;37m |\033[1;30m Porsche\033[1;37m |\033[1;30m 200000\033[1;37m |\033[1;30m\033[0m\n'
-        '\033[1;30m     \033[1;37m |\033[1;30m Ferrari\033[1;37m |\033[1;30m 400000\033[1;37m |\033[1;30m\033[0m\n'
-        '\033[A\033[A\033[A\033[A\033[1;32m    And that I have these items: \033[1;30m# tests/functional/output_features/success_table/success_table_steps.py:32\033[0m\n'
-        '\033[1;32m     \033[1;37m |\033[1;32m name   \033[1;37m |\033[1;32m price \033[1;37m |\033[1;32m\033[0m\n'
-        '\033[1;32m     \033[1;37m |\033[1;32m Porsche\033[1;37m |\033[1;32m 200000\033[1;37m |\033[1;32m\033[0m\n'
-        '\033[1;32m     \033[1;37m |\033[1;32m Ferrari\033[1;37m |\033[1;32m 400000\033[1;37m |\033[1;32m\033[0m\n'
-        '\033[1;30m    When I sell the "Ferrari"    \033[1;30m# tests/functional/output_features/success_table/success_table_steps.py:42\033[0m\n'
-        '\033[A\033[1;32m    When I sell the "Ferrari"    \033[1;30m# tests/functional/output_features/success_table/success_table_steps.py:42\033[0m\n'
-        '\033[1;30m    Then I have 400000 bucks     \033[1;30m# tests/functional/output_features/success_table/success_table_steps.py:28\033[0m\n'
-        '\033[A\033[1;32m    Then I have 400000 bucks     \033[1;30m# tests/functional/output_features/success_table/success_table_steps.py:28\033[0m\n'
-        '\033[1;30m    And my garage contains:      \033[1;30m# tests/functional/output_features/success_table/success_table_steps.py:47\033[0m\n'
-        '\033[1;30m     \033[1;37m |\033[1;30m name   \033[1;37m |\033[1;30m price \033[1;37m |\033[1;30m\033[0m\n'
-        '\033[1;30m     \033[1;37m |\033[1;30m Porsche\033[1;37m |\033[1;30m 200000\033[1;37m |\033[1;30m\033[0m\n'
-        '\033[A\033[A\033[A\033[1;32m    And my garage contains:      \033[1;30m# tests/functional/output_features/success_table/success_table_steps.py:47\033[0m\n'
-        '\033[1;32m     \033[1;37m |\033[1;32m name   \033[1;37m |\033[1;32m price \033[1;37m |\033[1;32m\033[0m\n'
-        '\033[1;32m     \033[1;37m |\033[1;32m Porsche\033[1;37m |\033[1;32m 200000\033[1;37m |\033[1;32m\033[0m\n'
-        '\n'
-        "\033[1;37m1 feature (\033[1;32m1 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m1 scenario (\033[1;32m1 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m5 steps (\033[1;32m5 passed\033[1;37m)\033[0m\n"
-    )
-
-
 def test_output_with_failed_colorless_with_table():
     "Testing the colorless output of failed with table"
 
-    runner = Runner(feature_name('failed_table'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(feature_name('failed_table'), verbosity=3)
+        assert_raises(SystemExit, runner.run)
 
-    assert_stdout_lines_with_traceback(
+    assert_equals(out.getvalue(),
         ("\n"
         "Feature: Table Fail                           # tests/functional/output_features/failed_table/failed_table.feature:1\n"
         "\n"
+        "  #1\n"
         "  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
         u"    Given I have a dumb step that passes ♥    # tests/functional/output_features/failed_table/failed_table_steps.py:20\n"
         "    And this one fails                        # tests/functional/output_features/failed_table/failed_table_steps.py:24\n"
@@ -508,77 +358,31 @@ def test_output_with_failed_colorless_with_table():
         "    And this one will be skipped              # tests/functional/output_features/failed_table/failed_table_steps.py:28\n"
         "    And this one does not even has definition # tests/functional/output_features/failed_table/failed_table.feature:12 (undefined)\n"
         "\n"
-        "1 feature (0 passed)\n"
-        "1 scenario (0 passed)\n"
-        "5 steps (1 failed, 2 skipped, 1 undefined, 1 passed)\n"
-        # FIXME: need to reimplement this
-        # "\n"
-        # "You can implement step definitions for undefined steps with these snippets:\n"
-        # "\n"
-        # "# -*- coding: utf-8 -*-\n"
-        # "from lettuce import step\n"
-        # "\n"
-        # "@step(u'And this one does not even has definition')\n"
-        # "def and_this_one_does_not_even_has_definition(step):\n"
-        # "    assert False, 'This step must be implemented'\n"
+        "  ----------------------------------------------------------------------------"
         "\n"
-        "List of failed scenarios:\n"
-        "  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
-        ) % {
-            'lettuce_core_file': lettuce_path('core.py'),
-            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')),
-            'call_line': call_line,
-        }
-    )
-
-
-def test_output_with_failed_colorful_with_table():
-    "Testing the colorful output of failed with table"
-
-    runner = Runner(feature_name('failed_table'), verbosity=4)
-    runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_stdout_lines_with_traceback(
         "\n"
-        "\033[1;37mFeature: Table Fail                           \033[1;30m# tests/functional/output_features/failed_table/failed_table.feature:1\033[0m\n"
+        "1 feature (1 failed)\n"
+        "1 scenario (1 failed)\n"
+        "5 steps (1 passed, 1 undefined, 2 skipped, 1 failed)\n"
         "\n"
-        "\033[1;37m  Scenario: See it fail                       \033[1;30m# tests/functional/output_features/failed_table/failed_table.feature:2\033[0m\n"
-        u"\033[1;30m    Given I have a dumb step that passes ♥    \033[1;30m# tests/functional/output_features/failed_table/failed_table_steps.py:20\033[0m\n"
-        u"\033[A\033[1;32m    Given I have a dumb step that passes ♥    \033[1;30m# tests/functional/output_features/failed_table/failed_table_steps.py:20\033[0m\n"
-        "\033[1;30m    And this one fails                        \033[1;30m# tests/functional/output_features/failed_table/failed_table_steps.py:24\033[0m\n"
-        "\033[A\033[0;31m    And this one fails                        \033[1;41;33m# tests/functional/output_features/failed_table/failed_table_steps.py:24\033[0m\n"
-        "\033[1;31m    Traceback (most recent call last):\n"
-        '      File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
-        "        ret = self.function(self.step, *args, **kw)\n"
-        '      File "%(step_file)s", line 25, in tof\n'
-        "        assert False\n"
-        "    AssertionError\033[0m\n"
-        "\033[1;30m    Then this one will be skipped             \033[1;30m# tests/functional/output_features/failed_table/failed_table_steps.py:28\033[0m\n"
-        "\033[A\033[0;36m    Then this one will be skipped             \033[1;30m# tests/functional/output_features/failed_table/failed_table_steps.py:28\033[0m\n"
-        "\033[1;30m    And this one will be skipped              \033[1;30m# tests/functional/output_features/failed_table/failed_table_steps.py:28\033[0m\n"
-        "\033[A\033[0;36m    And this one will be skipped              \033[1;30m# tests/functional/output_features/failed_table/failed_table_steps.py:28\033[0m\n"
-        "\033[0;33m    And this one does not even has definition \033[1;30m# tests/functional/output_features/failed_table/failed_table.feature:12\033[0m\n"
-        "\n"
-        "\033[1;37m1 feature (\033[0;31m0 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m1 scenario (\033[0;31m0 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m5 steps (\033[0;31m1 failed\033[1;37m, \033[0;36m2 skipped\033[1;37m, \033[0;33m1 undefined\033[1;37m, \033[1;32m1 passed\033[1;37m)\033[0m\n"
-        "\n"
-        "\033[0;33mYou can implement step definitions for undefined steps with these snippets:\n"
+        "You can implement step definitions for undefined steps with these snippets:\n"
         "\n"
         "# -*- coding: utf-8 -*-\n"
         "from lettuce import step\n"
         "\n"
-        "@step(u'And this one does not even has definition')\n"
-        "def and_this_one_does_not_even_has_definition(step):\n"
-        "    assert False, 'This step must be implemented'\033[0m"
+        "@step(ur'this one does not even has definition')\n"
+        "def this_one_does_not_even_has_definition(self):\n"
+        "    raise NotImplementedError()\n"
         "\n"
         "\n"
-        "\033[1;31mList of failed scenarios:\n"
-        "\033[0;31m  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
-        "\033[0m\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
+        "List of failed scenarios:\n"
+        "\n"
+        " * Feature: Table Fail\n"
+        "    - Scenario: See it fail\n"
+        "      (tests/functional/output_features/failed_table/failed_table.feature:2)\n"
+        "\n"
+        ) % {
+            'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')),
             'call_line': call_line,
         }
@@ -588,169 +392,150 @@ def test_output_with_failed_colorful_with_table():
 def test_output_with_successful_outline_colorless():
     "With colorless output, a successful outline scenario should print beautifully."
 
-    runner = Runner(feature_name('success_outline'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(feature_name('success_outline'), verbosity=3)
+        runner.run()
 
-    assert_stdout_lines(
-        '\n'
-        'Feature: Successful Scenario Outline                          # tests/functional/output_features/success_outline/success_outline.feature:1\n'
-        '  As lettuce author                                           # tests/functional/output_features/success_outline/success_outline.feature:2\n'
-        '  In order to finish the first release                        # tests/functional/output_features/success_outline/success_outline.feature:3\n'
-        u'  I want to make scenario outlines work ♥                     # tests/functional/output_features/success_outline/success_outline.feature:4\n'
-        '\n'
-        '  Scenario Outline: fill a web form                           # tests/functional/output_features/success_outline/success_outline.feature:6\n'
-        '    Given I open browser at "http://www.my-website.com/"      # tests/functional/output_features/success_outline/success_outline_steps.py:21\n'
-        '    And click on "sign-up"                                    # tests/functional/output_features/success_outline/success_outline_steps.py:25\n'
-        '    When I fill the field "username" with "<username>"        # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
-        '    And I fill the field "password" with "<password>"         # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
-        '    And I fill the field "password-confirm" with "<password>" # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
-        '    And I fill the field "email" with "<email>"               # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
-        '    And I click "done"                                        # tests/functional/output_features/success_outline/success_outline_steps.py:33\n'
-        '    Then I see the title of the page is "<title>"             # tests/functional/output_features/success_outline/success_outline_steps.py:37\n'
-        '\n'
-        '  Examples:\n'
-        '    | username | password | email          | title             |\n'
-        '    | john     | doe-1234 | john@gmail.org | John \| My Website |\n'
-        '    | mary     | wee-9876 | mary@email.com | Mary \| My Website |\n'
-        '    | foo      | foo-bar  | foo@bar.com    | Foo \| My Website  |\n'
-        '\n'
-        '1 feature (1 passed)\n'
-        '3 scenarios (3 passed)\n'
-        '24 steps (24 passed)\n'
-    )
-
-
-def test_output_with_successful_outline_colorful():
-    "With colored output, a successful outline scenario should print beautifully."
-
-    runner = Runner(feature_name('success_outline'), verbosity=4)
-    runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_stdout_lines_with_traceback(
-        '\n'
-        '\033[1;37mFeature: Successful Scenario Outline                          \033[1;30m# tests/functional/output_features/success_outline/success_outline.feature:1\033[0m\n'
-        '\033[1;37m  As lettuce author                                           \033[1;30m# tests/functional/output_features/success_outline/success_outline.feature:2\033[0m\n'
-        '\033[1;37m  In order to finish the first release                        \033[1;30m# tests/functional/output_features/success_outline/success_outline.feature:3\033[0m\n'
-        u'\033[1;37m  I want to make scenario outlines work ♥                     \033[1;30m# tests/functional/output_features/success_outline/success_outline.feature:4\033[0m\n'
-        '\n'
-        '\033[1;37m  Scenario Outline: fill a web form                           \033[1;30m# tests/functional/output_features/success_outline/success_outline.feature:6\033[0m\n'
-        '\033[0;36m    Given I open browser at "http://www.my-website.com/"      \033[1;30m# tests/functional/output_features/success_outline/success_outline_steps.py:21\033[0m\n'
-        '\033[0;36m    And click on "sign-up"                                    \033[1;30m# tests/functional/output_features/success_outline/success_outline_steps.py:25\033[0m\n'
-        '\033[0;36m    When I fill the field "username" with "<username>"        \033[1;30m# tests/functional/output_features/success_outline/success_outline_steps.py:29\033[0m\n'
-        '\033[0;36m    And I fill the field "password" with "<password>"         \033[1;30m# tests/functional/output_features/success_outline/success_outline_steps.py:29\033[0m\n'
-        '\033[0;36m    And I fill the field "password-confirm" with "<password>" \033[1;30m# tests/functional/output_features/success_outline/success_outline_steps.py:29\033[0m\n'
-        '\033[0;36m    And I fill the field "email" with "<email>"               \033[1;30m# tests/functional/output_features/success_outline/success_outline_steps.py:29\033[0m\n'
-        '\033[0;36m    And I click "done"                                        \033[1;30m# tests/functional/output_features/success_outline/success_outline_steps.py:33\033[0m\n'
-        '\033[0;36m    Then I see the title of the page is "<title>"             \033[1;30m# tests/functional/output_features/success_outline/success_outline_steps.py:37\033[0m\n'
-        '\n'
-        '\033[1;37m  Examples:\033[0m\n'
-        '\033[0;36m   \033[1;37m |\033[0;36m username\033[1;37m |\033[0;36m password\033[1;37m |\033[0;36m email         \033[1;37m |\033[0;36m title            \033[1;37m |\033[0;36m\033[0m\n'
-        '\033[1;32m   \033[1;37m |\033[1;32m john    \033[1;37m |\033[1;32m doe-1234\033[1;37m |\033[1;32m john@gmail.org\033[1;37m |\033[1;32m John \| My Website\033[1;37m |\033[1;32m\033[0m\n'
-        '\033[1;32m   \033[1;37m |\033[1;32m mary    \033[1;37m |\033[1;32m wee-9876\033[1;37m |\033[1;32m mary@email.com\033[1;37m |\033[1;32m Mary \| My Website\033[1;37m |\033[1;32m\033[0m\n'
-        '\033[1;32m   \033[1;37m |\033[1;32m foo     \033[1;37m |\033[1;32m foo-bar \033[1;37m |\033[1;32m foo@bar.com   \033[1;37m |\033[1;32m Foo \| My Website \033[1;37m |\033[1;32m\033[0m\n'
-        '\n'
-        "\033[1;37m1 feature (\033[1;32m1 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m3 scenarios (\033[1;32m3 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m24 steps (\033[1;32m24 passed\033[1;37m)\033[0m\n"
+    assert_equals(out.getvalue(),
+        u'\n'
+        u'Feature: Successful Scenario Outline                              # tests/functional/output_features/success_outline/success_outline.feature:1\n'
+        u'  As lettuce author                                               # tests/functional/output_features/success_outline/success_outline.feature:2\n'
+        u'  In order to finish the first release                            # tests/functional/output_features/success_outline/success_outline.feature:3\n'
+        u'  I want to make scenario outlines work ♥                         # tests/functional/output_features/success_outline/success_outline.feature:4\n'
+        u'\n'
+        u'  #1\n'
+        u'  Scenario Outline: fill a web form                               # tests/functional/output_features/success_outline/success_outline.feature:6\n'
+        u'\n'
+        u'  Example #1:\n'
+        u'    | username | password | email          | title              |\n'
+        u'    | john     | doe-1234 | john@gmail.org | John \| My Website |\n'
+        u'\n'
+        u'    Given I open browser at "http://www.my-website.com/"          # tests/functional/output_features/success_outline/success_outline_steps.py:21\n'
+        u'    And click on "sign-up"                                        # tests/functional/output_features/success_outline/success_outline_steps.py:25\n'
+        u'    When I fill the field "username" with "<username>"            # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
+        u'    And I fill the field "password" with "<password>"             # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
+        u'    And I fill the field "password-confirm" with "<password>"     # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
+        u'    And I fill the field "email" with "<email>"                   # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
+        u'    And I click "done"                                            # tests/functional/output_features/success_outline/success_outline_steps.py:33\n'
+        u'    Then I see the title of the page is "<title>"                 # tests/functional/output_features/success_outline/success_outline_steps.py:37\n'
+        u'\n'
+        u'  ----------------------------------------------------------------------------\n'
+        u'\n'
+        u'  Example #2:\n'
+        u'    | username | password | email          | title              |\n'
+        u'    | mary     | wee-9876 | mary@email.com | Mary \| My Website |\n'
+        u'\n'
+        u'    Given I open browser at "http://www.my-website.com/"          # tests/functional/output_features/success_outline/success_outline_steps.py:21\n'
+        u'    And click on "sign-up"                                        # tests/functional/output_features/success_outline/success_outline_steps.py:25\n'
+        u'    When I fill the field "username" with "<username>"            # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
+        u'    And I fill the field "password" with "<password>"             # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
+        u'    And I fill the field "password-confirm" with "<password>"     # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
+        u'    And I fill the field "email" with "<email>"                   # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
+        u'    And I click "done"                                            # tests/functional/output_features/success_outline/success_outline_steps.py:33\n'
+        u'    Then I see the title of the page is "<title>"                 # tests/functional/output_features/success_outline/success_outline_steps.py:37\n'
+        u'\n'
+        u'  ----------------------------------------------------------------------------\n'
+        u'\n'
+        u'  Example #3:\n'
+        u'    | username | password | email       | title             |\n'
+        u'    | foo      | foo-bar  | foo@bar.com | Foo \| My Website |\n'
+        u'\n'
+        u'    Given I open browser at "http://www.my-website.com/"          # tests/functional/output_features/success_outline/success_outline_steps.py:21\n'
+        u'    And click on "sign-up"                                        # tests/functional/output_features/success_outline/success_outline_steps.py:25\n'
+        u'    When I fill the field "username" with "<username>"            # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
+        u'    And I fill the field "password" with "<password>"             # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
+        u'    And I fill the field "password-confirm" with "<password>"     # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
+        u'    And I fill the field "email" with "<email>"                   # tests/functional/output_features/success_outline/success_outline_steps.py:29\n'
+        u'    And I click "done"                                            # tests/functional/output_features/success_outline/success_outline_steps.py:33\n'
+        u'    Then I see the title of the page is "<title>"                 # tests/functional/output_features/success_outline/success_outline_steps.py:37\n'
+        u'\n'
+        u'  ----------------------------------------------------------------------------\n'
+        u'\n'
+        u'1 feature (1 passed)\n'
+        u'3 scenarios (3 passed)\n'
+        u'24 steps (24 passed)\n'
     )
 
 
 def test_output_with_failful_outline_colorless():
     "With colorless output, an unsuccessful outline scenario should print beautifully."
 
-    runner = Runner(feature_name('fail_outline'), verbosity=3)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(feature_name('fail_outline'), verbosity=3)
+        assert_raises(SystemExit, runner.run)
 
-    assert_stdout_lines_with_traceback(
-        '\n'
-        'Feature: Failful Scenario Outline                             # tests/functional/output_features/fail_outline/fail_outline.feature:1\n'
-        '  As lettuce author                                           # tests/functional/output_features/fail_outline/fail_outline.feature:2\n'
-        '  In order to finish the first release                        # tests/functional/output_features/fail_outline/fail_outline.feature:3\n'
+    assert_equals(out.getvalue(),
+        u'\n'
+        u'Feature: Failful Scenario Outline                             # tests/functional/output_features/fail_outline/fail_outline.feature:1\n'
+        u'  As lettuce author                                           # tests/functional/output_features/fail_outline/fail_outline.feature:2\n'
+        u'  In order to finish the first release                        # tests/functional/output_features/fail_outline/fail_outline.feature:3\n'
         u'  I want to make scenario outlines work ♥                     # tests/functional/output_features/fail_outline/fail_outline.feature:4\n'
-        '\n'
-        '  Scenario Outline: fill a web form                           # tests/functional/output_features/fail_outline/fail_outline.feature:6\n'
-        '    Given I open browser at "http://www.my-website.com/"      # tests/functional/output_features/fail_outline/fail_outline_steps.py:21\n'
-        '    And click on "sign-up"                                    # tests/functional/output_features/fail_outline/fail_outline_steps.py:25\n'
-        '    When I fill the field "username" with "<username>"        # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
-        '    And I fill the field "password" with "<password>"         # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
-        '    And I fill the field "password-confirm" with "<password>" # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
-        '    And I fill the field "email" with "<email>"               # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
-        '    And I click "done"                                        # tests/functional/output_features/fail_outline/fail_outline_steps.py:33\n'
-        '    Then I see the message "<message>"                        # tests/functional/output_features/fail_outline/fail_outline_steps.py:37\n'
-        '\n'
-        '  Examples:\n'
-        '    | username | password | email          | message       |\n'
-        '    | john     | doe-1234 | john@gmail.org | Welcome, John |\n'
-        '    | mary     | wee-9876 | mary@email.com | Welcome, Mary |\n'
-        "    Traceback (most recent call last):\n"
-        '      File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
-        "        ret = self.function(self.step, *args, **kw)\n"
-        '      File "%(step_file)s", line 30, in when_i_fill_the_field_x_with_y\n'
-        "        if field == 'password' and value == 'wee-9876':  assert False\n"
-        "    AssertionError\n"
-        '    | foo      | foo-bar  | foo@bar.com    | Welcome, Foo  |\n'
-        '\n'
-        '1 feature (0 passed)\n'
-        '3 scenarios (2 passed)\n'
-        '24 steps (1 failed, 4 skipped, 19 passed)\n'
-        '\n'
-        'List of failed scenarios:\n'
-        '  Scenario Outline: fill a web form                           # tests/functional/output_features/fail_outline/fail_outline.feature:6\n'
-        '\n' % {
-            'lettuce_core_file': lettuce_path('core.py'),
-            'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'fail_outline', 'fail_outline_steps.py')),
-            'call_line': call_line,
-        }
-    )
-
-
-def test_output_with_failful_outline_colorful():
-    "With colored output, an unsuccessful outline scenario should print beautifully."
-
-    runner = Runner(feature_name('fail_outline'), verbosity=4)
-    runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_stdout_lines_with_traceback(
-        '\n'
-        '\033[1;37mFeature: Failful Scenario Outline                             \033[1;30m# tests/functional/output_features/fail_outline/fail_outline.feature:1\033[0m\n'
-        '\033[1;37m  As lettuce author                                           \033[1;30m# tests/functional/output_features/fail_outline/fail_outline.feature:2\033[0m\n'
-        '\033[1;37m  In order to finish the first release                        \033[1;30m# tests/functional/output_features/fail_outline/fail_outline.feature:3\033[0m\n'
-        u'\033[1;37m  I want to make scenario outlines work ♥                     \033[1;30m# tests/functional/output_features/fail_outline/fail_outline.feature:4\033[0m\n'
-        '\n'
-        '\033[1;37m  Scenario Outline: fill a web form                           \033[1;30m# tests/functional/output_features/fail_outline/fail_outline.feature:6\033[0m\n'
-        '\033[0;36m    Given I open browser at "http://www.my-website.com/"      \033[1;30m# tests/functional/output_features/fail_outline/fail_outline_steps.py:21\033[0m\n'
-        '\033[0;36m    And click on "sign-up"                                    \033[1;30m# tests/functional/output_features/fail_outline/fail_outline_steps.py:25\033[0m\n'
-        '\033[0;36m    When I fill the field "username" with "<username>"        \033[1;30m# tests/functional/output_features/fail_outline/fail_outline_steps.py:29\033[0m\n'
-        '\033[0;36m    And I fill the field "password" with "<password>"         \033[1;30m# tests/functional/output_features/fail_outline/fail_outline_steps.py:29\033[0m\n'
-        '\033[0;36m    And I fill the field "password-confirm" with "<password>" \033[1;30m# tests/functional/output_features/fail_outline/fail_outline_steps.py:29\033[0m\n'
-        '\033[0;36m    And I fill the field "email" with "<email>"               \033[1;30m# tests/functional/output_features/fail_outline/fail_outline_steps.py:29\033[0m\n'
-        '\033[0;36m    And I click "done"                                        \033[1;30m# tests/functional/output_features/fail_outline/fail_outline_steps.py:33\033[0m\n'
-        '\033[0;36m    Then I see the message "<message>"                        \033[1;30m# tests/functional/output_features/fail_outline/fail_outline_steps.py:37\033[0m\n'
-        '\n'
-        '\033[1;37m  Examples:\033[0m\n'
-        '\033[0;36m   \033[1;37m |\033[0;36m username\033[1;37m |\033[0;36m password\033[1;37m |\033[0;36m email         \033[1;37m |\033[0;36m message      \033[1;37m |\033[0;36m\033[0m\n'
-        '\033[1;32m   \033[1;37m |\033[1;32m john    \033[1;37m |\033[1;32m doe-1234\033[1;37m |\033[1;32m john@gmail.org\033[1;37m |\033[1;32m Welcome, John\033[1;37m |\033[1;32m\033[0m\n'
-        '\033[1;31m   \033[1;37m |\033[0;31m mary    \033[1;37m |\033[0;31m wee-9876\033[1;37m |\033[0;31m mary@email.com\033[1;37m |\033[0;31m Welcome, Mary\033[1;37m |\033[0;31m\033[0m\n'
-        "\033[1;31m    Traceback (most recent call last):\n"
-        '      File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
-        "        ret = self.function(self.step, *args, **kw)\n"
-        '      File "%(step_file)s", line 30, in when_i_fill_the_field_x_with_y\n'
-        "        if field == 'password' and value == 'wee-9876':  assert False\n"
-        "    AssertionError\033[0m\n"
-        '\033[1;32m   \033[1;37m |\033[1;32m foo     \033[1;37m |\033[1;32m foo-bar \033[1;37m |\033[1;32m foo@bar.com   \033[1;37m |\033[1;32m Welcome, Foo \033[1;37m |\033[1;32m\033[0m\n'
-        '\n'
-        "\033[1;37m1 feature (\033[0;31m0 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m3 scenarios (\033[1;32m2 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m24 steps (\033[0;31m1 failed\033[1;37m, \033[0;36m4 skipped\033[1;37m, \033[1;32m19 passed\033[1;37m)\033[0m\n"
+        u'\n'
+        u'  #1\n'
+        u'  Scenario Outline: fill a web form                           # tests/functional/output_features/fail_outline/fail_outline.feature:6\n'
+        u'\n'
+        u'  Example #1:\n'
+        u'    | username | password | email          | message       |\n'
+        u'    | john     | doe-1234 | john@gmail.org | Welcome, John |\n'
+        u'\n'
+        u'    Given I open browser at "http://www.my-website.com/"      # tests/functional/output_features/fail_outline/fail_outline_steps.py:21\n'
+        u'    And click on "sign-up"                                    # tests/functional/output_features/fail_outline/fail_outline_steps.py:25\n'
+        u'    When I fill the field "username" with "<username>"        # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
+        u'    And I fill the field "password" with "<password>"         # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
+        u'    And I fill the field "password-confirm" with "<password>" # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
+        u'    And I fill the field "email" with "<email>"               # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
+        u'    And I click "done"                                        # tests/functional/output_features/fail_outline/fail_outline_steps.py:33\n'
+        u'    Then I see the message "<message>"                        # tests/functional/output_features/fail_outline/fail_outline_steps.py:37\n'
         "\n"
-        "\033[1;31mList of failed scenarios:\n"
-        "\033[0;31m  Scenario Outline: fill a web form                           # tests/functional/output_features/fail_outline/fail_outline.feature:6\n"
-        "\033[0m\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
+        "  ----------------------------------------------------------------------------\n"
+        u'\n'
+        u'  Example #2:\n'
+        u'    | username | password | email          | message       |\n'
+        u'    | mary     | wee-9876 | mary@email.com | Welcome, Mary |\n'
+        u'\n'
+        u'    Given I open browser at "http://www.my-website.com/"      # tests/functional/output_features/fail_outline/fail_outline_steps.py:21\n'
+        u'    And click on "sign-up"                                    # tests/functional/output_features/fail_outline/fail_outline_steps.py:25\n'
+        u'    When I fill the field "username" with "<username>"        # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
+        u'    And I fill the field "password" with "<password>"         # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
+        u"    Traceback (most recent call last):\n"
+        u'      File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
+        u"        ret = self.function(self.step, *args, **kw)\n"
+        u'      File "%(step_file)s", line 30, in when_i_fill_the_field_x_with_y\n'
+        u"        if field == 'password' and value == 'wee-9876':  assert False\n"
+        u"    AssertionError\n"
+        u'    And I fill the field "password-confirm" with "<password>" # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
+        u'    And I fill the field "email" with "<email>"               # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
+        u'    And I click "done"                                        # tests/functional/output_features/fail_outline/fail_outline_steps.py:33\n'
+        u'    Then I see the message "<message>"                        # tests/functional/output_features/fail_outline/fail_outline_steps.py:37\n'
+        "\n"
+        "  ----------------------------------------------------------------------------\n"
+        u'\n'
+        u'  Example #3:\n'
+        u'    | username | password | email       | message      |\n'
+        u'    | foo      | foo-bar  | foo@bar.com | Welcome, Foo |\n'
+        u'\n'
+        u'    Given I open browser at "http://www.my-website.com/"      # tests/functional/output_features/fail_outline/fail_outline_steps.py:21\n'
+        u'    And click on "sign-up"                                    # tests/functional/output_features/fail_outline/fail_outline_steps.py:25\n'
+        u'    When I fill the field "username" with "<username>"        # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
+        u'    And I fill the field "password" with "<password>"         # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
+        u'    And I fill the field "password-confirm" with "<password>" # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
+        u'    And I fill the field "email" with "<email>"               # tests/functional/output_features/fail_outline/fail_outline_steps.py:29\n'
+        u'    And I click "done"                                        # tests/functional/output_features/fail_outline/fail_outline_steps.py:33\n'
+        u'    Then I see the message "<message>"                        # tests/functional/output_features/fail_outline/fail_outline_steps.py:37\n'
+        "\n"
+        "  ----------------------------------------------------------------------------\n"
+        u'\n'
+        u'1 feature (1 failed)\n'
+        u'3 scenarios (2 passed, 1 failed)\n'
+        u'24 steps (19 passed, 4 skipped, 1 failed)\n'
+        u'\n'
+        u'List of failed scenarios:\n'
+        u'\n'
+        u' * Feature: Failful Scenario Outline\n'
+        u'    - Scenario Outline: fill a web form\n'
+        u'      (tests/functional/output_features/fail_outline/fail_outline.feature:6)\n'
+        u'\n' % {
+            'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'fail_outline', 'fail_outline_steps.py')),
             'call_line': call_line,
         }
@@ -762,60 +547,31 @@ def test_output_snippets_with_groups_within_double_quotes_colorless():
 
     with capture_output() as (out, err):
         runner = Runner(feature_name('double-quoted-snippet'), verbosity=3)
-        runner.run()
+        assert_raises(SystemExit, runner.run)
 
     assert_equals(out.getvalue(),
         u'\n'
         u'Feature: double-quoted snippet proposal                          # tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:1\n'
         u'\n'
+        u'  #1\n'
         u'  Scenario: Propose matched groups                               # tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:2\n'
         u'    Given I have "stuff here" and "more @#$%ˆ& bizar sutff h3r3" # tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:3 (undefined)\n'
         u'\n'
-        u'1 feature (0 passed)\n'
-        u'1 scenario (0 passed)\n'
-        u'1 step (1 undefined, 0 passed)\n'
+        u'  ----------------------------------------------------------------------------\n'
+        u'\n'
+        u'1 feature (1 failed)\n'
+        u'1 scenario (1 failed)\n'
+        u'1 step (1 undefined)\n'
         u'\n'
         u'You can implement step definitions for undefined steps with these snippets:\n'
         u'\n'
         u"# -*- coding: utf-8 -*-\n"
         u'from lettuce import step\n'
         u'\n'
-        u'@step(u\'Given I have "([^\"]*)" and "([^\"]*)"\')\n'
-        u'def given_i_have_group1_and_group2(step, group1, group2):\n'
-        u'    assert False, \'This step must be implemented\'\n'
-    )
-
-
-def test_output_snippets_with_groups_within_double_quotes_colorful():
-    """
-    Testing that the proposed snippet is clever enough to identify groups
-    within double quotes. colorful
-    """
-
-    runner = Runner(feature_name('double-quoted-snippet'), verbosity=4)
-    runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_stdout_lines(
+        u'@step(ur\'I have "([^\"]*)" and "([^\"]*)"\')\n'
+        u'def i_have_str_and_str(self, param1, param2):\n'
+        u'    raise NotImplementedError()\n'
         u'\n'
-        u'\033[1;37mFeature: double-quoted snippet proposal                          \033[1;30m# tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:1\033[0m\n'
-        u'\n'
-        u'\033[1;37m  Scenario: Propose matched groups                               \033[1;30m# tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:2\033[0m\n'
-        u'\033[0;33m    Given I have "stuff here" and "more @#$%ˆ& bizar sutff h3r3" \033[1;30m# tests/functional/output_features/double-quoted-snippet/double-quoted-snippet.feature:3\033[0m\n'
-        u'\n'
-        "\033[1;37m1 feature (\033[0;31m0 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m1 scenario (\033[0;31m0 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m1 step (\033[0;33m1 undefined\033[1;37m, \033[1;32m0 passed\033[1;37m)\033[0m\n"
-        u'\n'
-        u'\033[0;33mYou can implement step definitions for undefined steps with these snippets:\n'
-        u'\n'
-        u"# -*- coding: utf-8 -*-\n"
-        u'from lettuce import step\n'
-        u'\n'
-        u'@step(u\'Given I have "([^"]*)" and "([^"]*)"\')\n'
-        u'def given_i_have_group1_and_group2(step, group1, group2):\n'
-        u'    assert False, \'This step must be implemented\'\033[0m\n'
     )
 
 
@@ -824,58 +580,31 @@ def test_output_snippets_with_groups_within_single_quotes_colorless():
 
     with capture_output() as (out, err):
         runner = Runner(feature_name('single-quoted-snippet'), verbosity=3)
-        runner.run()
+        assert_raises(SystemExit, runner.run)
 
     assert_equals(out.getvalue(),
         u'\n'
         u'Feature: single-quoted snippet proposal                          # tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:1\n'
         u'\n'
+        u'  #1\n'
         u'  Scenario: Propose matched groups                               # tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:2\n'
         u'    Given I have \'stuff here\' and \'more @#$%ˆ& bizar sutff h3r3\' # tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:3 (undefined)\n'
         u'\n'
-        u'1 feature (0 passed)\n'
-        u'1 scenario (0 passed)\n'
-        u'1 step (1 undefined, 0 passed)\n'
+        u'  ----------------------------------------------------------------------------\n'
+        u'\n'
+        u'1 feature (1 failed)\n'
+        u'1 scenario (1 failed)\n'
+        u'1 step (1 undefined)\n'
         u'\n'
         u'You can implement step definitions for undefined steps with these snippets:\n'
         u'\n'
         u"# -*- coding: utf-8 -*-\n"
         u'from lettuce import step\n'
         u'\n'
-        u'@step(u\'Given I have \\\'([^\\\']*)\\\' and \\\'([^\\\']*)\\\'\')\n'
-        u'def given_i_have_group1_and_group2(step, group1, group2):\n'
-        u'    assert False, \'This step must be implemented\'\n'
-    )
-
-
-def test_output_snippets_with_groups_within_single_quotes_colorful():
-    """Testing that the proposed snippet is clever enough to identify groups
-    within single quotes. colorful"""
-
-    runner = Runner(feature_name('single-quoted-snippet'), verbosity=4)
-    runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_stdout_lines(
+        u'@step(ur\'I have "([^"]*)" and "([^"]*)"\')\n'
+        u'def i_have_str_and_str(self, param1, param2):\n'
+        u'    raise NotImplementedError()\n'
         u'\n'
-        u'\033[1;37mFeature: single-quoted snippet proposal                          \033[1;30m# tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:1\033[0m\n'
-        u'\n'
-        u'\033[1;37m  Scenario: Propose matched groups                               \033[1;30m# tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:2\033[0m\n'
-        u'\033[0;33m    Given I have \'stuff here\' and \'more @#$%ˆ& bizar sutff h3r3\' \033[1;30m# tests/functional/output_features/single-quoted-snippet/single-quoted-snippet.feature:3\033[0m\n'
-        u'\n'
-        "\033[1;37m1 feature (\033[0;31m0 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m1 scenario (\033[0;31m0 passed\033[1;37m)\033[0m\n"
-        "\033[1;37m1 step (\033[0;33m1 undefined\033[1;37m, \033[1;32m0 passed\033[1;37m)\033[0m\n"
-        u'\n'
-        u'\033[0;33mYou can implement step definitions for undefined steps with these snippets:\n'
-        u'\n'
-        u"# -*- coding: utf-8 -*-\n"
-        u'from lettuce import step\n'
-        u'\n'
-        u'@step(u\'Given I have \\\'([^\\\']*)\\\' and \\\'([^\\\']*)\\\'\')\n'
-        u'def given_i_have_group1_and_group2(step, group1, group2):\n'
-        u'    assert False, \'This step must be implemented\'\033[0m\n'
     )
 
 
@@ -884,28 +613,32 @@ def test_output_snippets_with_groups_within_redundant_quotes():
 
     with capture_output() as (out, err):
         runner = Runner(feature_name('redundant-steps-quotes'), verbosity=3)
-        runner.run()
+        assert_raises(SystemExit, runner.run)
 
     assert_equals(out.getvalue(),
         u'\n'
         u'Feature: avoid duplicating same snippet                          # tests/functional/output_features/redundant-steps-quotes/redundant-steps-quotes.feature:1\n'
         u'\n'
+        u'  #1\n'
         u'  Scenario: Propose matched groups                               # tests/functional/output_features/redundant-steps-quotes/redundant-steps-quotes.feature:2\n'
         u'    Given I have "stuff here" and "more @#$%ˆ& bizar sutff h3r3" # tests/functional/output_features/redundant-steps-quotes/redundant-steps-quotes.feature:3 (undefined)\n'
         u'    Given I have "blablabla" and "12345"                         # tests/functional/output_features/redundant-steps-quotes/redundant-steps-quotes.feature:4 (undefined)\n'
         u'\n'
-        u'1 feature (0 passed)\n'
-        u'1 scenario (0 passed)\n'
-        u'2 steps (2 undefined, 0 passed)\n'
+        u'  ----------------------------------------------------------------------------\n'
+        u'\n'
+        u'1 feature (1 failed)\n'
+        u'1 scenario (1 failed)\n'
+        u'2 steps (2 undefined)\n'
         u'\n'
         u'You can implement step definitions for undefined steps with these snippets:\n'
         u'\n'
         u"# -*- coding: utf-8 -*-\n"
         u'from lettuce import step\n'
         u'\n'
-        u'@step(u\'Given I have "([^"]*)" and "([^"]*)"\')\n'
-        u'def given_i_have_group1_and_group2(step, group1, group2):\n'
-        u'    assert False, \'This step must be implemented\'\n'
+        u'@step(ur\'I have "([^"]*)" and "([^"]*)"\')\n'
+        u'def i_have_str_and_str(self, param1, param2):\n'
+        u'    raise NotImplementedError()\n'
+        u'\n'
     )
 
 
@@ -914,38 +647,44 @@ def test_output_snippets_with_normalized_unicode_names():
 
     with capture_output() as (out, err):
         runner = Runner(feature_name('latin-accents'), verbosity=3)
-        runner.run()
+        assert_raises(SystemExit, runner.run)
 
     assert_equals(out.getvalue(),
-        u"\n"
-        u"Funcionalidade: melhorar o output de snippets do lettuce                                      # tests/functional/output_features/latin-accents/latin-accents.feature:2\n"
-        u"  Como autor do lettuce                                                                       # tests/functional/output_features/latin-accents/latin-accents.feature:3\n"
-        u"  Eu quero ter um output refinado de snippets                                                 # tests/functional/output_features/latin-accents/latin-accents.feature:4\n"
-        u"  Para melhorar, de uma forma geral, a vida do programador                                    # tests/functional/output_features/latin-accents/latin-accents.feature:5\n"
-        u"\n"
-        u"  Cenário: normalizar snippets com unicode                                                    # tests/functional/output_features/latin-accents/latin-accents.feature:7\n"
-        u"    Dado que eu tenho palavrões e outras situações                                            # tests/functional/output_features/latin-accents/latin-accents.feature:8 (undefined)\n"
-        u"    E várias palavras acentuadas são úteis, tais como: \"(é,não,léo,chororó,chácara,epígrafo)\" # tests/functional/output_features/latin-accents/latin-accents.feature:9 (undefined)\n"
-        u"    Então eu fico felizão                                                                     # tests/functional/output_features/latin-accents/latin-accents.feature:10 (undefined)\n"
-        u"\n"
-        u"1 feature (0 passed)\n"
-        u"1 scenario (0 passed)\n"
-        u"3 steps (3 undefined, 0 passed)\n"
-        u"\n"
-        u"You can implement step definitions for undefined steps with these snippets:\n"
-        u"\n"
-        u"# -*- coding: utf-8 -*-\n"
-        u"from lettuce import step\n"
-        u"\n"
-        u"@step(u'Dado que eu tenho palavrões e outras situações')\n"
-        u"def dado_que_eu_tenho_palavroes_e_outras_situacoes(step):\n"
-        u"    assert False, 'This step must be implemented'\n"
-        u"@step(u'E várias palavras acentuadas são úteis, tais como: \"([^\"]*)\"')\n"
-        u"def e_varias_palavras_acentuadas_sao_uteis_tais_como_group1(step, group1):\n"
-        u"    assert False, 'This step must be implemented'\n"
-        u"@step(u'Então eu fico felizão')\n"
-        u"def entao_eu_fico_felizao(step):\n"
-        u"    assert False, 'This step must be implemented'\n"
+        u'\n'
+        u'Funcionalidade: melhorar o output de snippets do lettuce                                      # tests/functional/output_features/latin-accents/latin-accents.feature:2\n'
+        u'  Como autor do lettuce                                                                       # tests/functional/output_features/latin-accents/latin-accents.feature:3\n'
+        u'  Eu quero ter um output refinado de snippets                                                 # tests/functional/output_features/latin-accents/latin-accents.feature:4\n'
+        u'  Para melhorar, de uma forma geral, a vida do programador                                    # tests/functional/output_features/latin-accents/latin-accents.feature:5\n'
+        u'\n'
+        u'  #1\n'
+        u'  Cenário: normalizar snippets com unicode                                                    # tests/functional/output_features/latin-accents/latin-accents.feature:7\n'
+        u'    Dado que eu tenho palavrões e outras situações                                            # tests/functional/output_features/latin-accents/latin-accents.feature:8 (undefined)\n'
+        u'    E várias palavras acentuadas são úteis, tais como: \"(é,não,léo,chororó,chácara,epígrafo)\" # tests/functional/output_features/latin-accents/latin-accents.feature:9 (undefined)\n'
+        u'    Então eu fico felizão                                                                     # tests/functional/output_features/latin-accents/latin-accents.feature:10 (undefined)\n'
+        u'\n'
+        u'  ----------------------------------------------------------------------------\n'
+        u'\n'
+        u'1 feature (1 failed)\n'
+        u'1 scenario (1 failed)\n'
+        u'3 steps (3 undefined)\n'
+        u'\n'
+        u'You can implement step definitions for undefined steps with these snippets:\n'
+        u'\n'
+        u'# -*- coding: utf-8 -*-\n'
+        u'from lettuce import step\n'
+        u'\n'
+        u'@step(ur\'eu fico felizão\')\n'
+        u'def eu_fico_felizao(self):\n'
+        u'    raise NotImplementedError()\n'
+        u'\n'
+        u'@step(ur\'que eu tenho palavrões e outras situações\')\n'
+        u'def que_eu_tenho_palavroes_e_outras_situacoes(self):\n'
+        u'    raise NotImplementedError()\n'
+        u'\n'
+        u'@step(ur\'várias palavras acentuadas são úteis, tais como: "([^"]*)"\')\n'
+        u'def varias_palavras_acentuadas_sao_uteis_tais_como_str(self, param1):\n'
+        u'    raise NotImplementedError()\n'
+        u'\n'
     )
 
 
@@ -961,8 +700,9 @@ def test_output_level_2_success():
         runner.run()
 
     assert_equals(out.getvalue(),
-        "Do nothing ... OK\n"
-        "Do nothing (again) ... OK\n"
+        "Feature: Dumb feature\n"
+        "Do nothing... OK\n"
+        "Do nothing (again)... OK\n"
         "\n"
         "1 feature (1 passed)\n"
         "2 scenarios (2 passed)\n"
@@ -973,29 +713,43 @@ def test_output_level_2_success():
 def test_output_level_2_fail():
     'Output with verbosity 2 must show only the scenario names, followed by "... FAILED" in case of fail'
 
-    runner = Runner(feature_name('failed_table'), verbosity=2)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(feature_name('failed_table'), verbosity=2)
+        assert_raises(SystemExit, runner.run)
 
-    assert_stdout_lines_with_traceback(
-        "See it fail ... FAILED\n"
-        "\n"
-        "\n"
-        "<Step: \"And this one fails\">\n"
-        "Traceback (most recent call last):\n"
-        '  File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
-        "    ret = self.function(self.step, *args, **kw)\n"
-        '  File "%(step_file)s", line 25, in tof\n'
-        "    assert False\n"
-        "AssertionError\n"
-        "\n"
-        "1 feature (0 passed)\n"
-        "1 scenario (0 passed)\n"
-        "5 steps (1 failed, 2 skipped, 1 undefined, 1 passed)\n"
-        "\n"
-        "List of failed scenarios:\n"
-        "  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
-        "\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
+    assert_equals(out.getvalue(),
+        u'Feature: Table Fail\n'
+        u'See it fail... FAILED\n'
+        u'And this one fails                            # tests/functional/output_features/failed_table/failed_table_steps.py:24\n'
+        u'    Traceback (most recent call last):\n'
+        u'      File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
+        u'        ret = self.function(self.step, *args, **kw)\n'
+        u'      File "%(step_file)s", line 25, in tof\n'
+        u'        assert False\n'
+        u'    AssertionError\n'
+        u'\n'
+        u'\n'
+        u'1 feature (1 failed)\n'
+        u'1 scenario (1 failed)\n'
+        u'5 steps (1 passed, 1 undefined, 2 skipped, 1 failed)\n'
+        u'\n'
+        u'You can implement step definitions for undefined steps with these snippets:\n'
+        u'\n'
+        u'# -*- coding: utf-8 -*-\n'
+        u'from lettuce import step\n'
+        u'\n'
+        u'@step(ur\'this one does not even has definition\')\n'
+        u'def this_one_does_not_even_has_definition(self):\n'
+        u'    raise NotImplementedError()\n'
+        u'\n'
+        u'\n'
+        u'List of failed scenarios:\n'
+        u'\n'
+        u' * Feature: Table Fail\n'
+        u'    - Scenario: See it fail\n'
+        u'      (tests/functional/output_features/failed_table/failed_table.feature:2)\n'
+        u'\n' % {
+            'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')),
             'call_line': call_line,
         }
@@ -1005,30 +759,34 @@ def test_output_level_2_fail():
 def test_output_level_2_error():
     'Output with verbosity 2 must show only the scenario names, followed by "... ERROR" in case of fail'
 
-    runner = Runner(feature_name('error_traceback'), verbosity=2)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(feature_name('error_traceback'), verbosity=2)
+        assert_raises(SystemExit, runner.run)
 
-    assert_stdout_lines_with_traceback(
-        "It should pass ... OK\n"
-        "It should raise an exception different of AssertionError ... ERROR\n"
-        "\n"
-        "\n"
-        "<Step: \"Given my step that blows a exception\">\n"
-        "Traceback (most recent call last):\n"
-        '  File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
-        "    ret = self.function(self.step, *args, **kw)\n"
-        '  File "%(step_file)s", line 10, in given_my_step_that_blows_a_exception\n'
-        "    raise RuntimeError\n"
-        "RuntimeError\n"
-        "\n"
-        "1 feature (0 passed)\n"
-        "2 scenarios (1 passed)\n"
-        "2 steps (1 failed, 1 passed)\n"
-        "\n"
-        "List of failed scenarios:\n"
-        "  Scenario: It should raise an exception different of AssertionError # tests/functional/output_features/error_traceback/error_traceback.feature:5\n"
-        "\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
+    assert_equals(out.getvalue(),
+        u'Feature: Error traceback for output testing\n'
+        u'It should pass... OK\n'
+        u'It should raise an exception different of AssertionError... ERROR\n'
+        u'Given my step that blows a exception                                 # tests/functional/output_features/error_traceback/error_traceback_steps.py:9\n'
+        u'    Traceback (most recent call last):\n'
+        u'      File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
+        u'        ret = self.function(self.step, *args, **kw)\n'
+        u'      File "%(step_file)s", line 10, in given_my_step_that_blows_a_exception\n'
+        u'        raise RuntimeError\n'
+        u'    RuntimeError\n'
+        u'\n'
+        u'\n'
+        u'1 feature (1 failed)\n'
+        u'2 scenarios (1 passed, 1 failed)\n'
+        u'2 steps (1 passed, 1 failed)\n'
+        u'\n'
+        u'List of failed scenarios:\n'
+        u'\n'
+        u' * Feature: Error traceback for output testing\n'
+        u'    - Scenario: It should raise an exception different of AssertionError\n'
+        u'      (tests/functional/output_features/error_traceback/error_traceback.feature:5)\n'
+        u'\n' % {
+            'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'error_traceback', 'error_traceback_steps.py')),
             'call_line': call_line,
         }
@@ -1058,28 +816,32 @@ def test_output_level_1_success():
 def test_output_level_1_fail():
     'Output with verbosity 2 must show only the scenario names, followed by "... FAILED" in case of fail'
 
-    runner = Runner(feature_name('failed_table'), verbosity=1)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(feature_name('failed_table'), verbosity=1)
+        assert_raises(SystemExit, runner.run)
 
-    assert_stdout_lines_with_traceback(
-        "F\n"
-        "\n"
-        "<Step: \"And this one fails\">\n"
-        "Traceback (most recent call last):\n"
-        '  File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
-        "    ret = self.function(self.step, *args, **kw)\n"
-        '  File "%(step_file)s", line 25, in tof\n'
-        "    assert False\n"
-        "AssertionError\n"
-        "\n"
-        "1 feature (0 passed)\n"
-        "1 scenario (0 passed)\n"
-        "5 steps (1 failed, 2 skipped, 1 undefined, 1 passed)\n"
-        "\n"
-        "List of failed scenarios:\n"
-        "  Scenario: See it fail                       # tests/functional/output_features/failed_table/failed_table.feature:2\n"
-        "\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
+    assert_equals(out.getvalue(),
+        u'F\n'
+        u'\n'
+        u'<Step: "And this one fails">\n'
+        u'Traceback (most recent call last):\n'
+        u'  File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
+        u'    ret = self.function(self.step, *args, **kw)\n'
+        u'  File "%(step_file)s", line 25, in tof\n'
+        u'    assert False\n'
+        u'AssertionError\n'
+        u'\n'
+        u'1 feature (0 passed)\n'
+        u'1 scenario (0 passed)\n'
+        u'5 steps (1 failed, 2 skipped, 1 undefined, 1 passed)\n'
+        u'\n'
+        u'List of failed scenarios:\n'
+        u'\n'
+        u' * Feature: Table Fail\n'
+        u'    - Scenario: See it fail\n'
+        u'      (tests/functional/output_features/failed_table/failed_table.feature:2)\n'
+        u'\n' % {
+            'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'failed_table', 'failed_table_steps.py')),
             'call_line': call_line,
         }
@@ -1089,28 +851,32 @@ def test_output_level_1_fail():
 def test_output_level_1_error():
     'Output with verbosity 2 must show only the scenario names, followed by "... ERROR" in case of fail'
 
-    runner = Runner(feature_name('error_traceback'), verbosity=1)
-    runner.run()
+    with capture_output() as (out, err):
+        runner = Runner(feature_name('error_traceback'), verbosity=1)
+        assert_raises(SystemExit, runner.run)
 
-    assert_stdout_lines_with_traceback(
-        ".E\n"
-        "\n"
-        "<Step: \"Given my step that blows a exception\">\n"
-        "Traceback (most recent call last):\n"
-        '  File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
-        "    ret = self.function(self.step, *args, **kw)\n"
-        '  File "%(step_file)s", line 10, in given_my_step_that_blows_a_exception\n'
-        "    raise RuntimeError\n"
-        "RuntimeError\n"
-        "\n"
-        "1 feature (0 passed)\n"
-        "2 scenarios (1 passed)\n"
-        "2 steps (1 failed, 1 passed)\n"
-        "\n"
-        "List of failed scenarios:\n"
-        "  Scenario: It should raise an exception different of AssertionError # tests/functional/output_features/error_traceback/error_traceback.feature:5\n"
-        "\n" % {
-            'lettuce_core_file': lettuce_path('core.py'),
+    assert_equals(out.getvalue(),
+        u'.E\n'
+        u'\n'
+        u'<Step: \"Given my step that blows a exception\">\n'
+        u'Traceback (most recent call last):\n'
+        u'  File "%(lettuce_core_file)s", line %(call_line)d, in __call__\n'
+        u'    ret = self.function(self.step, *args, **kw)\n'
+        u'  File "%(step_file)s", line 10, in given_my_step_that_blows_a_exception\n'
+        u'    raise RuntimeError\n'
+        u'RuntimeError\n'
+        u'\n'
+        u'1 feature (0 passed)\n'
+        u'2 scenarios (1 passed)\n'
+        u'2 steps (1 failed, 1 passed)\n'
+        u'\n'
+        u'List of failed scenarios:\n'
+        u'\n'
+        u' * Feature: Error traceback for output testing\n'
+        u'    - Scenario: It should raise an exception different of AssertionError\n'
+        u'      (tests/functional/output_features/error_traceback/error_traceback.feature:5)\n'
+        u'\n' % {
+            'lettuce_core_file': abspath(lettuce_path('core.py')),
             'step_file': abspath(lettuce_path('..', 'tests', 'functional', 'output_features', 'error_traceback', 'error_traceback_steps.py')),
             'call_line': call_line,
         }
@@ -1133,9 +899,11 @@ def test_commented_scenario():
     )
 
 
+@preserve_registry
 def test_blank_step_hash_value():
     """syntax checking: Blank in step hash column = empty string"""
 
+    STEP_REGISTRY.clear()
     from lettuce import step
 
     @step('ignore step')
@@ -1163,9 +931,11 @@ def test_blank_step_hash_value():
     )
 
 
+@preserve_registry
 def test_run_only_fast_tests():
     "Runner can filter by tags"
 
+    STEP_REGISTRY.clear()
     from lettuce import step
 
     good_one = Mock()
@@ -1214,9 +984,11 @@ def test_run_random():
         pshuffle.assert_called_once_with([])
 
 
+@preserve_registry
 def test_background_with_header():
     "Running background with header"
 
+    STEP_REGISTRY.clear()
     from lettuce import step, world
 
     @step(ur'the variable "(\w+)" holds (\d+)')
@@ -1252,6 +1024,7 @@ def test_background_with_header():
 def test_background_without_header():
     "Running background without header"
 
+    STEP_REGISTRY.clear()
     from lettuce import step, world, before, after
 
     actions = {}
@@ -1303,14 +1076,17 @@ def test_background_without_header():
     })
 
 
+@preserve_registry
 def test_output_background_with_success_colorless():
-    "A feature with background should print it accordingly under verbosity 3"
+    """
+    A feature with background should print it accordingly under verbosity 3
+    """
 
+    STEP_REGISTRY.clear()
     from lettuce import step
 
     line = currentframe().f_lineno  # get line number
     @step(ur'the variable "(\w+)" holds (\d+)')
-    @step(ur'the variable "(\w+)" is equal to (\d+)')
     def just_pass(step, *args):
         pass
 
@@ -1320,62 +1096,27 @@ def test_output_background_with_success_colorless():
         runner = Runner(filename, verbosity=3)
         runner.run()
 
-    assert_equals(out.getvalue(),
-        '\n'
-        'Feature: Simple and successful                # tests/functional/bg_features/simple/simple.feature:1\n'
-        '  As the Lettuce maintainer                   # tests/functional/bg_features/simple/simple.feature:2\n'
-        '  In order to make sure the output is pretty  # tests/functional/bg_features/simple/simple.feature:3\n'
-        '  I want to automate its test                 # tests/functional/bg_features/simple/simple.feature:4\n'
-        '\n'
-        '  Background:                                 # tests/functional/bg_features/simple/simple.feature:6\n'
-        '    Given the variable "X" holds 2            # tests/functional/test_runner.py:{line}\n'
-        '\n'
-        '  Scenario: multiplication changing the value # tests/functional/bg_features/simple/simple.feature:9\n'
-        '    Given the variable "X" is equal to 2      # tests/functional/test_runner.py:{line}\n'
-        '\n'
-        '1 feature (1 passed)\n'
-        '1 scenario (1 passed)\n'
-        '1 step (1 passed)\n'
-        .format(line=line+2)  # increment is line number of step past line
-    )
+    assert_equals(out.getvalue(), u"""
+Feature: Simple and successful                # tests/functional/bg_features/simple/simple.feature:1
+  As the Lettuce maintainer                   # tests/functional/bg_features/simple/simple.feature:2
+  In order to make sure the output is pretty  # tests/functional/bg_features/simple/simple.feature:3
+  I want to automate its test                 # tests/functional/bg_features/simple/simple.feature:4
 
+  #1
+  Scenario: multiplication changing the value # tests/functional/bg_features/simple/simple.feature:9
 
-def test_output_background_with_success_colorful():
-    "A feature with background should print it accordingly under verbosity 4"
+  Background:                                 # tests/functional/bg_features/simple/simple.feature:6
+    Given the variable "X" holds 2            # tests/functional/test_runner.py:{line}
 
-    from lettuce import step
+  Scenario:
+    Given the variable "X" is equal to 2      # tests/functional/bg_features/simple/steps.py:5
 
-    line = currentframe().f_lineno  # get line number
-    @step(ur'the variable "(\w+)" holds (\d+)')
-    @step(ur'the variable "(\w+)" is equal to (\d+)')
-    def just_pass(step, *args):
-        pass
+  ----------------------------------------------------------------------------
 
-    filename = bg_feature_name('simple')
-
-    runner = Runner(filename, verbosity=4)
-    runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_stdout_lines(
-        '\n'
-        '\033[1;37mFeature: Simple and successful                \033[1;30m# tests/functional/bg_features/simple/simple.feature:1\033[0m\n'
-        '\033[1;37m  As the Lettuce maintainer                   \033[1;30m# tests/functional/bg_features/simple/simple.feature:2\033[0m\n'
-        '\033[1;37m  In order to make sure the output is pretty  \033[1;30m# tests/functional/bg_features/simple/simple.feature:3\033[0m\n'
-        '\033[1;37m  I want to automate its test                 \033[1;30m# tests/functional/bg_features/simple/simple.feature:4\033[0m\n'
-        '\n'
-        '\033[1;37m  Background:\033[0m\n'
-        '\033[1;30m    Given the variable "X" holds 2            \033[1;30m# tests/functional/test_runner.py:{line}\033[0m\n'
-        '\033[A\033[1;32m    Given the variable "X" holds 2            \033[1;30m# tests/functional/test_runner.py:{line}\033[0m\n'
-        '\n'
-        '\033[1;37m  Scenario: multiplication changing the value \033[1;30m# tests/functional/bg_features/simple/simple.feature:9\033[0m\n'
-        '\033[1;30m    Given the variable "X" is equal to 2      \033[1;30m# tests/functional/test_runner.py:{line}\033[0m\n'
-        '\033[A\033[1;32m    Given the variable "X" is equal to 2      \033[1;30m# tests/functional/test_runner.py:{line}\033[0m\n'
-        '\n'
-        '\033[1;37m1 feature (\033[1;32m1 passed\033[1;37m)\033[0m\n'
-        '\033[1;37m1 scenario (\033[1;32m1 passed\033[1;37m)\033[0m\n'
-        '\033[1;37m1 step (\033[1;32m1 passed\033[1;37m)\033[0m\n'
+1 feature (1 passed)
+1 scenario (1 passed)
+1 step (1 passed)
+"""
         .format(line=line+2)  # increment is line number of step past line
     )
 
@@ -1383,6 +1124,7 @@ def test_output_background_with_success_colorful():
 def test_background_with_scenario_before_hook():
     "Running background with before_scenario hook"
 
+    STEP_REGISTRY.clear()
     from lettuce import step, world, before
 
     @before.each_scenario
@@ -1467,46 +1209,3 @@ Syntax error at: {filename}
 
 ^
         """.format(filename=filename).strip())
-
-
-def test_output_with_undefined_steps_colorful():
-    "With colored output, an undefined step should be printed in sequence."
-
-    runner = Runner(feature_name('undefined_steps'), verbosity=4)
-    runner.run()
-
-    raise SkipTest("coloured output")
-
-    assert_stdout_lines_with_traceback(
-        '\n'
-        '\x1b[1;37mFeature: Test undefined steps are displayed on console           \x1b[1;30m# tests/functional/output_features/undefined_steps/undefined_steps.feature:1\x1b[0m\n'
-        '\n'
-        '\x1b[1;37m  Scenario: Scenario with undefined step                         \x1b[1;30m# tests/functional/output_features/undefined_steps/undefined_steps.feature:3\x1b[0m\n'
-        '\x1b[1;30m    Given this test step passes                                  \x1b[1;30m# tests/functional/output_features/undefined_steps/undefined_steps.py:4\x1b[0m\n'
-        '\x1b[A\x1b[1;32m    Given this test step passes                                  \x1b[1;30m# tests/functional/output_features/undefined_steps/undefined_steps.py:4\x1b[0m\n'
-        '\x1b[0;33m    When this test step is undefined                             \x1b[1;30m# tests/functional/output_features/undefined_steps/undefined_steps.feature:5\x1b[0m\n'
-        '\n'
-        '\x1b[1;37m  Scenario Outline: Outline scenario with general undefined step \x1b[1;30m# tests/functional/output_features/undefined_steps/undefined_steps.feature:7\x1b[0m\n'
-        '\x1b[0;36m    Given this test step passes                                  \x1b[1;30m# tests/functional/output_features/undefined_steps/undefined_steps.py:4\x1b[0m\n'
-        '\x1b[0;33m    When this test step is undefined                             \x1b[1;30m# tests/functional/output_features/undefined_steps/undefined_steps.feature:5\x1b[0m\n'
-        '\x1b[0;36m    Then <in> squared is <out>                                   \x1b[1;30m# tests/functional/output_features/undefined_steps/undefined_steps.py:8\x1b[0m\n'
-        '\n'
-        '\x1b[1;37m  Examples:\x1b[0m\n'
-        '\x1b[0;36m   \x1b[1;37m |\x1b[0;36m in\x1b[1;37m |\x1b[0;36m out\x1b[1;37m |\x1b[0;36m\x1b[0m\n'
-        '\x1b[1;32m   \x1b[1;37m |\x1b[1;32m 1 \x1b[1;37m |\x1b[1;32m 1  \x1b[1;37m |\x1b[1;32m\x1b[0m\n'
-        '\x1b[1;32m   \x1b[1;37m |\x1b[1;32m 2 \x1b[1;37m |\x1b[1;32m 4  \x1b[1;37m |\x1b[1;32m\x1b[0m\n'
-        '\n'
-        '\x1b[1;37m1 feature (\x1b[0;31m0 passed\x1b[1;37m)\x1b[0m\n'
-        '\x1b[1;37m3 scenarios (\x1b[0;31m0 passed\x1b[1;37m)\x1b[0m\n'
-        '\x1b[1;37m8 steps (\x1b[0;36m2 skipped\x1b[1;37m, \x1b[0;33m3 undefined\x1b[1;37m, \x1b[1;32m3 passed\x1b[1;37m)\x1b[0m\n'
-        '\n'
-        '\x1b[0;33mYou can implement step definitions for undefined steps with these snippets:\n'
-        '\n'
-        '# -*- coding: utf-8 -*-\n'
-        'from lettuce import step\n'
-        '\n'
-        "@step(u'When this test step is undefined')\n"
-        'def when_this_test_step_is_undefined(step):\n'
-        "    assert False, 'This step must be implemented'\x1b[0m\n"
-    )
-

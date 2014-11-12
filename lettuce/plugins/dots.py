@@ -34,10 +34,10 @@ class DotReporter(Reporter):
 
 reporter = DotReporter()
 
-before.each_scenario(reporter.print_scenario_running)
-after.each_scenario(reporter.print_scenario_ran)
-after.each_step(reporter.store_failed_step)
-after.all(reporter.print_end)
+before.each_scenario(reporter.print_scenario_running, name='output')
+after.each_scenario(reporter.print_scenario_ran, name='output')
+after.each_step(reporter.store_failed_step, name='output')
+after.all(reporter.print_end, name='output')
 
 
 def print_no_features_found(where):
