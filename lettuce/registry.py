@@ -19,7 +19,7 @@ import re
 import sys
 import threading
 import traceback
-from functools import wraps
+from functools import wraps, partial
 
 from lettuce.exceptions import StepLoadingError
 
@@ -50,9 +50,20 @@ class CallbackDict(dict):
 
 class StepDict(dict):
     def load(self, step, func):
+        func.sentence = step
+
         step = self._assert_is_step(step, func)
         self[step] = func
+
+        func.unregister = partial(self.unload, step)
+
         return func
+
+    def unload(self, step):
+        try:
+            del self[step]
+        except KeyError:
+            pass
 
     def load_func(self, func):
         regex = self._extract_sentence(func)
