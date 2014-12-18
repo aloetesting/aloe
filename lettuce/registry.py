@@ -31,7 +31,11 @@ real_stdout = sys.stdout
 
 
 def _function_id(func):
-    return (func.func_code.co_filename, func.func_code.co_firstlineno)
+    return (
+        func.func_code.co_filename,
+        func.func_code.co_firstlineno,
+        tuple(c.cell_contents for c in func.func_closure or ()),
+    )
 
 
 class CallbackDict(dict):
