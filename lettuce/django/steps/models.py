@@ -250,8 +250,8 @@ def models_exist(model, data, queryset=None):
 
 for txt in (
     (r'I have(?: an?)? ([a-z][a-z0-9_ ]*) in the database:'),
-    (r'I update(?: an?)? existing ([a-z][a-z0-9_ ]*) by ([a-z]+) in the '
-     'database:'),
+    (r'I update(?: an?)? existing ([a-z][a-z0-9_ ]*) by ([a-z][a-z0-9_]*) '
+     'in the database:'),
 ):
     @step(txt)
     def write_models_generic(step, model, field=None):
