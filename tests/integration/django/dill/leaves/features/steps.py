@@ -22,15 +22,13 @@ def create_with_rego(step):
     create_models(Harvester, data)
 
 
-@checks_existence(Harvester)
-def check_with_rego(step):
-    data = hashes_data(step)
-    for hash_ in data:
-        try:
-            hash_['rego'] = hash_['rego'].upper()
-        except KeyError:
-            pass
-    models_exist(Harvester, data)
+@tests_existence(Harvester)
+def check_with_rego(data):
+    try:
+        data['rego'] = data['rego'].upper()
+    except KeyError:
+        pass
+    return test_existence(Harvester, data)
 
 
 @step(r'The database dump is as follows')

@@ -112,7 +112,11 @@ registering your own model testers
 -----------------------------------
 
 For more complex tests that have to process or parse data you can write your
-own creating steps using the ``checks_existence`` decorator.
+own creating steps using the ``tests_existence`` decorator. It should take a
+hash and return a true value if the model with the specified attributes exists
+in the database. The "should be present" and "should not be present" steps will
+call the decorated function once for every line in the table and fail if it
+does not return ``True`` and ``False``, respectively.
 
 *************
 testing email

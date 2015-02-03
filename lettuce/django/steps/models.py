@@ -10,7 +10,7 @@ from django.core.management.color import no_style
 from django.db import connection
 from django.db.models.loading import get_models
 from django.utils.functional import curry
-from functools import wraps
+from functools import partial, wraps
 
 from lettuce import step
 
@@ -73,6 +73,9 @@ _MODEL_EXISTS = {}
 def checks_existence(model):
     """
     Register a model-specific existence check function.
+
+    This is deprecated, use tests_existence which checks individual hashes and
+    can reuse diagnostic information from the generic existence check.
     """
 
     def decorated(func):
@@ -80,6 +83,24 @@ def checks_existence(model):
         Decorator for the existence function.
         """
         _MODEL_EXISTS[model] = func
+        return func
+
+    return decorated
+
+
+_TEST_MODEL = {}
+
+
+def tests_existence(model):
+    """
+    Register a model-specific existence test.
+    """
+
+    def decorated(func):
+        """
+        Decorator for the existence function.
+        """
+        _TEST_MODEL[model] = func
         return func
 
     return decorated
@@ -199,7 +220,38 @@ def _dump_model(model, attrs=None):
     print
 
 
-def models_exist(model, data, queryset=None):
+def test_existence(model_or_queryset, data):
+    """
+    Test existence of a given hash in a queryset (or among all model instances
+    if a model is given).
+    """
+
+    try:
+        queryset = model_or_queryset.objects
+    except AttributeError:
+        queryset = model_or_queryset
+
+    fields = {}
+    extra_attrs = {}
+    for k, v in data.iteritems():
+        if k.startswith('@'):
+            # this is an attribute
+            extra_attrs[k[1:]] = v
+        else:
+            fields[k] = v
+
+    filtered = queryset.filter(**fields)
+
+    if filtered.exists():
+        for obj in filtered.all():
+            if all(getattr(obj, k) == v
+                    for k, v in extra_attrs.iteritems()):
+                return True
+
+    return False
+
+
+def models_exist(model, data, queryset=None, existence_check=None):
     """
     Check whether the models defined by @data exist in the @queryset.
     """
@@ -213,28 +265,13 @@ def models_exist(model, data, queryset=None):
     failed = 0
     try:
         for hash_ in data:
-            fields = {}
-            extra_attrs = {}
-            for k, v in hash_.iteritems():
-                if k.startswith('@'):
-                    # this is an attribute
-                    extra_attrs[k[1:]] = v
-                else:
-                    fields[k] = v
-
-            filtered = queryset.filter(**fields)
-
-            match = False
-            if filtered.exists():
-                for obj in filtered.all():
-                    if all(getattr(obj, k) == v
-                            for k, v in extra_attrs.iteritems()):
-                        match = True
-                        break
+            if existence_check:
+                match = existence_check(hash_)
+            else:
+                match = test_existence(queryset, hash_)
 
             assert match, \
-                "%s does not exist: %s\n%s" % (
-                model.__name__, hash_, filtered.query)
+                "%s does not exist: %s" % (model.__name__, hash_)
 
     except AssertionError as exc:
         print exc
@@ -243,7 +280,10 @@ def models_exist(model, data, queryset=None):
     if failed:
         print "Rows in DB are:"
         for model in queryset.all():
-            _dump_model(model, extra_attrs.keys())
+            _dump_model(model,
+                        attrs=[k[1:]
+                               for k in data[0].keys()
+                               if k.startswith('@')])
 
         raise AssertionError("%i rows missing" % failed)
 
@@ -346,6 +386,12 @@ def models_exist_generic(step, model):
         func = _MODEL_EXISTS[model]
     except KeyError:
         func = curry(models_exist, model)
+
+        try:
+            existence_check = _TEST_MODEL[model]
+            func = partial(func, existence_check=existence_check)
+        except KeyError:
+            pass
 
     func(step)
 
