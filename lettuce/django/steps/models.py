@@ -4,6 +4,7 @@ Step definitions for working with Django models.
 
 from datetime import datetime
 import re
+import warnings
 
 from django.core.management import call_command
 from django.core.management.color import no_style
@@ -77,6 +78,8 @@ def checks_existence(model):
     This is deprecated, use tests_existence which checks individual hashes and
     can reuse diagnostic information from the generic existence check.
     """
+
+    warnings.warn("deprecated - use tests_existence", DeprecationWarning)
 
     def decorated(func):
         """
