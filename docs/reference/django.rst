@@ -85,7 +85,7 @@ own creating steps using the ``creates_models`` decorator.
 testing models
 **************
 
-Two steps exist to test models.
+The following steps exist to test models.
 
 .. highlight:: ruby
 
@@ -94,6 +94,9 @@ Two steps exist to test models.
     Then features should be present in the database:
         | name    | value |
         | Lettuce | Rocks |
+    And features should not be present in the database:
+        | name    | value         |
+        | Lettuce | Is Enterprise |
     And there should be 1 feature in the database
 
 You can also test non-database model attributes by prefixing an ``@`` to the

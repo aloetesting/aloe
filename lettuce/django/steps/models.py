@@ -251,7 +251,9 @@ def test_existence(model_or_queryset, data):
     return False
 
 
-def models_exist(model, data, queryset=None, existence_check=None):
+def models_exist(model, data, queryset=None,
+                 existence_check=None,
+                 should_exist=True):
     """
     Check whether the models defined by @data exist in the @queryset.
     """
@@ -270,8 +272,12 @@ def models_exist(model, data, queryset=None, existence_check=None):
             else:
                 match = test_existence(queryset, hash_)
 
-            assert match, \
-                "%s does not exist: %s" % (model.__name__, hash_)
+            if should_exist:
+                assert match, \
+                    "%s does not exist: %s" % (model.__name__, hash_)
+            else:
+                assert not match, \
+                    "%s exists: %s" % (model.__name__, hash_)
 
     except AssertionError as exc:
         print exc
@@ -285,7 +291,10 @@ def models_exist(model, data, queryset=None, existence_check=None):
                                for k in data[0].keys()
                                if k.startswith('@')])
 
-        raise AssertionError("%i rows missing" % failed)
+        if should_exist:
+            raise AssertionError("%i rows missing" % failed)
+        else:
+            raise AssertionError("%i rows found" % failed)
 
 
 for txt in (
@@ -380,6 +389,26 @@ def models_exist_generic(step, model):
     | Make a mess      |
     """
 
+    return models_existence_generic(step, model, True)
+
+
+@step(STEP_PREFIX + r'(?:an? )?([A-Z][a-z0-9_ ]*) should not be present ' +
+      r'in the database')
+def models_exist_generic(step, model):
+    """
+    And objectives should not be present in the database:
+    | description      |
+    | Make a mess      |
+    """
+
+    return models_existence_generic(step, model, False)
+
+
+def models_existence_generic(step, model, should_exist):
+    """
+    Assert the models are present or absent in the database.
+    """
+
     model = get_model(model)
 
     try:
@@ -393,7 +422,7 @@ def models_exist_generic(step, model):
         except KeyError:
             pass
 
-    func(step)
+    func(step, should_exist=should_exist)
 
 
 @step(r'There should be (\d+) ([a-z][a-z0-9_ ]*) in the database')

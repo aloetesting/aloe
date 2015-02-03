@@ -26,6 +26,9 @@ Feature: Check models existence
     And gardens should be present in the database:
       | name          | area |
       | Covent Garden | 200  |
+    And gardens should not be present in the database:
+      | name          | area |
+      | Covent Garden | 300  |
     And gardens should be present in the database:
       | @howbig | raining |
       | small   | false   |
@@ -35,6 +38,9 @@ Feature: Check models existence
     And harvesters should be present in the database:
       | rego   |
       | fra001 |
+    And harvesters should not be present in the database:
+      | rego   |
+      | fra002 |
 
   Scenario: Negative check
     Given I have populated the database
@@ -51,3 +57,9 @@ Feature: Check models existence
   Scenario: Negative count check
     Given I have populated the database
     Then there should be 2 geese in the database
+
+  Scenario: Negative absence check
+    Given I have populated the database
+    Then a garden should not be present in the database:
+      | name          | @howbig |
+      | Secret Garden | small   |
