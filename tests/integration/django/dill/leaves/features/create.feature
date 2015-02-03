@@ -38,66 +38,66 @@ Feature: Create models
       | Silly |
     Then the database dump is as follows:
     """
-    "[
-    "  {
-    "    "pk": 1,
-    "    "model": "leaves.garden",
-    "    "fields": { "raining": false, "name": "Secret Garden", "area": 45 }
-    "  },
-    "  {
-    "    "pk": 2,
-    "    "model": "leaves.garden",
-    "    "fields": { "raining": true, "name": "Octopus's Garden", "area": 120 }
-    "  },
-    "  {
-    "    "pk": 3,
-    "    "model": "leaves.garden",
-    "    "fields": { "raining": true, "name": "Covent Garden", "area": 200 }
-    "  },
-    "  {
-    "    "pk": 1,
-    "    "model": "leaves.field",
-    "    "fields": {"name": "Strawberry"}
-    "  },
-    "  {
-    "    "pk": 2,
-    "    "model": "leaves.field",
-    "    "fields": {"name": "Blueberry"}
-    "  },
-    "  {
-    "    "pk": 1,
-    "    "model": "leaves.fruit",
-    "    "fields": { "fields": [1], "ripe_by": "2013-07-02", "name": "Apple", "garden": 1 }
-    "  },
-    "  {
-    "    "pk": 2,
-    "    "model": "leaves.fruit",
-    "    "fields": { "fields": [], "ripe_by": "2013-09-09", "name": "Grapes", "garden": 1 }
-    "  },
-    "  {
-    "    "pk": 1,
-    "    "model": "leaves.bee",
-    "    "fields": {"name": "Billy", "pollinated_fruit": [1, 2]}
-    "  },
-    "  {
-    "    "pk": 2,
-    "    "model": "leaves.bee",
-    "    "fields": {"name": "Silly", "pollinated_fruit": [1]}
-    "  },
-    "  {
-    "    "pk": 1,
-    "    "model": "leaves.goose",
-    "    "fields": { "name": "Grey" }
-    "  },
-    "  {
-    "    "pk": 1,
-    "    "model": "leaves.harvester",
-    "    "fields": { "rego": "FRA001", "make": "Frank" }
-    "  },
-    "  {
-    "    "pk": 2,
-    "    "model": "leaves.harvester",
-    "    "fields": { "rego": "CRA001", "make": "Crank" }
-    "  }
-    "]
+    [
+      {
+        "pk": 1,
+        "model": "leaves.garden",
+        "fields": { "raining": false, "name": "Secret Garden", "area": 45 }
+      },
+      {
+        "pk": 2,
+        "model": "leaves.garden",
+        "fields": { "raining": true, "name": "Octopus's Garden", "area": 120 }
+      },
+      {
+        "pk": 3,
+        "model": "leaves.garden",
+        "fields": { "raining": true, "name": "Covent Garden", "area": 200 }
+      },
+      {
+        "pk": 1,
+        "model": "leaves.field",
+        "fields": {"name": "Strawberry"}
+      },
+      {
+        "pk": 2,
+        "model": "leaves.field",
+        "fields": {"name": "Blueberry"}
+      },
+      {
+        "pk": 1,
+        "model": "leaves.fruit",
+        "fields": { "fields": [1], "ripe_by": "2013-07-02", "name": "Apple", "garden": 1 }
+      },
+      {
+        "pk": 2,
+        "model": "leaves.fruit",
+        "fields": { "fields": [], "ripe_by": "2013-09-09", "name": "Grapes", "garden": 1 }
+      },
+      {
+        "pk": 1,
+        "model": "leaves.bee",
+        "fields": {"name": "Billy", "pollinated_fruit": [1, 2]}
+      },
+      {
+        "pk": 2,
+        "model": "leaves.bee",
+        "fields": {"name": "Silly", "pollinated_fruit": [1]}
+      },
+      {
+        "pk": 1,
+        "model": "leaves.goose",
+        "fields": { "name": "Grey" }
+      },
+      {
+        "pk": 1,
+        "model": "leaves.harvester",
+        "fields": { "rego": "FRA001", "make": "Frank" }
+      },
+      {
+        "pk": 2,
+        "model": "leaves.harvester",
+        "fields": { "rego": "CRA001", "make": "Crank" }
+      }
+    ]
     """

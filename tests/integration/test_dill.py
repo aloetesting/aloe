@@ -39,7 +39,7 @@ def test_model_update():
 
     status, out = run_scenario('leaves', 'update', 2)
     assert_not_equals(status, 0, out)
-    assert "IntegrityError: PRIMARY KEY must be unique" in out
+    assert "IntegrityError" in out
 
     status, out = run_scenario('leaves', 'update', 3)
     assert_not_equals(status, 0, out)
@@ -93,7 +93,7 @@ def test_use_test_database_setting():
 
     for i in range(1, 2):
         status, out = commands.getstatusoutput(
-            "python manage.py harvest --settings=testdbsettings " +
+            "python manage.py harvest --settings=testdbsettings -v 2 " +
             "leaves/features/testdb.feature")
 
         assert_equals(status, 0, out)
