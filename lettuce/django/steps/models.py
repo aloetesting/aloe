@@ -246,10 +246,10 @@ def test_existence(model_or_queryset, data):
     filtered = queryset.filter(**fields)
 
     if filtered.exists():
-        for obj in filtered.all():
-            if all(getattr(obj, k) == v
-                    for k, v in extra_attrs.iteritems()):
-                return True
+        return any(
+            all(getattr(obj, k) == v for k, v in extra_attrs.iteritems())
+            for obj in filtered.all()
+        )
 
     return False
 
