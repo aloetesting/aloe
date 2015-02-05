@@ -425,7 +425,9 @@ def models_existence_generic(step, model, should_exist):
         except KeyError:
             pass
 
-    func(step, should_exist=should_exist)
+        func = partial(func, should_exist=should_exist)
+
+    func(step)
 
 
 @step(r'There should be (\d+) ([a-z][a-z0-9_ ]*) in the database')
