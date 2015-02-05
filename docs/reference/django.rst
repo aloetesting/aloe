@@ -85,7 +85,7 @@ own creating steps using the ``creates_models`` decorator.
 testing models
 **************
 
-Two steps exist to test models.
+The following steps exist to test models.
 
 .. highlight:: ruby
 
@@ -94,6 +94,9 @@ Two steps exist to test models.
     Then features should be present in the database:
         | name    | value |
         | Lettuce | Rocks |
+    And features should not be present in the database:
+        | name    | value         |
+        | Lettuce | Is Enterprise |
     And there should be 1 feature in the database
 
 You can also test non-database model attributes by prefixing an ``@`` to the
@@ -112,7 +115,11 @@ registering your own model testers
 -----------------------------------
 
 For more complex tests that have to process or parse data you can write your
-own creating steps using the ``checks_existence`` decorator.
+own creating steps using the ``tests_existence`` decorator. It should take a
+hash and return a true value if the model with the specified attributes exists
+in the database. The "should be present" and "should not be present" steps will
+call the decorated function once for every line in the table and fail if it
+does not return ``True`` and ``False``, respectively.
 
 *************
 testing email

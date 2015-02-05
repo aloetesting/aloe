@@ -39,7 +39,7 @@ def test_model_update():
 
     status, out = run_scenario('leaves', 'update', 2)
     assert_not_equals(status, 0, out)
-    assert "IntegrityError: PRIMARY KEY must be unique" in out
+    assert "IntegrityError" in out
 
     status, out = run_scenario('leaves', 'update', 3)
     assert_not_equals(status, 0, out)
@@ -86,6 +86,19 @@ def test_model_existence_check():
     assert_not_equals(status, 0)
     assert "Expected 2 geese, found 1" in out
 
+    status, out = run_scenario('leaves', 'existence', 5)
+    assert_not_equals(status, 0)
+    assert "Garden exists: {u'name': u'Secret Garden', " \
+        "u'@howbig': u'small'}" in out
+    assert "AssertionError: 1 rows found" in out
+    gardens = "\n".join([
+        "Rows in DB are:",
+        "id=1, name=Secret Garden, area=45, raining=False, howbig=small,",
+        "id=2, name=Octopus's Garden, area=120, raining=True, howbig=medium,",
+        "id=3, name=Covent Garden, area=200, raining=True, howbig=big,",
+    ])
+    assert gardens in out
+
 
 @FileSystem.in_directory(current_directory, 'django', 'dill')
 def test_use_test_database_setting():
@@ -93,7 +106,7 @@ def test_use_test_database_setting():
 
     for i in range(1, 2):
         status, out = commands.getstatusoutput(
-            "python manage.py harvest --settings=testdbsettings " +
+            "python manage.py harvest --settings=testdbsettings -v 2 " +
             "leaves/features/testdb.feature")
 
         assert_equals(status, 0, out)

@@ -4,13 +4,14 @@ Step definitions for working with Django models.
 
 from datetime import datetime
 import re
+import warnings
 
 from django.core.management import call_command
 from django.core.management.color import no_style
 from django.db import connection
 from django.db.models.loading import get_models
 from django.utils.functional import curry
-from functools import wraps
+from functools import partial, wraps
 
 from lettuce import step
 
@@ -73,13 +74,36 @@ _MODEL_EXISTS = {}
 def checks_existence(model):
     """
     Register a model-specific existence check function.
+
+    This is deprecated, use tests_existence which checks individual hashes and
+    can reuse diagnostic information from the generic existence check.
     """
+
+    warnings.warn("deprecated - use tests_existence", DeprecationWarning)
 
     def decorated(func):
         """
         Decorator for the existence function.
         """
         _MODEL_EXISTS[model] = func
+        return func
+
+    return decorated
+
+
+_TEST_MODEL = {}
+
+
+def tests_existence(model):
+    """
+    Register a model-specific existence test.
+    """
+
+    def decorated(func):
+        """
+        Decorator for the existence function.
+        """
+        _TEST_MODEL[model] = func
         return func
 
     return decorated
@@ -199,7 +223,40 @@ def _dump_model(model, attrs=None):
     print
 
 
-def models_exist(model, data, queryset=None):
+def test_existence(model_or_queryset, data):
+    """
+    Test existence of a given hash in a queryset (or among all model instances
+    if a model is given).
+    """
+
+    try:
+        queryset = model_or_queryset.objects
+    except AttributeError:
+        queryset = model_or_queryset
+
+    fields = {}
+    extra_attrs = {}
+    for k, v in data.iteritems():
+        if k.startswith('@'):
+            # this is an attribute
+            extra_attrs[k[1:]] = v
+        else:
+            fields[k] = v
+
+    filtered = queryset.filter(**fields)
+
+    if filtered.exists():
+        return any(
+            all(getattr(obj, k) == v for k, v in extra_attrs.iteritems())
+            for obj in filtered.all()
+        )
+
+    return False
+
+
+def models_exist(model, data, queryset=None,
+                 existence_check=None,
+                 should_exist=True):
     """
     Check whether the models defined by @data exist in the @queryset.
     """
@@ -213,28 +270,17 @@ def models_exist(model, data, queryset=None):
     failed = 0
     try:
         for hash_ in data:
-            fields = {}
-            extra_attrs = {}
-            for k, v in hash_.iteritems():
-                if k.startswith('@'):
-                    # this is an attribute
-                    extra_attrs[k[1:]] = v
-                else:
-                    fields[k] = v
+            if existence_check:
+                match = existence_check(hash_)
+            else:
+                match = test_existence(queryset, hash_)
 
-            filtered = queryset.filter(**fields)
-
-            match = False
-            if filtered.exists():
-                for obj in filtered.all():
-                    if all(getattr(obj, k) == v
-                            for k, v in extra_attrs.iteritems()):
-                        match = True
-                        break
-
-            assert match, \
-                "%s does not exist: %s\n%s" % (
-                model.__name__, hash_, filtered.query)
+            if should_exist:
+                assert match, \
+                    "%s does not exist: %s" % (model.__name__, hash_)
+            else:
+                assert not match, \
+                    "%s exists: %s" % (model.__name__, hash_)
 
     except AssertionError as exc:
         print exc
@@ -243,9 +289,15 @@ def models_exist(model, data, queryset=None):
     if failed:
         print "Rows in DB are:"
         for model in queryset.all():
-            _dump_model(model, extra_attrs.keys())
+            _dump_model(model,
+                        attrs=[k[1:]
+                               for k in data[0].keys()
+                               if k.startswith('@')])
 
-        raise AssertionError("%i rows missing" % failed)
+        if should_exist:
+            raise AssertionError("%i rows missing" % failed)
+        else:
+            raise AssertionError("%i rows found" % failed)
 
 
 for txt in (
@@ -340,12 +392,40 @@ def models_exist_generic(step, model):
     | Make a mess      |
     """
 
+    return models_existence_generic(step, model, True)
+
+
+@step(STEP_PREFIX + r'(?:an? )?([A-Z][a-z0-9_ ]*) should not be present ' +
+      r'in the database')
+def models_exist_generic(step, model):
+    """
+    And objectives should not be present in the database:
+    | description      |
+    | Make a mess      |
+    """
+
+    return models_existence_generic(step, model, False)
+
+
+def models_existence_generic(step, model, should_exist):
+    """
+    Assert the models are present or absent in the database.
+    """
+
     model = get_model(model)
 
     try:
         func = _MODEL_EXISTS[model]
     except KeyError:
         func = curry(models_exist, model)
+
+        try:
+            existence_check = _TEST_MODEL[model]
+            func = partial(func, existence_check=existence_check)
+        except KeyError:
+            pass
+
+        func = partial(func, should_exist=should_exist)
 
     func(step)
 

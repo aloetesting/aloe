@@ -20,23 +20,23 @@ Feature: Update models
 
     Then the database dump is as follows:
     """
-    "[
-    "  {
-    "    "pk": 1,
-    "    "model": "leaves.garden",
-    "    "fields": { "raining": false, "name": "Secret Garden", "area": 55 }
-    "  },
-    "  {
-    "    "pk": 2,
-    "    "model": "leaves.garden",
-    "    "fields": { "raining": false, "name": "Nicer Octopus's Garden", "area": 150 }
-    "  },
-    "  {
-    "    "pk": 3,
-    "    "model": "leaves.garden",
-    "    "fields": { "raining": true, "name": "Covent Garden", "area": 200 }
-    "  }
-    "]
+    [
+      {
+        "pk": 1,
+        "model": "leaves.garden",
+        "fields": { "raining": false, "name": "Secret Garden", "area": 55 }
+      },
+      {
+        "pk": 2,
+        "model": "leaves.garden",
+        "fields": { "raining": false, "name": "Nicer Octopus's Garden", "area": 150 }
+      },
+      {
+        "pk": 3,
+        "model": "leaves.garden",
+        "fields": { "raining": true, "name": "Covent Garden", "area": 200 }
+      }
+    ]
     """
 
   Scenario: Create a nice farm, then try to make the same farm
