@@ -103,6 +103,8 @@ class Command(BaseCommand):
         make_option("--pdb", dest="auto_pdb", default=False,
                     action="store_true", help='Launches an interactive debugger upon error'),
 
+        make_option('--steps-catalog', dest='steps_catalog', default=False,
+                    action='store_true', help='Lists all available steps'),
     )
 
     def stopserver(self, failed=False):
@@ -122,8 +124,6 @@ class Command(BaseCommand):
         return paths
 
     def handle(self, *args, **options):
-        setup_test_environment()
-
         verbosity = int(options.get('verbosity', 4))
         apps_to_run = tuple(options.get('apps', '').split(","))
         apps_to_avoid = tuple(options.get('avoid_apps', '').split(","))
@@ -135,38 +135,46 @@ class Command(BaseCommand):
         auto_pdb = options.get('auto_pdb', False)
         threading = options.get('use_threading', True)
         with_summary = options.get('summary_display', False)
+        steps_catalog = options.get('steps_catalog', False)
 
-        if test_database:
-            migrate_south = getattr(settings, "SOUTH_TESTS_MIGRATE", True)
-            try:
-                from south.management.commands import patch_for_test_db_setup
-                patch_for_test_db_setup()
-            except:
-                migrate_south = False
-                pass
+        if not steps_catalog:
+            setup_test_environment()
 
-            from django.test.utils import get_runner
-            self._testrunner = get_runner(settings)(interactive=False)
-            self._testrunner.setup_test_environment()
-            self._old_db_config = self._testrunner.setup_databases()
+            if test_database:
+                migrate_south = getattr(settings, "SOUTH_TESTS_MIGRATE", True)
+                try:
+                    from south.management.commands import patch_for_test_db_setup
+                    patch_for_test_db_setup()
+                except:
+                    migrate_south = False
+                    pass
 
-            call_command('syncdb', verbosity=0, interactive=False,)
-            if migrate_south:
-               call_command('migrate', verbosity=0, interactive=False,)
+                from django.test.utils import get_runner
+                self._testrunner = get_runner(settings)(interactive=False)
+                self._testrunner.setup_test_environment()
+                self._old_db_config = self._testrunner.setup_databases()
+
+                call_command('syncdb', verbosity=0, interactive=False,)
+                if migrate_south:
+                   call_command('migrate', verbosity=0, interactive=False,)
 
         settings.DEBUG = options.get('debug', False)
 
         paths = self.get_paths(args, apps_to_run, apps_to_avoid)
-        server = get_server(port=options['port'], threading=threading)
 
-        if run_server:
-            try:
-                server.start()
-            except LettuceServerException, e:
-                raise SystemExit(e)
+        steps = set()
 
-        os.environ['SERVER_NAME'] = str(server.address)
-        os.environ['SERVER_PORT'] = str(server.port)
+        if not steps_catalog:
+            server = get_server(port=options['port'], threading=threading)
+
+            if run_server:
+                try:
+                    server.start()
+                except LettuceServerException, e:
+                    raise SystemExit(e)
+
+            os.environ['SERVER_NAME'] = str(server.address)
+            os.environ['SERVER_PORT'] = str(server.port)
 
         failed = False
 
@@ -193,7 +201,13 @@ class Command(BaseCommand):
                                     tags=tags, failfast=failfast, auto_pdb=auto_pdb,
                                     smtp_queue=smtp_queue)
 
-                    result = runner.run()
+                    if steps_catalog:
+                        runner.loader.find_and_load_step_definitions()
+
+                        steps.update([step.pattern
+                                      for step in registry.STEP_REGISTRY])
+                    else:
+                        result = runner.run()
 
                 except (ImportError, SyntaxError):
                     import traceback
@@ -215,15 +229,22 @@ class Command(BaseCommand):
             failed = e.code
 
         finally:
-            summary = SummaryTotalResults(results)
-            summary.summarize_all()
-            registry.call_hook('after', 'harvest', summary)
+            if steps_catalog:
+                steps = list(steps)
+                steps.sort()
 
-            server.stop(failed)
+                for step in steps:
+                    self.stdout.write('  ' + step)
+            else:
+                summary = SummaryTotalResults(results)
+                summary.summarize_all()
+                registry.call_hook('after', 'harvest', summary)
 
-            if test_database:
-                self._testrunner.teardown_databases(self._old_db_config)
+                server.stop(failed)
 
-            teardown_test_environment()
+                if test_database:
+                    self._testrunner.teardown_databases(self._old_db_config)
 
-            raise SystemExit(int(failed))
+                teardown_test_environment()
+
+                raise SystemExit(int(failed))
