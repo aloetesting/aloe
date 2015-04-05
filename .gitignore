@@ -1,14 +1,2 @@
-*.pyc
-.coverage
-./tests/functional/2nd_feature_dir/step_definitions/__init__.py
-docs/_build/
-docs/_build
-lettuce.egg-info/
-build/
-dist/
-.DS_Store
-*.swp
-tests/integration/django/dill/garden-db.sqlite
-tests/integration/django/grocery/grocery-db.sqlite
-.tox
-./_public
+/.eggs
+/lychee.egg-info
