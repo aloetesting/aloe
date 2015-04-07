@@ -48,11 +48,11 @@ class Language(object):
         return self.__class__.__name__
 
     def print_keywords(self):
-        print u'FEATURE', unicode(self.FEATURE)
-        print u'BACKGROUND', unicode(self.BACKGROUND)
-        print u'SCENARIO', unicode(self.SCENARIO)
-        print u'EXAMPLES', unicode(self.EXAMPLES)
-        print u'STATEMENT', unicode(self.STATEMENT)
+        print(u'FEATURE', unicode(self.FEATURE))
+        print(u'BACKGROUND', unicode(self.BACKGROUND))
+        print(u'SCENARIO', unicode(self.SCENARIO))
+        print(u'EXAMPLES', unicode(self.EXAMPLES))
+        print(u'STATEMENT', unicode(self.STATEMENT))
 
     def __implement_me__(self):
         raise NotImplementedError("Language isn't complete")
@@ -67,7 +67,7 @@ i18n = os.path.join(os.path.dirname(__file__),
 with open(i18n) as i18n:
     i18n = json.load(i18n)
 
-    for lang, defn in i18n.iteritems():
+    for lang, defn in i18n.items():
         name = defn['name']
 
         def generate_keywords(*args):

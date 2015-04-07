@@ -45,13 +45,16 @@ from pyparsing import (CharsNotIn,
 
 from fuzzywuzzy import fuzz
 
-from lettuce import languages, strings
-from lettuce.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
-from lettuce.decorators import memoizedproperty
+from lychee import languages, strings
+from lychee.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
 
 
-unicodePrintables = u''.join(unichr(c) for c in xrange(65536)
-                             if not unichr(c).isspace())
+# TODO: is this needed?
+memoizedproperty = property
+
+
+unicodePrintables = u''.join(chr(c) for c in range(65536)
+                             if not chr(c).isspace())
 
 
 class ParseLocation(object):
@@ -65,12 +68,12 @@ class ParseLocation(object):
         self.line = lineno(loc, s)
         self.col = col(loc, s)
 
-    def __unicode__(self):
+    def __str__(self):
         return u'{file}:{line}'.format(file=self.file,
                                        line=self.line)
 
     def __repr__(self):
-        return unicode(self).encode('utf-8')
+        return str(self)
 
     @property
     def file(self):
@@ -132,7 +135,7 @@ class Step(Node):
         token = tokens[0]
 
         self.sentence = u' '.join(token.sentence)
-        self.table = map(list, token.table) \
+        self.table = list(map(list, token.table)) \
             if token.table else None
         self.multiline = token.multiline
 
@@ -303,14 +306,14 @@ class TaggedBlock(Block):
                     col=col(loc, s),
                     klass=self.__class__.__name__))
 
-    def __unicode__(self):
+    def __str__(self):
         return '<{klass}: "{name}">'.format(
             # FIXME: use self.language
             klass=self.__class__.__name__,
             name=self.name)
 
     def __repr__(self):
-        return unicode(self).encode('utf-8')
+        return str(self)
 
     @property
     def tags(self):
@@ -325,7 +328,7 @@ class TaggedBlock(Block):
                                                         name=self.name)
         if annotate:
             s = strings.ljust(s, self.feature.max_length + 1) + \
-                u'# ' + unicode(self.described_at)
+                u'# ' + str(self.described_at)
 
         return s
 
@@ -386,7 +389,7 @@ class Background(Block):
 
 class Scenario(TaggedBlock):
     @classmethod
-    def add_statements(cls, s, loc, tokens):
+    def add_statements(cls, tokens):
         token = tokens[0]
 
         self = super(Scenario, cls).add_statements(tokens)
@@ -397,7 +400,7 @@ class Scenario(TaggedBlock):
         self.outlines = []
 
         for outline in token.outlines:
-            outlines = map(list, outline)
+            outlines = list(map(list, outline))
 
             # the first row of the table is the column headings
             keys = outlines[0]
@@ -501,11 +504,11 @@ class Description(Node):
 
         self.lines = [u' '.join(line).strip() for line in token]
 
-    def __unicode__(self):
+    def __str__(self):
         return u'\n'.join(self.lines)
 
     def __repr__(self):
-        return unicode(self).encode('utf-8')
+        return str(self)
 
     def represented(self, indent=2, annotate=True):
         return u'\n'.join(
@@ -603,7 +606,7 @@ class Feature(TaggedBlock):
         In order to remain compatible with the existing API we disassemble
         the Description node
         """
-        return unicode(self.description_node)
+        return str(self.description_node)
 
     @property
     def feature(self):

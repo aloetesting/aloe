@@ -36,7 +36,7 @@ def represent_table(table, indent=0, cell_wrap=lambda s: s):
         return ''
 
     # calculate the width of each column
-    table = [[unicode(cell).replace('|', r'\|')
+    table = [[str(cell).replace('|', r'\|')
               for cell in row]
              for row in table]
     lengths = [get_terminal_width(cell) for cell in table[0]]
