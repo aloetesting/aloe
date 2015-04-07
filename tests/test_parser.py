@@ -14,12 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from sure import expect
-from sure.old import that
+
+from nose.tools import assert_equals, assert_raises
+
 from lychee import step
 from lychee.parser import Feature, Scenario, Background
 from lychee.exceptions import LettuceSyntaxError
-from nose.tools import assert_equals
 
 FEATURE1 = """
 Feature: Rent movies
@@ -458,7 +458,7 @@ def test_feature_has_repr():
     Feature implements __repr__ nicely
     """
     feature = Feature.from_string(FEATURE1)
-    expect(repr(feature)).to.equal('<Feature: "Rent movies">')
+    assert repr(feature) == '<Feature: "Rent movies">'
 
 
 def test_scenario_has_name():
@@ -470,7 +470,7 @@ def test_scenario_has_name():
 
     assert isinstance(feature, Feature)
 
-    expect(feature.name).to.equal("Rent movies")
+    assert feature.name == "Rent movies"
 
 
 def test_feature_has_scenarios():
@@ -480,8 +480,8 @@ def test_feature_has_scenarios():
 
     feature = Feature.from_string(FEATURE1)
 
-    expect(feature.scenarios).to.be.a(list)
-    expect(feature.scenarios).to.have.length_of(3)
+    assert isinstance(feature.scenarios, list)
+    assert len(feature.scenarios) == 3
 
     expected_scenario_names = [
         "Renting a featured movie",
@@ -490,13 +490,13 @@ def test_feature_has_scenarios():
     ]
 
     for scenario, expected_name in zip(feature.scenarios, expected_scenario_names):
-        expect(scenario).to.be.a(Scenario)
-        expect(scenario.name).to.equal(expected_name)
+        assert isinstance(scenario, Scenario)
+        assert scenario.name == expected_name
 
-    expect(feature.scenarios[1].steps[0].keys).to.equal(
-        ('Name', 'Rating', 'New', 'Available'))
+    assert feature.scenarios[1].steps[0].keys == \
+        ('Name', 'Rating', 'New', 'Available')
 
-    expect(list(feature.scenarios[1].steps[0].hashes)).to.equal([
+    assert list(feature.scenarios[1].steps[0].hashes) == [
         {
             'Name': 'A night at the museum 2',
             'Rating': '3 stars',
@@ -509,7 +509,7 @@ def test_feature_has_scenarios():
             'New': 'no',
             'Available': '6',
         },
-    ])
+    ]
 
 
 def test_can_parse_feature_description():
@@ -657,22 +657,20 @@ def test_single_scenario_single_scenario():
 
     first_scenario = feature.scenarios[0]
 
-    assert that(first_scenario.tags).deep_equals([
-        'many', 'other', 'basic', 'tags', 'here', ':)'])
+    assert first_scenario.tags == [
+        'many', 'other', 'basic', 'tags', 'here', ':)'
+    ]
 
 
 def test_single_feature_single_tag():
     "All scenarios within a feature inherit the feature's tags"
     feature = Feature.from_string(FEATURE18)
 
-    assert that(feature.scenarios[0].tags).deep_equals([
-        'runme1', 'feature_runme'])
+    assert feature.scenarios[0].tags == ['runme1', 'feature_runme']
 
-    assert that(feature.scenarios[1].tags).deep_equals([
-        'runme2', 'feature_runme'])
+    assert feature.scenarios[1].tags == ['runme2', 'feature_runme']
 
-    assert that(feature.scenarios[2].tags).deep_equals([
-        'runme3', 'feature_runme'])
+    assert feature.scenarios[2].tags == ['runme3', 'feature_runme']
 
 
 def test_single_scenario_many_scenarios():
@@ -692,21 +690,21 @@ def test_single_scenario_many_scenarios():
 
     @step(r'fill my email with [\'"]?([^\'"]+)[\'"]?')
     def fill_email(step, email):
-        assert that(email).equals('gabriel@lettuce.it')
+        assert email == 'gabriel@lettuce.it'
 
     feature = Feature.from_string(FEATURE13)
 
     first_scenario = feature.scenarios[0]
-    assert that(first_scenario.tags).equals(['runme'])
+    assert first_scenario.tags == ['runme']
 
     second_scenario = feature.scenarios[1]
-    assert that(second_scenario.tags).equals([])
+    assert second_scenario.tags == []
 
     third_scenario = feature.scenarios[2]
-    assert that(third_scenario.tags).equals(['slow'])
+    assert third_scenario.tags == ['slow']
 
     last_scenario = feature.scenarios[3]
-    assert that(last_scenario.tags).equals([])
+    assert last_scenario.tags == []
 
 
 def test_scenarios_with_extra_whitespace():
@@ -726,7 +724,7 @@ def test_scenarios_parsing():
     feature = Feature.from_string(FEATURE15)
     scenarios_and_tags = [(s.name, s.tags) for s in feature.scenarios]
 
-    scenarios_and_tags.should.equal([
+    assert scenarios_and_tags == [
         ('Bootstraping Redis role', []),
         ('Restart scalarizr', []),
         ('Rebundle server', [u'rebundle']),
@@ -744,34 +742,31 @@ def test_scenarios_parsing():
         ('Writing on Master, reading on Slave', []),
         ('Slave -> Master promotion', []),
         ('Restart farm', [u'restart_farm']),
-    ])
+    ]
 
 def test_scenarios_with_special_characters():
     "Make sure that regex special characters in the scenario names are ignored"
     feature = Feature.from_string(FEATURE19)
 
-    assert that(feature.scenarios[0].tags).deep_equals([
-        'runme1'])
+    assert feature.scenarios[0].tags == ['runme1']
 
-    assert that(feature.scenarios[1].tags).deep_equals([
-        'runme2'])
+    assert feature.scenarios[1].tags == ['runme2']
 
 def test_background_parsing_with_mmf():
     feature = Feature.from_string(FEATURE16)
-    expect(feature.description).to.equal(
-        "As a rental store owner\n"
-        "I want to keep track of my clients\n"
+    assert feature.description == \
+        "As a rental store owner\n" \
+        "I want to keep track of my clients\n" \
         "So that I can manage my business better"
-    )
 
-    expect(feature).to.have.property('background').being.a(Background)
-    expect(feature.background).to.have.property('steps')
-    expect(feature.background.steps).to.have.length_of(2)
+    assert isinstance(feature.background, Background)
+    assert feature.background.steps
+    assert len(feature.background.steps) == 2
 
     step1, step2 = feature.background.steps
-    step1.sentence.should.equal(
-        'Given I have the following movies in my database:')
-    step1.hashes.should.equal([
+    assert step1.sentence == \
+        'Given I have the following movies in my database:'
+    assert step1.hashes == [
         {
             u'Available': u'6',
             u'Rating': u'4 stars',
@@ -784,28 +779,28 @@ def test_background_parsing_with_mmf():
             u'Name': u'Iron Man 2',
             u'New': u'yes',
         },
-    ])
+    ]
 
-    step2.sentence.should.equal(
-        'And the following clients:')
-    step2.hashes.should.equal([
+    assert step2.sentence == \
+        'And the following clients:'
+    assert step2.hashes == [
         {u'Name': u'John Doe'},
         {u'Name': u'Foo Bar'},
-    ])
+    ]
 
 
 def test_background_parsing_without_mmf():
     feature = Feature.from_string(FEATURE17)
-    expect(feature.description).to.be.empty
+    assert feature.description == ""
 
-    expect(feature).to.have.property('background').being.a(Background)
-    expect(feature.background).to.have.property('steps')
-    expect(feature.background.steps).to.have.length_of(2)
+    assert isinstance(feature.background, Background)
+    assert feature.background.steps
+    assert len(feature.background.steps) == 2
 
     step1, step2 = feature.background.steps
-    step1.sentence.should.equal(
-        'Given I have the following movies in my database:')
-    step1.hashes.should.equal([
+    assert step1.sentence == \
+        'Given I have the following movies in my database:'
+    assert step1.hashes == [
         {
             u'Available': u'6',
             u'Rating': u'4 stars',
@@ -818,24 +813,25 @@ def test_background_parsing_without_mmf():
             u'Name': u'Iron Man 2',
             u'New': u'yes',
         },
-    ])
+    ]
 
-    step2.sentence.should.equal(
-        'And the following clients:')
-    step2.hashes.should.equal([
+    assert step2.sentence == \
+        'And the following clients:'
+    assert step2.hashes == [
         {u'Name': u'John Doe'},
         {u'Name': u'Foo Bar'},
-    ])
+    ]
 
 
 def test_syntax_error_for_scenarios_with_no_name():
     ("Trying to parse features with unnamed "
      "scenarios will cause a syntax error")
-    expect(Feature.from_string).when.called_with(FEATURE20).to.throw(
-        LettuceSyntaxError,
-        ('Syntax error at: None\n'
-         '3:5 Scenario must have a name')
-    )
+    with assert_raises(LettuceSyntaxError) as error:
+        Feature.from_string(FEATURE20)
+
+    assert error.exception.msg == \
+        'Syntax error at: None\n' \
+        '3:5 Scenario must have a name'
 
 
 def test_scenario_post_email():
@@ -846,16 +842,15 @@ def test_scenario_post_email():
     feature = Feature.from_string(FEATURE21)
     scenario1, scenario2 = feature.scenarios
 
-    scenario1.tags.should.be.empty
-    scenario2.tags.should.equal(['tag'])
+    assert scenario1.tags == []
+    assert scenario2.tags == ['tag']
 
 def test_feature_first_scenario_tag_extraction():
     ("A feature object should be able to find the single tag "
      "belonging to the first scenario")
     feature = Feature.from_string(FEATURE22)
 
-    assert that(feature.scenarios[0].tags).deep_equals([
-        'onetag'])
+    assert feature.scenarios[0].tags == ['onetag']
 
 
 def test_feature_first_scenario_tags_extraction():
@@ -863,5 +858,5 @@ def test_feature_first_scenario_tags_extraction():
      "belonging to the first scenario")
     feature = Feature.from_string(FEATURE23)
 
-    assert that(feature.scenarios[0].tags).deep_equals([
-        'onetag', 'another', '$%^&even-weird_chars'])
+    assert feature.scenarios[0].tags == \
+        ['onetag', 'another', '$%^&even-weird_chars']
