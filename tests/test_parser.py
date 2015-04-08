@@ -17,7 +17,6 @@
 
 from nose.tools import assert_equals, assert_raises
 
-from lychee import step
 from lychee.parser import Feature, Scenario, Background
 from lychee.exceptions import LettuceSyntaxError
 
@@ -675,22 +674,6 @@ def test_single_feature_single_tag():
 
 def test_single_scenario_many_scenarios():
     "Untagged scenario following a tagged one should have no tags"
-
-    @step('this scenario has tags')
-    def scenario_has_tags(step):
-        assert step.scenario.tags
-
-    @step('this scenario has no tags')
-    def scenario_has_no_tags(step):
-        assert not step.scenario.tags
-
-    @step('it can be inspected from within the object')
-    def inspected_within_object(step):
-        assert step.scenario.tags
-
-    @step(r'fill my email with [\'"]?([^\'"]+)[\'"]?')
-    def fill_email(step, email):
-        assert email == 'gabriel@lettuce.it'
 
     feature = Feature.from_string(FEATURE13)
 
