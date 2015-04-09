@@ -16,3 +16,14 @@ class LettuceSyntaxWarning(SyntaxWarning):
 class StepLoadingError(Exception):
     """Raised when a step cannot be loaded."""
     pass
+
+
+class NoDefinitionFound(Exception):
+    """
+    Exception raised when there is no suitable step definition for a step.
+    """
+
+    def __init__(self, step):
+        self.step = step
+        super(NoDefinitionFound, self).__init__(
+            'The step r"%s" is not defined' % self.step.sentence)
