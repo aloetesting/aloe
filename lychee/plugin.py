@@ -2,6 +2,8 @@ import os
 
 from nose.plugins import Plugin
 
+from lychee.testclass import TestCase
+
 
 class GherkinPlugin(Plugin):
     """
@@ -9,6 +11,8 @@ class GherkinPlugin(Plugin):
     """
 
     name = 'gherkin'
+
+    TEST_CLASS = TestCase
 
     def wantDirectory(self, directory):
         """
@@ -31,4 +35,5 @@ class GherkinPlugin(Plugin):
         Load a feature from the feature file.
         """
 
-        raise NotImplementedError
+        # TODO: How to customize the test class?
+        return self.TEST_CLASS.from_file(file)

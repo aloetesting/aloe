@@ -21,7 +21,10 @@ import threading
 import traceback
 from functools import wraps, partial
 
-from lettuce.exceptions import StepLoadingError
+from lychee.exceptions import (
+    NoDefinitionFound,
+    StepLoadingError,
+)
 
 
 world = threading.local()
@@ -92,7 +95,7 @@ class StepDict(dict):
     def _assert_is_step(self, step, func):
         try:
             return re.compile(step, re.I | re.U)
-        except re.error, e:
+        except re.error as e:
             raise StepLoadingError("Error when trying to compile:\n"
                                    "  regex: %r\n"
                                    "  for function: %s\n"
@@ -106,6 +109,18 @@ class StepDict(dict):
         return callable(func) and (
             "func_name" in func_dir or
             "__func__" in func_dir)
+
+    def match_step(self, step):
+        """
+        Find a function and arguments to call for a specified step.
+        """
+
+        for regex, func in self.items():
+            matched = regex.search(step.sentence)
+            if matched:
+                return (func, matched.groupdict())
+
+        raise NoDefinitionFound(step)
 
 
 STEP_REGISTRY = StepDict()
