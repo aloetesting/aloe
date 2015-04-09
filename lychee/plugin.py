@@ -2,6 +2,7 @@ import os
 
 from nose.plugins import Plugin
 
+from lychee.fs import FeatureLoader
 from lychee.testclass import TestCase
 
 
@@ -13,6 +14,14 @@ class GherkinPlugin(Plugin):
     name = 'gherkin'
 
     TEST_CLASS = TestCase
+
+    def begin(self):
+        """
+        Load the steps.
+        """
+
+        loader = FeatureLoader('.')
+        loader.find_and_load_step_definitions()
 
     def wantDirectory(self, directory):
         """
@@ -36,4 +45,4 @@ class GherkinPlugin(Plugin):
         """
 
         # TODO: How to customize the test class?
-        return self.TEST_CLASS.from_file(file)
+        yield self.TEST_CLASS.from_file(file)
