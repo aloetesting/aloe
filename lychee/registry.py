@@ -113,12 +113,19 @@ class StepDict(dict):
     def match_step(self, step):
         """
         Find a function and arguments to call for a specified step.
+
+        Returns a tuple of (function, args, kwargs).
         """
 
         for regex, func in self.items():
             matched = regex.search(step.sentence)
             if matched:
-                return (func, matched.groupdict())
+                kwargs = matched.groupdict()
+                if kwargs:
+                    return (func, (), matched.groupdict())
+                else:
+                    args = matched.groups()
+                    return (func, args, {})
 
         raise NoDefinitionFound(step)
 
