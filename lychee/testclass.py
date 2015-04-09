@@ -17,8 +17,9 @@ def rename(name, func):
     Set the function name.
     """
 
+    # TODO: What attributes are actually needed?
     func.__name__ = name
-    # TODO: __qualname__?
+    func.__qualname__ == name
     return func
 
 
@@ -103,8 +104,7 @@ class TestCase(unittest.TestCase):
         # TODO: replace with code generation
         def run_steps(self):
             before(self)
-            for step, (func, kwargs) in step_definitions:
-                # TODO: what does Lettuce pass as 'self'/'step'?
-                func(step, **kwargs)
+            for step, (func, args, kwargs) in step_definitions:
+                func(step, *args, **kwargs)
 
         return run_steps
