@@ -95,7 +95,6 @@ class TestCase(unittest.TestCase):
         Construct a method calling the specified steps.
         """
 
-        # TODO: when are the steps loaded? probably in GherkinPlugin
         step_definitions = [
             (step, STEP_REGISTRY.match_step(step))
             for step in steps

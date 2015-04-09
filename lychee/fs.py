@@ -24,8 +24,8 @@ import zipfile
 
 from functools import wraps
 from glob import glob
+from importlib import reload
 from os.path import abspath, join, dirname, curdir, exists
-from importlib import import_module
 
 
 class FeatureLoader(object):
@@ -43,18 +43,13 @@ class FeatureLoader(object):
                 break
             base_dir = FileSystem.join(base_dir, '..')
 
-        # hacky, so we can load stuff in the directory we found things in
-        base_dir = FileSystem.join(base_dir, '..')
-        sys.path.insert(0, base_dir)
-
         for filename in files:
-            package = os.path.relpath(FileSystem.dirname(filename),
-                                      base_dir).replace('/', '.')
+            root = FileSystem.dirname(filename)
+            sys.path.insert(0, root)
             to_load = FileSystem.filename(filename, with_extension=False)
             try:
-                module = import_module('.' + to_load, package)
-                print "from", package, "import", to_load
-            except ValueError, e:
+                module = __import__(to_load)
+            except ValueError as e:
                 import traceback
                 err_msg = traceback.format_exc(e)
                 if 'empty module name' in err_msg.lower():
@@ -65,8 +60,7 @@ class FeatureLoader(object):
                     raise e
 
             reload(module)  # always take fresh meat :)
-
-        sys.path.remove(base_dir)
+            sys.path.remove(root)
 
     def find_feature_files(self):
         paths = FileSystem.locate(self.base_dir, "*.feature")
@@ -151,7 +145,7 @@ class FileSystem(object):
         """
         try:
             os.makedirs(path)
-        except OSError, e:
+        except OSError as e:
             # ignore if path already exists
             if e.errno not in (17, ):
                 raise e
