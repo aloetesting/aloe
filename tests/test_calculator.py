@@ -17,6 +17,8 @@ class CalculatorTest(unittest.TestCase):
         A context manager to change the current directory.
         """
 
+        # TODO: This should be a decorator on the function/class
+
         cwd = os.getcwd()
         os.chdir(directory)
         try:
@@ -30,5 +32,17 @@ class CalculatorTest(unittest.TestCase):
         """
 
         with self.in_directory('tests/tested_app'):
-            result = Runner(exit=False)
+            result = Runner(exit=False,
+                            argv=['lychee', 'features/calculator.feature'])
             assert result.success
+
+    def test_wrong_expectations(self):
+        """
+        Test that a failing feature fails tests.
+        """
+
+        with self.in_directory('tests/tested_app'):
+            result = Runner(exit=False,
+                            argv=['lychee',
+                                  'features/wrong_expectations.feature'])
+            assert not result.success
