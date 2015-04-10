@@ -87,8 +87,10 @@ class TestCase(unittest.TestCase):
         result = cls.make_steps(scenario.steps,
                                 before=lambda self: self.background())
 
+        result.is_scenario = True
+
         # TODO: inject line/file information
-        return rename('test_' + scenario.name, result)
+        return rename(scenario.name, result)
 
     @classmethod
     def make_steps(cls, steps, before=const(None)):

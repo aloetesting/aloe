@@ -46,7 +46,6 @@ class GherkinPlugin(Plugin):
 
         # TODO: How to customize the test class?
         test = self.TEST_CLASS.from_file(file)
-        # TODO: How does the base runner do this?
         for method in test.__dict__:
-            if method.startswith('test_'):
+            if getattr(getattr(test, method), 'is_scenario', False):
                 yield test(method)
