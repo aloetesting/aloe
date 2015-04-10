@@ -13,8 +13,11 @@ with open('requirements.txt') as requirements, \
         author='Alexey Kotlyarov',
         author_email='a@koterpillar.com',
         url='https://github.com/koterpillar/lychee',
-        license='MIT',
         long_description=open('README.md').read(),
+        classifiers=[
+            'License :: OSI Approved :: ' +
+                'GNU General Public License v3 or later (GPLv3+)',
+        ],
 
         packages=find_packages(exclude=['tests']),
         package_data={
