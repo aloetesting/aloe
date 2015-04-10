@@ -14,23 +14,14 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-import os
 import re
-import sys
 import threading
-import traceback
 from functools import wraps, partial
 
 from lychee.exceptions import (
     NoDefinitionFound,
     StepLoadingError,
 )
-
-
-world = threading.local()
-world._set = False
-
-real_stdout = sys.stdout
 
 
 def _function_id(func):
@@ -131,72 +122,10 @@ class StepDict(dict):
 
 
 STEP_REGISTRY = StepDict()
-CALLBACK_REGISTRY = CallbackDict(
-    {
-        'all': {
-            'before': {},
-            'after': {},
-        },
-        'step': {
-            'before_each': {},
-            'after_each': {},
-            'before_output': {},
-            'after_output': {},
-        },
-        'scenario': {
-            'before_each': {},
-            'after_each': {},
-            'outline': {},  # an example
-        },
-        'background': {
-            'before_each': {},
-            'after_each': {},
-        },
-        'feature': {
-            'before_each': {},
-            'after_each': {},
-        },
-        'scenario_outline': {
-            'before_each': {},
-            'after_each': {},
-        },
-        'example': {
-            'before_each': {},
-            'after_each': {},
-        },
-        'app': {
-            'before_each': {},
-            'after_each': {},
-        },
-        'harvest': {
-            'before': {},
-            'after': {},
-        },
-        'handle_request': {
-            'before': {},
-            'after': {},
-        },
-        'runserver': {
-            'before': {},
-            'after': {},
-        },
-    },
-)
-
-
-def call_hook(situation, kind, *args, **kw):
-    for callback in CALLBACK_REGISTRY[kind][situation].values():
-        try:
-            callback(*args, **kw)
-        except Exception as e:
-            print >> real_stdout, "Exception in hook %s:" % callback.__name__
-            traceback.print_exc(e, file=real_stdout)
-            raise
 
 
 def clear():
     STEP_REGISTRY.clear()
-    CALLBACK_REGISTRY.clear()
 
 
 def preserve_registry(func):
@@ -207,15 +136,11 @@ def preserve_registry(func):
     @wraps(func)
     def inner(*args, **kwargs):
         step_registry = STEP_REGISTRY.copy()
-        call_registry = CALLBACK_REGISTRY.copy()
 
         ret = func(*args, **kwargs)
 
         STEP_REGISTRY.clear()
         STEP_REGISTRY.update(step_registry)
-
-        CALLBACK_REGISTRY.clear()
-        CALLBACK_REGISTRY.update(call_registry)
 
         return ret
 

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from lychee.registry import STEP_REGISTRY, world
+from lychee.registry import STEP_REGISTRY
 
 
 def _is_step_sentence(sentence):
@@ -34,3 +34,6 @@ def step(step_func_or_sentence):
         return lambda func: STEP_REGISTRY.load(step_func_or_sentence, func)
     else:
         return STEP_REGISTRY.load_func(step_func_or_sentence)
+
+
+world = threading.local()
