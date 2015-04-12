@@ -10,6 +10,13 @@ class CalculatorTest(unittest.TestCase):
     Test that calculator feature works as expected.
     """
 
+    def setUp(self):
+        """
+        Ensure inner Nose doesn't redirect output.
+        """
+
+        os.environ['NOSE_NOCAPTURE'] = '1'
+
     @staticmethod
     @contextmanager
     def in_directory(directory):

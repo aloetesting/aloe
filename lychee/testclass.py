@@ -1,3 +1,4 @@
+import ast
 import unittest
 
 from lychee.parser import Feature
@@ -69,12 +70,11 @@ class TestCase(unittest.TestCase):
         """
 
         if background is None:
-            result = const(True)
+            result = rename('background', const(True))
         else:
-            result = self.make_steps(background.steps)
+            result = cls.make_steps(background.steps)
 
-        # TODO: inject line/file information
-        return rename('background', result)
+        return result
 
     @classmethod
     def make_scenario(cls, scenario):
@@ -89,24 +89,64 @@ class TestCase(unittest.TestCase):
 
         result.is_scenario = True
 
-        # TODO: inject line/file information
-        return rename(scenario.name, result)
+        return result
 
     @classmethod
     def make_steps(cls, steps, before=const(None)):
         """
         Construct a method calling the specified steps.
+
+        The method will have debugging information corresponding to the lines
+        in the feature file.
         """
 
+        assert len(steps) > 0
+        first_step = steps[0]
+
+        feature = first_step.feature
+
         step_definitions = [
-            (step, STEP_REGISTRY.match_step(step))
+            # step, func, args, kwargs
+            (step,) + STEP_REGISTRY.match_step(step)
             for step in steps
         ]
 
-        # TODO: replace with code generation
-        def run_steps(self):
-            before(self)
-            for step, (func, args, kwargs) in step_definitions:
-                func(step, *args, **kwargs)
+        func = ast.parse(
+            'def run_steps(self):\n    before(self)\n' + '\n'.join(
+                '    func{i}(step{i}, *args{i}, **kwargs{i})'.format(i=i)
+                for i in range(len(step_definitions))
+            )
+        )
 
+        # Set function name and location
+        # TODO: What happens to the background steps?
+        assert first_step.scenario
+        context = first_step.scenario
+        func_name = context.name
+        func.body[0].name = func_name
+
+        # Set locations of the steps
+        for step, step_call in zip(steps, func.body[0].body[1:]):
+            for node in ast.walk(step_call):
+                node.lineno = step.described_at.line
+
+        code = compile(func, feature.described_at.file, 'exec')
+
+        # Supply all the step functions and arguments
+        glob = {
+            'before': before,
+        }
+        for i, (step, func, args, kwargs) in enumerate(step_definitions):
+            glob.update({
+                k + str(i): v for k, v in {
+                    'step': step,
+                    'func': func,
+                    'args': args,
+                    'kwargs': kwargs,
+                }.items()
+            })
+        eval(code, glob)
+
+        # The result exists in the globals
+        run_steps = glob[func_name]
         return run_steps
