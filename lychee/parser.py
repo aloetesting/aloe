@@ -676,7 +676,7 @@ def guess_language(string=None, filename=None):
         if code != '':
             return languages.Language(code=code)
 
-    except ParseException as e:
+    except ParseException:
         # try English
         pass
 
@@ -761,16 +761,16 @@ def parse(string=None, filename=None, token=None, lang=None):
             Generate the lines removing the indent
             """
 
-            for line in multiline.splitlines():
-                if line and not line[:indent].isspace():
+            for ln in multiline.splitlines():
+                if ln and not ln[:indent].isspace():
                     warn("%s: %s: under-indented multiline string "
                          "truncated: '%s'" %
-                         (lineno(loc, s), col(loc, s), line),
+                         (lineno(loc, s), col(loc, s), ln),
                          LettuceSyntaxWarning)
 
                 # for those who are surprised by this, slicing a string
                 # shorter than indent will yield empty string, not IndexError
-                yield line[indent:]
+                yield ln[indent:]
 
         # determine the indentation offset
         indent = loc - s.rfind('\n', 0, loc) - 1
