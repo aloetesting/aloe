@@ -45,7 +45,7 @@ from pyparsing import (CharsNotIn,
 
 from fuzzywuzzy import fuzz
 
-from lychee import languages, strings
+from lychee import fs, languages, strings
 from lychee.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
 
 
@@ -81,11 +81,9 @@ class ParseLocation(object):
         Return the relative path to the file
         """
 
-        # need to import this here to prevent a circular import
-        from lettuce.core import fs
-
         if self._file:
-            return fs.relpath(self._file)
+            # TODO: Lettuce has this pluggable, for unit testing
+            return fs.FileSystem().relpath(self._file)
         elif self.parent:
             if self.parent.feature.described_at is self:
                 return None
