@@ -59,6 +59,15 @@ class CalculatorTest(unittest.TestCase):
             result = self.run_features('features/wrong_expectations.feature')
             assert not result.success
 
+    def test_background(self):
+        """
+        Test running a scenario with a background.
+        """
+
+        with self.in_directory('tests/tested_app'):
+            result = self.run_features('features/background.feature')
+            assert result.success
+
     def test_outlines(self):
         """
         Test a scenario with outlines.
