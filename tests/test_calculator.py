@@ -33,14 +33,21 @@ class CalculatorTest(unittest.TestCase):
         finally:
             os.chdir(cwd)
 
+    def run_features(self, *features):
+        """
+        Run the specified features.
+        """
+
+        return Runner(exit=False,
+                      argv=['lychee'] + list(features))
+
     def test_calculator(self):
         """
         Test running the calculator feature.
         """
 
         with self.in_directory('tests/tested_app'):
-            result = Runner(exit=False,
-                            argv=['lychee', 'features/calculator.feature'])
+            result = self.run_features('features/calculator.feature')
             assert result.success
 
     def test_wrong_expectations(self):
@@ -49,7 +56,14 @@ class CalculatorTest(unittest.TestCase):
         """
 
         with self.in_directory('tests/tested_app'):
-            result = Runner(exit=False,
-                            argv=['lychee',
-                                  'features/wrong_expectations.feature'])
+            result = self.run_features('features/wrong_expectations.feature')
             assert not result.success
+
+    def test_outlines(self):
+        """
+        Test a scenario with outlines.
+        """
+
+        with self.in_directory('tests/tested_app'):
+            result = self.run_features('features/outlines.feature')
+            assert result.success
