@@ -15,7 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import re
-import threading
 from functools import wraps, partial
 
 from lychee.exceptions import (
@@ -24,27 +23,109 @@ from lychee.exceptions import (
 )
 
 
-def _function_id(func):
-    return (
-        func.func_code.co_filename,
-        func.func_code.co_firstlineno,
-        tuple(c.cell_contents for c in func.func_closure or ()),
-    )
+# What part of the test to hook
+HOOK_WHAT = (
+    'all',
+    'feature',
+    'example',
+    'background',
+    'scenario',
+    'step',
+)
+
+
+# When to execute the hook in relation to the test part
+HOOK_WHEN = (
+    'before',
+    'after',
+    'around',
+)
 
 
 class CallbackDict(dict):
-    def append_to(self, where, when, function, name=None):
+    def __init__(self):
+        """
+        Initialize the callback lists for every kind of situation.
+        """
+        super().__init__({
+            what: {
+                when: {}
+                for when in HOOK_WHEN
+            }
+            for what in HOOK_WHAT
+        })
+
+    @staticmethod
+    def _function_id(func):
+        """
+        A unique identifier of a function to prevent adding the same hook
+        twice.
+
+        To support dynamically generated functions, take the variables from
+        the function closure into account.
+        """
+        return (
+            func.__code__.co_filename,
+            func.__code__.co_firstlineno,
+            tuple(c.cell_contents for c in func.__closure__ or ()),
+        )
+
+    def append_to(self, what, when, function, name=None):
+        """
+        Add a callback for a particular type of hook.
+        """
+        # TODO: support priority for hook ordering
         if name is None:
-            name = _function_id(function)
-        self[where][when].setdefault(name, function)
+            name = self._function_id(function)
+        self[what][when].setdefault(name, function)
 
     def clear(self, name=None):
-        for _, action_dict in self.items():
+        """
+        Remove all callbacks.
+        """
+        for action_dict in self.values():
             for callback_list in action_dict.values():
                 if name is None:
                     callback_list.clear()
                 else:
                     callback_list.pop(name, None)
+
+    def wrap(self, what, function):
+        """
+        Return a function that executes all the callbacks in proper relations
+        to the given test part.
+        """
+
+        # TODO: Code generation (not trivial as need to preserve the line
+        # numbers later)?
+
+        before = self[what]['before'].values()
+        around = self[what]['around'].values()
+        after = self[what]['after'].values()
+
+        # Cannot loop 'with' statements without code generation
+        for with_hook in around:
+            @wraps(function)
+            def wrap_with(*args, **kwargs):
+                with with_hook():  # TODO: arguments
+                    return function(*args, **kwargs)
+
+            function = wrap_with
+
+        @wraps(function)
+        def wrapped(*args, **kwargs):
+            for before_hook in before:
+                before_hook()  # TODO: arguments
+
+            # TODO: do 'after' hooks run after an exception?
+            try:
+                return function(*args, **kwargs)
+            finally:
+                for after_hook in after:
+                    after_hook()  # TODO: arguments
+
+        return wrapped
+
 
 class StepDict(dict):
     def load(self, step, func):
@@ -124,8 +205,61 @@ class StepDict(dict):
 STEP_REGISTRY = StepDict()
 
 
+def step(step_func_or_sentence):
+    """Decorates a function, so that it will become a new step
+    definition.
+    You give step sentence either (by priority):
+    * with step function argument (first example)
+    * with function doc (second example)
+    * with the function name exploded by underscores (third example)
+    """
+    if isinstance(step_func_or_sentence, str):
+        return lambda func: STEP_REGISTRY.load(step_func_or_sentence, func)
+    else:
+        return STEP_REGISTRY.load_func(step_func_or_sentence)
+
+
+CALLBACK_REGISTRY = CallbackDict()
+
+
+class CallbackDecorator(object):
+    """
+    Add functions to the appropriate callback lists.
+    """
+
+    def __init__(self, when):
+        self.when = when
+
+    def _decorate(self, what, function, name=None):
+        """
+        Add the specified function (with name if given) to the callback list.
+        """
+
+        CALLBACK_REGISTRY.append_to(what, self.when, function, name=name)
+        return function
+
+    def make_decorator(what):
+        """
+        Make a decorator for a specific situation.
+        """
+
+        def decorator(self, function, name=None):
+            return self._decorate(what, function, name=name)
+        return decorator
+
+    each_step = make_decorator('step')
+    each_example = make_decorator('example')
+    # TODO: More situations
+
+
+after = CallbackDecorator('after')
+around = CallbackDecorator('around')
+before = CallbackDecorator('before')
+
+
 def clear():
     STEP_REGISTRY.clear()
+    CALLBACK_REGISTRY.clear()
 
 
 def preserve_registry(func):
@@ -136,11 +270,15 @@ def preserve_registry(func):
     @wraps(func)
     def inner(*args, **kwargs):
         step_registry = STEP_REGISTRY.copy()
+        call_registry = CALLBACK_REGISTRY.copy()
 
         ret = func(*args, **kwargs)
 
         STEP_REGISTRY.clear()
         STEP_REGISTRY.update(step_registry)
+
+        CALLBACK_REGISTRY.clear()
+        CALLBACK_REGISTRY.update(call_registry)
 
         return ret
 

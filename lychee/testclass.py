@@ -2,7 +2,7 @@ import ast
 import unittest
 
 from lychee.parser import Feature
-from lychee.registry import STEP_REGISTRY
+from lychee.registry import CALLBACK_REGISTRY, STEP_REGISTRY
 
 
 def const(value):
@@ -106,9 +106,11 @@ class TestCase(unittest.TestCase):
         feature = first_step.feature
 
         step_definitions = [
-            # step, func, args, kwargs
-            (step,) + STEP_REGISTRY.match_step(step)
-            for step in steps
+            (step, CALLBACK_REGISTRY.wrap('step', func), args, kwargs)
+            for step, func, args, kwargs in (
+                (step,) + STEP_REGISTRY.match_step(step)
+                for step in steps
+            )
         ]
 
         func = ast.parse(
@@ -149,4 +151,7 @@ class TestCase(unittest.TestCase):
 
         # The result exists in the globals
         run_steps = glob[func_name]
+
+        run_steps = CALLBACK_REGISTRY.wrap('example', run_steps)
+
         return run_steps

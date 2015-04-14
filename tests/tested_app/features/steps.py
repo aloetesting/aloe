@@ -1,10 +1,14 @@
-from lychee import step, world
+from lychee import before, step, world
+
+
+@before.each_example
+def clear(*args):
+    world.numbers = []
+    world.result = 0
 
 
 @step(r'I have entered (\d+) into the calculator')
 def enter_number(self, number):
-    if not hasattr(world, 'numbers'):
-        world.numbers = []
     world.numbers.append(float(number))
 
 
