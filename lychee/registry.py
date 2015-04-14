@@ -129,12 +129,17 @@ class CallbackDict(dict):
 
 class StepDict(dict):
     def load(self, step, func):
-        func.sentence = step
 
         step = self._assert_is_step(step, func)
         self[step] = func
 
-        func.unregister = partial(self.unload, step)
+        try:
+            func.sentence = step
+            func.unregister = partial(self.unload, step)
+        except AttributeError:
+            # func might have been a bound method, no way to set attributes
+            # on that
+            pass
 
         return func
 
@@ -160,7 +165,7 @@ class StepDict(dict):
         func = getattr(func, '__func__', func)
         sentence = getattr(func, '__doc__', None)
         if sentence is None:
-            sentence = func.func_name.replace('_', ' ')
+            sentence = func.__name__.replace('_', ' ')
             sentence = sentence[0].upper() + sentence[1:]
         return sentence
 

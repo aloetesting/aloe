@@ -119,7 +119,7 @@ class FileSystem(object):
 
         Examples::
 
-        >>> from lettuce.fs import FileSystem
+        >>> from lychee.fs import FileSystem
         >>> assert FileSystem.filename('/full/path/to/some_file.py') == 'some_file.py'
         >>> assert FileSystem.filename('/full/path/to/some_file.py', False) == 'some_file'
 
@@ -140,7 +140,7 @@ class FileSystem(object):
         """Create paths recursively, ignore already created dirs
 
         Example:
-            >>> from lettuce.fs import FileSystem
+            >>> from lychee.fs import FileSystem
             >>> FileSystem.mkdir('~/a/lot/of/nested/dirs')
         """
         try:

@@ -114,7 +114,7 @@ class Node(object):
 
         if annotate:
             s = strings.ljust(s, self.feature.max_length + 1) + \
-                u'# ' + unicode(self.described_at)
+                u'# ' + str(self.described_at)
 
         return s
 
@@ -137,11 +137,11 @@ class Step(Node):
             if token.table else None
         self.multiline = token.multiline
 
-    def __unicode__(self):
-        return u'<Step: "%s">' % self.sentence
+    def __str__(self):
+        return '<Step: "%s">' % self.sentence
 
     def __repr__(self):
-        return unicode(self).encode('utf-8')
+        return str(self)
 
     @classmethod
     def parse_steps_from_string(cls, string, language=None):

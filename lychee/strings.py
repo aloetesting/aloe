@@ -19,7 +19,7 @@ import unicodedata
 
 
 def utf8_string(s):
-    if isinstance(s, str):
+    if isinstance(s, bytes):
         s = s.decode("utf-8")
 
     return s
@@ -39,11 +39,14 @@ def represent_table(table, indent=0, cell_wrap=lambda s: s):
     table = [[str(cell).replace('|', r'\|')
               for cell in row]
              for row in table]
-    lengths = [get_terminal_width(cell) for cell in table[0]]
 
-    for row in table[1:]:
-        lengths = map(max, zip(lengths,
-                               [get_terminal_width(cell) for cell in row]))
+    lengths = [
+        max(
+            get_terminal_width(cell)
+            for cell in column
+        )
+        for column in zip(*table) # transpose
+    ]
 
     return u'\n'.join(
         u' ' * indent +
