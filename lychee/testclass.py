@@ -82,10 +82,31 @@ class TestCase(unittest.TestCase):
         Construct a method running the scenario steps.
         """
 
-        # TODO: outlines
+        call_background = lambda self: self.background()
 
-        result = cls.make_steps(scenario.steps,
-                                before=lambda self: self.background())
+        if scenario.outlines:
+            func = ast.parse(
+                'def run_outlines(self):\n' + '\n'.join(
+                    '    outline{i}(self)'.format(i=i)
+                    for i in range(len(scenario.outlines))
+                )
+            )
+
+            # TODO: set line numbers - outlines don't have described_at
+            func.body[0].name = scenario.name
+            code = compile(func, scenario.feature.described_at.file, 'exec')
+
+            # TODO: Put compilation into a separate function
+            glob = {
+                'outline' + str(i): cls.make_steps(steps,
+                                                   before=call_background)
+                for i, (_, steps) in enumerate(scenario.evaluated)
+            }
+            eval(code, glob)
+            result = glob[scenario.name]
+        else:
+            result = cls.make_steps(scenario.steps,
+                                    before=call_background)
 
         result.is_scenario = True
 
