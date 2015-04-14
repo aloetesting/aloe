@@ -17,25 +17,11 @@
 
 import threading
 
-from lychee.registry import STEP_REGISTRY
-
-
-def _is_step_sentence(sentence):
-    return isinstance(sentence, str) or isinstance(sentence, basestring)
-
-
-def step(step_func_or_sentence):
-    """Decorates a function, so that it will become a new step
-    definition.
-    You give step sentence either (by priority):
-    * with step function argument (first example)
-    * with function doc (second example)
-    * with the function name exploded by underscores (third example)
-    """
-    if _is_step_sentence(step_func_or_sentence):
-        return lambda func: STEP_REGISTRY.load(step_func_or_sentence, func)
-    else:
-        return STEP_REGISTRY.load_func(step_func_or_sentence)
-
+from lychee.registry import (
+    after,
+    around,
+    before,
+    step,
+)
 
 world = threading.local()
