@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from nose.tools import assert_equals
-from lettuce.core import Scenario, Feature
-from lettuce.languages import Language
+from lychee.languages import Language
+from lychee.parser import Feature
 
 SCENARIO = u"""
 Сценарий: Сохранение базы курсов универитета в текстовый файл
@@ -78,7 +78,7 @@ def test_language_russian():
     assert_equals(lang.name, u'Russian')
     assert_equals(lang.native, u'Русский')
     assert_equals(lang.FEATURE, u'Функционал')
-    assert_equals(unicode(lang.SCENARIO),
+    assert_equals(str(lang.SCENARIO),
                   u'{"Сценарий" ^ "Структура сценария"}')
     assert_equals(lang.EXAMPLES, u'Примеры')
 

@@ -16,8 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import re
 
-from lettuce.registry import StepDict
-from lettuce.exceptions import StepLoadingError
+from lychee.registry import StepDict
+from lychee.exceptions import StepLoadingError
 
 from nose.tools import assert_raises, assert_equal
 

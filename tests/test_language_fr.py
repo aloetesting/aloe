@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from nose.tools import assert_equals
-from lettuce.core import Scenario, Feature
-from lettuce.languages import Language
+from lychee.languages import Language
+from lychee.parser import Feature
 
 SCENARIO = u"""
 Scénario: Ajout de plusieurs cursus dans la base de mon université

@@ -17,7 +17,7 @@
 
 from nose.tools import assert_equals
 
-from lettuce import strings
+from lychee import strings
 
 
 def test_represent_table():
@@ -52,9 +52,11 @@ def test_represent_table_escapes_pipe():
 
     assert_equals(
         strings.represent_table(table),
-        ur"| name              | age |" "\n"
-        ur"| Gabriel \| Falcão | 22  |" "\n"
-        ur"| Miguel \| Arcanjo | 19  |"
+        '\n'.join((
+            r"| name              | age |",
+            r"| Gabriel \| Falcão | 22  |",
+            r"| Miguel \| Arcanjo | 19  |",
+        ))
     )
 
 
@@ -71,9 +73,11 @@ def test_represent_table_allows_empty():
 
     assert_equals(
         strings.represent_table(table),
-        ur"| name              | age |" "\n"
-        ur"| Gabriel \| Falcão | 22  |" "\n"
-        ur"| Miguel \| Arcanjo |     |"
+        '\n'.join((
+            r"| name              | age |",
+            r"| Gabriel \| Falcão | 22  |",
+            r"| Miguel \| Arcanjo |     |",
+        ))
     )
 
 

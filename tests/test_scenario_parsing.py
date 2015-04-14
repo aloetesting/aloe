@@ -14,9 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from sure import expect
-from lettuce.parser import Step, Scenario, Feature
-from lettuce.exceptions import LettuceSyntaxError
+from lychee.parser import Step, Scenario, Feature
+from lychee.exceptions import LettuceSyntaxError
 
 from nose.tools import assert_equals
 from nose.tools import assert_raises
@@ -485,7 +484,7 @@ def test_full_featured_feature():
     for ((got_examples, got_steps), (expected_examples, expected_steps)) in zip(scenario4.evaluated, expected_evaluated):
         sentences_of = lambda x: x.sentence
         assert_equals(got_examples, expected_examples)
-        assert_equals(map(sentences_of, got_steps), expected_steps)
+        assert_equals(list(map(sentences_of, got_steps)), expected_steps)
 
 def test_scenario_with_table_and_no_step_fails():
     "A step table imediately after the scenario line, without step line fails"
@@ -536,7 +535,7 @@ def test_scenario_matches_tags():
         SCENARIO1,
         tags=['onetag', 'another-one'])
 
-    expect(scenario.tags).to.equal(['onetag', 'another-one'])
+    assert scenario.tags == ['onetag', 'another-one']
     assert scenario.matches_tags(['onetag'])
     assert scenario.matches_tags(['another-one'])
 
@@ -592,9 +591,9 @@ def test_scenario_show_tags_in_its_representation():
         SCENARIO1,
         tags=['slow', 'firefox', 'chrome'])
 
-    expect(scenario.represented()).to.equal(
-        u'  @slow @firefox @chrome\n  '
-        'Scenario: Adding some students to my university database')
+    assert scenario.represented() == \
+        '  @slow @firefox @chrome\n  '\
+        'Scenario: Adding some students to my university database'
 
 
 def test_scenario_with_inline_comments():
@@ -604,8 +603,8 @@ def test_scenario_with_inline_comments():
 
     step1, step2 = scenario.steps
 
-    expect(step1.sentence).to.equal(u'Given I am using an anvil')
-    expect(step2.sentence).to.equal(u'And I am using a hammer')
+    assert step1.sentence == u'Given I am using an anvil'
+    assert step2.sentence == u'And I am using a hammer'
 
 
 def test_scenario_with_hash_within_double_quotes():
@@ -617,8 +616,8 @@ def test_scenario_with_hash_within_double_quotes():
 
     step1, step2 = scenario.steps
 
-    expect(step1.sentence).to.equal(u'Given I am logged in on twitter')
-    expect(step2.sentence).to.equal(u'When I search for the hashtag "#hammer"')
+    assert step1.sentence == u'Given I am logged in on twitter'
+    assert step2.sentence == u'When I search for the hashtag "#hammer"'
 
 
 def test_scenario_with_hash_within_single_quotes():
@@ -630,5 +629,5 @@ def test_scenario_with_hash_within_single_quotes():
 
     step1, step2 = scenario.steps
 
-    expect(step1.sentence).to.equal(u'Given I am logged in on twitter')
-    expect(step2.sentence).to.equal(u"When I search for the hashtag '#hammer'")
+    assert step1.sentence == u'Given I am logged in on twitter'
+    assert step2.sentence == u"When I search for the hashtag '#hammer'"

@@ -17,8 +17,8 @@
 #
 from nose.tools import assert_equals
 
-from lettuce.core import Scenario, Feature
-from lettuce.languages import Language
+from lychee.languages import Language
+from lychee.parser import Feature
 
 SCENARIO = u"""
 Cenário: Consolidar o banco de dados de cursos universitários em arquivo texto
@@ -96,7 +96,7 @@ def test_language_portuguese():
     assert_equals(lang.name, u'Portuguese')
     assert_equals(lang.native, u'Português')
     assert_equals(lang.FEATURE, u'Funcionalidade')
-    assert_equals(unicode(lang.SCENARIO),
+    assert_equals(str(lang.SCENARIO),
                   u'{"Cenário" ^ "Cenario" ^ "Esquema do Cenário" ^ '
                   u'"Esquema do Cenario" ^ "Delineação do Cenário" ^ '
                   u'"Delineacao do Cenario"}')

@@ -19,7 +19,7 @@ from pyparsing import Keyword
 
 from nose.tools import assert_equals
 
-from lettuce.languages import Language
+from lychee.languages import Language
 
 
 def test_language_is_english_by_default():

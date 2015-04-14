@@ -76,11 +76,9 @@ import warnings
 
 from nose.tools import assert_equals, assert_raises
 
-from lettuce.parser import Feature, Step
-from lettuce.exceptions import LettuceSyntaxError
-from lettuce import strings
-
-from tests.asserts import *
+from lychee.parser import Feature, Step
+from lychee.exceptions import LettuceSyntaxError
+from lychee import strings
 
 
 def parse_steps(step):
@@ -284,9 +282,9 @@ and this is line three
 
 
 def test_multiline_with_whitespace():
-    with warnings.catch_warnings(True) as w:
+    with warnings.catch_warnings(record=True) as w:
         step, = parse_steps(MULTI_LINE_WHITESPACE)
-        print len(w)
+        print(len(w))
         assert len(w) == 3
 
     assert_equals(step.sentence, 'Given I have a string like so:')
@@ -300,7 +298,7 @@ and spaces at the end   \"""")
 
 
 def test_multiline_larger_indents():
-    with warnings.catch_warnings(True) as w:
+    with warnings.catch_warnings(record=True) as w:
         step, = parse_steps('''
     Given I have a string line so:
     """
