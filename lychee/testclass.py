@@ -121,10 +121,12 @@ class TestCase(unittest.TestCase):
         )
 
         # Set function name and location
-        # TODO: What happens to the background steps?
-        assert first_step.scenario
-        context = first_step.scenario
-        func_name = context.name
+        try:
+            context = first_step.scenario
+            func_name = context.name
+        except AttributeError:
+            # This is a background step
+            func_name = 'background'
         func.body[0].name = func_name
 
         # Set locations of the steps
