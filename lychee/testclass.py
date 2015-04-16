@@ -1,6 +1,7 @@
 import ast
 import unittest
 
+from lychee.codegen import make_function
 from lychee.parser import Feature
 from lychee.registry import CALLBACK_REGISTRY, STEP_REGISTRY
 
@@ -85,25 +86,24 @@ class TestCase(unittest.TestCase):
         call_background = lambda self: self.background()
 
         if scenario.outlines:
-            func = ast.parse(
-                'def run_outlines(self):\n' + '\n'.join(
-                    '    outline{i}(self)'.format(i=i)
-                    for i in range(len(scenario.outlines))
-                )
+            source = 'def run_outlines(self):\n' + '\n'.join(
+                '    outline{i}(self)'.format(i=i)
+                for i in range(len(scenario.outlines))
             )
 
-            # TODO: set line numbers - outlines don't have described_at
-            func.body[0].name = scenario.name
-            code = compile(func, scenario.feature.described_at.file, 'exec')
-
-            # TODO: Put compilation into a separate function
-            glob = {
+            context = {
                 'outline' + str(i): cls.make_steps(steps,
                                                    before=call_background)
                 for i, (_, steps) in enumerate(scenario.evaluated)
             }
-            eval(code, glob)
-            result = glob[scenario.name]
+
+            # TODO: Line numbers?
+            result = make_function(
+                source=source,
+                context=context,
+                source_file=scenario.feature.described_at.file,
+                name=scenario.name,
+            )
         else:
             result = cls.make_steps(scenario.steps,
                                     before=call_background)
@@ -134,35 +134,24 @@ class TestCase(unittest.TestCase):
             )
         ]
 
-        func = ast.parse(
+        source = ast.parse(
             'def run_steps(self):\n    before(self)\n' + '\n'.join(
                 '    func{i}(step{i}, *args{i}, **kwargs{i})'.format(i=i)
                 for i in range(len(step_definitions))
             )
         )
 
-        # Set function name and location
-        try:
-            context = first_step.scenario
-            func_name = context.name
-        except AttributeError:
-            # This is a background step
-            func_name = 'background'
-        func.body[0].name = func_name
-
         # Set locations of the steps
-        for step, step_call in zip(steps, func.body[0].body[1:]):
+        for step, step_call in zip(steps, source.body[0].body[1:]):
             for node in ast.walk(step_call):
                 node.lineno = step.described_at.line
 
-        code = compile(func, feature.described_at.file, 'exec')
-
         # Supply all the step functions and arguments
-        glob = {
+        context = {
             'before': before,
         }
         for i, (step, func, args, kwargs) in enumerate(step_definitions):
-            glob.update({
+            context.update({
                 k + str(i): v for k, v in {
                     'step': step,
                     'func': func,
@@ -170,10 +159,20 @@ class TestCase(unittest.TestCase):
                     'kwargs': kwargs,
                 }.items()
             })
-        eval(code, glob)
 
-        # The result exists in the globals
-        run_steps = glob[func_name]
+        # Function name
+        try:
+            func_name = first_step.scenario.name
+        except AttributeError:
+            # This is a background step
+            func_name = 'background'
+
+        run_steps = make_function(
+            source=source,
+            context=context,
+            source_file=step.described_at.file,
+            name=func_name,
+        )
 
         run_steps = CALLBACK_REGISTRY.wrap('example', run_steps)
 
