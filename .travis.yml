@@ -13,7 +13,9 @@ cache:
         - $HOME/virtualenv
 
 script:
-    - nosetests
+    - coverage erase
+    - coverage run nosetests
+    - coverage report
 
 after_success:
     - coveralls
