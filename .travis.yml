@@ -8,6 +8,10 @@ install:
     - pip install -r test_requirements.txt
     - pip install coveralls
 
+cache:
+    directories:
+        - $HOME/virtualenv
+
 script:
     - nosetests
 
