@@ -14,7 +14,7 @@ cache:
 
 script:
     - coverage erase
-    - coverage run nosetests
+    - coverage run -m nose
     - coverage report
 
 after_success:
