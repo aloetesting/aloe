@@ -1,0 +1,23 @@
+language: python
+
+python:
+    - "3.4"
+
+install:
+    - pip install -r requirements.txt
+    - pip install -r test_requirements.txt
+    - pip install coveralls
+
+cache:
+    directories:
+        - $HOME/virtualenv
+
+script:
+    - coverage erase
+    - coverage run -m nose
+    - coverage report
+
+after_success:
+    - coveralls
+
+sudo: false
