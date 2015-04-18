@@ -1,3 +1,9 @@
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
 import os
 import unittest
 from contextlib import contextmanager
@@ -26,7 +32,7 @@ class CalculatorTest(unittest.TestCase):
 
         # TODO: This should be a decorator on the function/class
 
-        cwd = os.getcwd()
+        cwd = os.getcwdu()
         os.chdir(directory)
         try:
             yield
