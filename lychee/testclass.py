@@ -8,30 +8,12 @@ from builtins import range
 from future import standard_library
 standard_library.install_aliases()
 import ast
+import sys
 import unittest
 
 from lychee.codegen import make_function
 from lychee.parser import Feature
 from lychee.registry import CALLBACK_REGISTRY, STEP_REGISTRY
-
-
-def const(value):
-    """
-    A function accepting any arguments and returning the specified value.
-    """
-
-    return lambda *args, **kwargs: value
-
-
-def rename(name, func):
-    """
-    Set the function name.
-    """
-
-    # TODO: What attributes are actually needed?
-    func.__name__ = name
-    func.__qualname__ == name
-    return func
 
 
 class TestCase(unittest.TestCase):
@@ -56,9 +38,13 @@ class TestCase(unittest.TestCase):
             for scenario in feature.scenarios
         ]
 
+        class_name = feature.name
+        if sys.version_info < (3, 0):
+            class_name = class_name.encode()
+
         # TODO: Make a method?
         # TODO: inject line/file information
-        return type(feature.name, (cls,), cls.make_members(
+        return type(class_name, (cls,), cls.make_members(
             [background] + scenarios))
 
     @classmethod
@@ -80,7 +66,7 @@ class TestCase(unittest.TestCase):
         """
 
         if background is None:
-            result = rename('background', const(True))
+            result = make_function('def background(self): pass')
         else:
             result = cls.make_steps(background.steps)
 
@@ -122,7 +108,7 @@ class TestCase(unittest.TestCase):
         return result
 
     @classmethod
-    def make_steps(cls, steps, before=const(None)):
+    def make_steps(cls, steps, before=None):
         """
         Construct a method calling the specified steps.
 
@@ -133,8 +119,6 @@ class TestCase(unittest.TestCase):
         assert len(steps) > 0
         first_step = steps[0]
 
-        feature = first_step.feature
-
         step_definitions = [
             (step, CALLBACK_REGISTRY.wrap('step', func), args, kwargs)
             for step, func, args, kwargs in (
@@ -143,12 +127,14 @@ class TestCase(unittest.TestCase):
             )
         ]
 
-        source = ast.parse(
-            'def run_steps(self):\n    before(self)\n' + '\n'.join(
-                '    func{i}(step{i}, *args{i}, **kwargs{i})'.format(i=i)
-                for i in range(len(step_definitions))
-            )
+        source = 'def run_steps(self):\n'
+        if before:
+            source += '    before(self)\n'
+        source += '\n'.join(
+            '    func{i}(step{i}, *args{i}, **kwargs{i})'.format(i=i)
+            for i in range(len(step_definitions))
         )
+        source = ast.parse(source)
 
         # Set locations of the steps
         for step, step_call in zip(steps, source.body[0].body[1:]):

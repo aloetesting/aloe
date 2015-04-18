@@ -32,7 +32,7 @@ class CalculatorTest(unittest.TestCase):
 
         # TODO: This should be a decorator on the function/class
 
-        cwd = os.getcwdu()
+        cwd = os.getcwd()
         os.chdir(directory)
         try:
             yield

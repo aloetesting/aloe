@@ -8,6 +8,7 @@ standard_library.install_aliases()
 
 import ast
 import re
+import sys
 
 
 FUNCTION_DEF_SAMPLE = ast.parse('def func(): pass')
@@ -30,6 +31,8 @@ def make_function(source, context=None, source_file=None, name=None):
 
     # Set or record the function name
     if name is not None:
+        if sys.version_info < (3, 0):
+            name = name.encode()
         func.body[0].name = name
     else:
         name = func.body[0].name
