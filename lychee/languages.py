@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# <Lettuce - Behaviour Driven Development for python>
+# Lychee - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2010-2012>  Gabriel Falcão <gabriel@nacaolivre.org>
 # Copyright (C) <2014>  Danielle Madeley <danielle@madeley.id.au>
 #
