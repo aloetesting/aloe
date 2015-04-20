@@ -14,6 +14,13 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from builtins import open
+from future import standard_library
+standard_library.install_aliases()
 
 import re
 import os
@@ -25,7 +32,10 @@ import zipfile
 
 from functools import wraps
 from glob import glob
-from importlib import reload
+try:
+    reload
+except NameError:
+    from importlib import reload
 from os.path import abspath, join, dirname, curdir, exists
 
 

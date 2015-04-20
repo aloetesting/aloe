@@ -1,3 +1,4 @@
+future
 fuzzywuzzy
 nose
 pyparsing

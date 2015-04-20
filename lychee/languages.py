@@ -16,8 +16,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+from __future__ import unicode_literals
+from __future__ import division
+from __future__ import absolute_import
+from builtins import open
+from builtins import next
+from builtins import str
+from future import standard_library
+standard_library.install_aliases()
 import json
 import os.path
+import sys
 
 from pyparsing import Keyword, Literal
 
@@ -103,7 +113,10 @@ with open(i18n) as i18n:
 
             return comb
 
-        locals()[name] = type(str(name), (Language,), {
+        if sys.version_info < (3, 0):
+            name = name.encode()
+
+        locals()[name] = type(name, (Language,), {
             'code': lang,
             'native': defn['native'].title(),
             'FEATURE': build_keywords('feature'),
