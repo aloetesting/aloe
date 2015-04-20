@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# <Lettuce - Behaviour Driven Development for python>
+# Lychee - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2010-2012>  Gabriel Falcão <gabriel@nacaolivre.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -22,6 +22,7 @@ from __future__ import absolute_import
 from builtins import str
 from future import standard_library
 standard_library.install_aliases()
+
 from nose.tools import assert_equals
 
 from lychee.languages import Language

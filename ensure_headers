@@ -1,0 +1,135 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Ensure copyright notices are present in all files.
+"""
+
+from __future__ import print_function
+
+import datetime
+import os
+
+DIRS = ('lychee', 'tests')
+
+DESCRIPTION = """
+# Lychee - Cucumber runner for Python based on Lettuce and Nose
+""".strip('\n')
+
+OLD_DESCRIPTION = """
+# <Lettuce - Behaviour Driven Development for python>
+""".strip('\n')
+
+DEFAULT_AUTHOR = "Alexey Kotlyarov <a@koterpillar.com>"
+
+COPYRIGHT = """
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+""".lstrip('\n').split('\n')
+
+
+def add_notice(lines):
+    """
+    Given a list of lines in the original file, produce the lines with the
+    notice inserted (as a generator).
+    """
+
+    lines = iter(lines)
+
+    def next_nl(iterable):
+        """
+        Get the next line from an iterable, stripping trailing newline.
+        """
+
+        line = next(iterable)
+        return line.rstrip('\n')
+
+    # Skip things that need to be at the start of the file
+    line = next_nl(lines)
+    while line.startswith('#!') or \
+            (line.startswith('#') and 'coding: ' in line):
+        yield line
+        line = next_nl(lines)
+
+    # Start writing out the notice
+    yield DESCRIPTION
+    if line == DESCRIPTION or line == OLD_DESCRIPTION:
+        line = next_nl(lines)
+
+    # Write out the authors
+    has_author = False
+    while line.startswith('# Copyright'):
+        yield line
+        line = next_nl(lines)
+        has_author = True
+
+    # TODO: Should the new author always be inserted?
+    if not has_author:
+        # TODO: Figure out authors and year from Git
+        yield "# Copyright (C) <{year}> {author}".format(
+            year=datetime.date.today().year,
+            author=DEFAULT_AUTHOR,
+        )
+
+    yield '#'
+
+    # Write the actual notice
+    while line in COPYRIGHT:
+        line = next_nl(lines)
+
+    for copyright_line in COPYRIGHT:
+        yield copyright_line
+
+    # Rest of the file
+    while True:
+        assert not line.startswith('# Copyright'), \
+            "Why is line '{0}' so low?".format(line)
+        assert line.strip('# ') == '' or line not in COPYRIGHT, \
+            "Why is line '{0}' so low?".format(line)
+        yield line
+        line = next_nl(lines)
+
+
+def notice_in_file(filename):
+    """
+    Ensure copyright notice in a file.
+    """
+
+    if not filename.endswith('.py'):
+        return
+
+    print(filename)
+
+    with open(filename) as fd:
+        lines = list(fd)
+
+    lines = add_notice(lines)
+
+    with open(filename, 'w') as fd:
+        for line in lines:
+            print(line, file=fd)
+
+
+def notices_in_dir(filename):
+    """
+    Ensure copyright notices in every source file in the directory.
+    """
+
+    if os.path.isdir(filename):
+        for file_in_dir in os.listdir(filename):
+            file_in_dir = os.path.join(filename, file_in_dir)
+            notices_in_dir(file_in_dir)
+    else:
+        notice_in_file(filename)
+
+for directory in DIRS:
+    notices_in_dir(directory)
