@@ -14,10 +14,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Code generation helpers
+"""
+Code generation helpers
+"""
+
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
 
 import ast
 import re
+import sys
 
 
 FUNCTION_DEF_SAMPLE = ast.parse('def func(): pass')
@@ -40,6 +50,8 @@ def make_function(source, context=None, source_file=None, name=None):
 
     # Set or record the function name
     if name is not None:
+        if sys.version_info < (3, 0):
+            name = name.encode()
         func.body[0].name = name
     else:
         name = func.body[0].name

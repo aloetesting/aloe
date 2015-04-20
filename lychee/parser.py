@@ -19,6 +19,21 @@
 A Gherkin parser written using pyparsing
 """
 
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from builtins import range
+from builtins import super
+from builtins import open
+from builtins import chr
+from builtins import dict
+from builtins import str
+from builtins import map
+from builtins import zip
+from future import standard_library
+standard_library.install_aliases()
+
 from codecs import open
 from copy import deepcopy
 from collections import OrderedDict
@@ -126,7 +141,7 @@ class Step(Node):
 
     def __init__(self, s, loc, tokens):
 
-        super(Step, self).__init__(s, loc, tokens)
+        super().__init__(s, loc, tokens)
 
         # statements are made up of a statement sentence + optional data
         # the optional data can either be a table or a multiline string
@@ -211,7 +226,7 @@ class Step(Node):
         Represent the line
         """
 
-        return super(Step, self).represented(indent=indent, annotate=annotate)
+        return super().represented(indent=indent, annotate=annotate)
 
     def represent_hashes(self, indent=6, **kwargs):
         """
@@ -251,7 +266,7 @@ class Block(Node):
     """
 
     def __init__(self, *args):
-        super(Block, self).__init__(*args)
+        super().__init__(*args)
 
         self.statements = []
 
@@ -280,7 +295,7 @@ class Block(Node):
         Include block indents
         """
 
-        return super(Block, self).represented(indent=indent, annotate=annotate)
+        return super().represented(indent=indent, annotate=annotate)
 
 
 class TaggedBlock(Block):
@@ -288,7 +303,7 @@ class TaggedBlock(Block):
     Tagged blocks contain type-specific child content as well as tags
     """
     def __init__(self, s, loc, tokens):
-        super(TaggedBlock, self).__init__(s, loc, tokens)
+        super().__init__(s, loc, tokens)
 
         token = tokens[0]
 
@@ -390,7 +405,7 @@ class Scenario(TaggedBlock):
     def add_statements(cls, tokens):
         token = tokens[0]
 
-        self = super(Scenario, cls).add_statements(tokens)
+        self = super().add_statements(tokens)
 
         # Build a list of outline hashes
         # A single scenario can have multiple example blocks, the returned
@@ -411,7 +426,7 @@ class Scenario(TaggedBlock):
         return self
 
     def represented(self, indent=2, **kwargs):
-        return super(Scenario, self).represented(indent=indent, **kwargs)
+        return super().represented(indent=indent, **kwargs)
 
     def represent_outlines(self, indent=4):
         """
@@ -496,7 +511,7 @@ class Description(Node):
 
     def __init__(self, s, loc, tokens):
 
-        super(Description, self).__init__(s, loc, tokens)
+        super().__init__(s, loc, tokens)
 
         token = tokens[0]
 
@@ -629,7 +644,7 @@ class Feature(TaggedBlock):
         )
 
     def represented(self, indent=0, annotate=True, description=True):
-        s = super(Feature, self).represented(indent=indent, annotate=annotate)
+        s = super().represented(indent=indent, annotate=annotate)
 
         # FIXME: indent here is description default indent + feature
         # requested indent

@@ -14,6 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Exception classes
+"""
+
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from builtins import super
+from future import standard_library
+standard_library.install_aliases()
+
+
 class LettuceSyntaxError(SyntaxError):
     def __init__(self, filename, string):
         self.filename = filename
@@ -22,7 +35,7 @@ class LettuceSyntaxError(SyntaxError):
         msg = "Syntax error at: {filename}\n{string}".format(
             filename=filename, string=string)
 
-        super(LettuceSyntaxError, self).__init__(msg)
+        super().__init__(msg)
 
 
 class LettuceSyntaxWarning(SyntaxWarning):
@@ -41,5 +54,4 @@ class NoDefinitionFound(Exception):
 
     def __init__(self, step):
         self.step = step
-        super(NoDefinitionFound, self).__init__(
-            'The step r"%s" is not defined' % self.step.sentence)
+        super().__init__('The step r"%s" is not defined' % self.step.sentence)

@@ -15,6 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Registry of steps and hooks called when running scenarios.
+"""
+
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from builtins import super
+from builtins import str
+from future import standard_library
+standard_library.install_aliases()
+
 import re
 from functools import wraps, partial
 

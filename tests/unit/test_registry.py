@@ -15,6 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
+
 import re
 
 from lychee.registry import StepDict
@@ -76,7 +83,7 @@ def test_StepDict_can_load_a_step_from_a_function():
 def test_StepDict_can_load_steps_from_an_object():
     u"lettuce.STEP_REGISTRY.load_steps(obj) append all obj methods to STEP_REGISTRY"
     steps = StepDict()
-    class LotsOfSteps:
+    class LotsOfSteps(object):
         def step_1(self):
             pass
         def step_2(self):
@@ -96,7 +103,7 @@ def test_StepDict_can_load_steps_from_an_object():
 def test_StepDict_can_exclude_methods_when_load_steps():
     u"lettuce.STEP_REGISTRY.load_steps(obj) don't load exluded attr in STEP_REGISTRY"
     steps = StepDict()
-    class LotsOfSteps:
+    class LotsOfSteps(object):
         exclude = ["step_1"]
         def step_1(self):
             pass
@@ -115,7 +122,7 @@ def test_StepDict_can_exclude_methods_when_load_steps():
 def test_StepDict_can_exclude_callable_object_when_load_steps():
     u"lettuce.STEP_REGISTRY.load_steps(obj) don't load callable objets in STEP_REGISTRY"
     steps = StepDict()
-    class NoStep:
+    class NoStep(object):
         class NotAStep(object):
             def __call__(self):
                 pass
