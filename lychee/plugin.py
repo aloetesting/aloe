@@ -39,6 +39,7 @@ class GherkinPlugin(Plugin):
     """
 
     name = 'gherkin'
+    enableOpt = 'gherkin'
 
     TEST_CLASS = TestCase
 
@@ -49,6 +50,34 @@ class GherkinPlugin(Plugin):
 
         loader = FeatureLoader('.')
         loader.find_and_load_step_definitions()
+
+    def options(self, parser, env=os.environ):
+        """
+        Register the plugin options.
+        """
+
+        super().options(parser, env)
+
+        test_class_name = \
+            '{c.__module__}.{c.__name__}'.format(c=self.TEST_CLASS)
+        parser.add_option(
+            '--test-class', action='store',
+            dest='test_class_name',
+            default=env.get('NOSE_GHERKIN_CLASS', test_class_name),
+            metavar='TEST_CLASS',
+            help='Base class to use for the generated tests.',
+        )
+
+    def configure(self, options, conf):
+        """
+        Configure the plugin.
+        """
+
+        super().configure(options, conf)
+
+        module_name, class_name = options.test_class_name.rsplit('.', 1)
+        module = __import__(module_name, fromlist=(class_name,))
+        self.test_class = getattr(module, class_name)
 
     def wantDirectory(self, directory):
         """
@@ -71,8 +100,7 @@ class GherkinPlugin(Plugin):
         Load a feature from the feature file.
         """
 
-        # TODO: How to customize the test class?
-        test = self.TEST_CLASS.from_file(file)
+        test = self.test_class.from_file(file)
         for method in test.__dict__:
             if getattr(getattr(test, method), 'is_scenario', False):
                 yield test(method)
