@@ -38,9 +38,6 @@ class TestCase(unittest.TestCase):
     The base test class for tests compiled from Gherkin features.
     """
 
-    # TODO: Create a metaclass for this one, so the invocations can be:
-    # class MyFeature(feature, TestCase): pass
-
     @classmethod
     def from_file(cls, file):
         """
