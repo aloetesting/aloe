@@ -15,12 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Main module.
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
+
+import sys
 import threading
 
 from lychee.registry import (
@@ -29,5 +35,19 @@ from lychee.registry import (
     before,
     step,
 )
+from lychee.runner import Runner
 
 world = threading.local()
+
+def main(argv=None):
+    """
+    Entry point for running Lychee.
+    """
+
+    if argv is None:
+        argv = sys.argv
+
+    Runner(argv)
+
+if __name__ == '__main__':
+    main()
