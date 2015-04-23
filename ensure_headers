@@ -9,7 +9,7 @@ from __future__ import print_function
 import datetime
 import os
 
-DIRS = ('lychee', 'tests')
+FILES = ('lychee', 'tests', 'setup.py')
 
 DESCRIPTION = """
 # Lychee - Cucumber runner for Python based on Lettuce and Nose
@@ -131,5 +131,5 @@ def notices_in_dir(filename):
     else:
         notice_in_file(filename)
 
-for directory in DIRS:
+for directory in FILES:
     notices_in_dir(directory)
