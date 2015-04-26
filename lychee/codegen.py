@@ -28,6 +28,7 @@ standard_library.install_aliases()
 import ast
 import re
 import sys
+from contextlib import contextmanager
 
 
 FUNCTION_DEF_SAMPLE = ast.parse('def func(): pass')
@@ -101,3 +102,47 @@ def remove_indent(source):
         line[min_indent:]
         for line in lines
     )
+
+
+def multi_manager(*managers):
+    """
+    A context manager invoking all the given context managers in order.
+
+    Returns a tuple with all the manager results.
+    """
+
+    if len(managers) == 0:
+        source = remove_indent(
+            """
+            def null_manager():
+                yield ()
+            """
+        )
+    else:
+        with_stmt = ', '.join(
+            "manager{i}() as result{i}".format(i=i)
+            for i in range(len(managers))
+        )
+
+        result_tuple = '(' + ', '.join(
+            "result{i}".format(i=i)
+            for i in range(len(managers))
+        ) + ')'
+
+        source = remove_indent(
+            """
+            def multi_manager():
+                with {with_stmt}:
+                    yield {result_tuple}
+            """
+        ).format(with_stmt=with_stmt, result_tuple=result_tuple)
+
+    context = {
+        'manager' + str(i): manager
+        for i, manager in enumerate(managers)
+    }
+
+    return contextmanager(make_function(
+        source=source,
+        context=context,
+    ))
