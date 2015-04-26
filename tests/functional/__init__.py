@@ -104,3 +104,19 @@ class FeatureTest(unittest.TestCase):
 
         return Runner(exit=False,
                       argv=['lychee'] + list(features))
+
+    def assert_feature_success(self, *features):
+        """
+        Assert that the specified features can be run successfully.
+        """
+
+        result = self.run_features(*features)
+        assert result.success
+
+    def assert_feature_fail(self, *features):
+        """
+        Assert that the specified features fail when run.
+        """
+
+        result = self.run_features(*features)
+        assert not result.success

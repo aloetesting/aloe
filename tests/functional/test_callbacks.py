@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Test callbacks.
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -27,43 +31,15 @@ from . import (
 )
 
 
-@in_directory('tests/tested_app')
-class CalculatorTest(FeatureTest):
+@in_directory('tests/callbacks_app')
+class CallbackTest(FeatureTest):
     """
-    Test that calculator feature works as expected.
+    Test callbacks functionality.
     """
 
-    def test_calculator(self):
+    def test_step_callbacks(self):
         """
-        Test running the calculator feature.
-        """
-
-        self.assert_feature_success('features/calculator.feature')
-
-    def test_wrong_expectations(self):
-        """
-        Test that a failing feature fails tests.
+        Test step callbacks execution order.
         """
 
-        self.assert_feature_fail('features/wrong_expectations.feature')
-
-    def test_background(self):
-        """
-        Test running a scenario with a background.
-        """
-
-        self.assert_feature_success('features/background.feature')
-
-    def test_outlines(self):
-        """
-        Test a scenario with outlines.
-        """
-
-        self.assert_feature_success('features/outlines.feature')
-
-    def test_python_test_skipped(self):
-        """
-        Test that the Python test does not get picked up.
-        """
-
-        self.assert_feature_success('tests')
+        self.assert_feature_success('features/step_callbacks.feature')
