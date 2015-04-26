@@ -22,10 +22,12 @@ from future import standard_library
 standard_library.install_aliases()
 
 import unittest
+from contextlib import contextmanager
 
 from lychee.codegen import (
     indent,
     make_function,
+    multi_manager,
     remove_indent,
 )
 
@@ -100,3 +102,34 @@ class TestIndent(unittest.TestCase):
             '    pass',
             '',
         )))
+
+
+class TestMultiWith(unittest.TestCase):
+    def test_multi_manager(self):
+        order = []
+
+        def sample_cm(i):
+            @contextmanager
+            def cm():
+                order.append('before cm {0}'.format(i))
+                yield 'from cm {0}'.format(i)
+                order.append('after cm {0}'.format(i))
+
+            return cm
+
+        multi_cm = multi_manager(sample_cm(1), sample_cm(2))
+
+        with multi_cm() as (r1, r2):
+            assert r1 == 'from cm 1'
+            assert r2 == 'from cm 2'
+
+        assert order == [
+            'before cm 1',
+            'before cm 2',
+            'after cm 2',
+            'after cm 1',
+        ]
+
+    def test_empty(self):
+        with multi_manager()() as result:
+            assert result == ()
