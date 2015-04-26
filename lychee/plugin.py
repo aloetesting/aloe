@@ -68,6 +68,12 @@ class GherkinPlugin(Plugin):
             metavar='TEST_CLASS',
             help='Base class to use for the generated tests.',
         )
+        parser.add_option(
+            '--no-ignore-python', action='store_false',
+            dest='ignore_python',
+            default=True,
+            help='Run Python and Gherkin tests together.',
+        )
 
     def configure(self, options, conf):
         """
@@ -79,6 +85,8 @@ class GherkinPlugin(Plugin):
         module_name, class_name = options.test_class_name.rsplit('.', 1)
         module = __import__(module_name, fromlist=(class_name,))
         self.test_class = getattr(module, class_name)
+
+        self.ignore_python = options.ignore_python
 
     def wantDirectory(self, directory):
         """
@@ -95,6 +103,16 @@ class GherkinPlugin(Plugin):
 
         if os.path.basename(file).endswith('.feature'):
             return True
+
+    def wantPython(self, _):
+        """
+        Ignore Python tests if required.
+        """
+
+        if self.ignore_python:
+            return False
+
+    wantClass = wantFunction = wantMethod = wantModule = wantPython
 
     def loadTestsFromFile(self, file):
         """

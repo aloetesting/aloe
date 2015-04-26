@@ -103,3 +103,12 @@ class CalculatorTest(unittest.TestCase):
         with self.in_directory('tests/tested_app'):
             result = self.run_features('features/outlines.feature')
             assert result.success
+
+    def test_python_test_skipped(self):
+        """
+        Test that the Python test does not get picked up.
+        """
+
+        with self.in_directory('tests/tested_app'):
+            result = self.run_features('tests')
+            assert result.success
