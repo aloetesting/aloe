@@ -14,6 +14,7 @@ cache:
         - $HOME/virtualenv
 
 script:
+    - pep8 .
     - coverage erase
     - coverage run -m nose
     - coverage report
