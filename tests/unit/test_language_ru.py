@@ -48,7 +48,7 @@ SCENARIO_OUTLINE1 = u'''
     | имя  | возраст |
     | Вася | 22      |
     | Петя | 30      |
-'''
+'''  # noqa
 
 FEATURE = u'''
 Функционал: Деление чисел
@@ -89,6 +89,7 @@ def test_language_russian():
     assert_equals(str(lang.SCENARIO),
                   u'{"Сценарий" ^ "Структура сценария"}')
     assert_equals(lang.EXAMPLES, u'Примеры')
+
 
 def test_scenario_ru_from_string():
     """
@@ -168,4 +169,3 @@ def test_feature_ru_from_string():
             {u'делимое': '0', u'делитель': '5', u'частное': '0'},
         ]
     )
-
