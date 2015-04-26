@@ -27,6 +27,7 @@ standard_library.install_aliases()
 import re
 from functools import wraps, partial
 
+from lychee.codegen import multi_manager
 from lychee.exceptions import (
     NoDefinitionFound,
     StepLoadingError,
@@ -113,24 +114,18 @@ class CallbackDict(dict):
         around = self[what]['around'].values()
         after = self[what]['after'].values()
 
-        # Cannot loop 'with' statements without code generation
-        for with_hook in around:
-            @wraps(function)
-            def wrap_with(*args, **kwargs):
-                with with_hook():  # TODO: arguments
-                    return function(*args, **kwargs)
-
-            function = wrap_with
+        multi_hook = multi_manager(*around)  # TODO: pass arguments to each
 
         @wraps(function)
         def wrapped(*args, **kwargs):
             for before_hook in before:
                 before_hook()  # TODO: arguments
 
-            # TODO: do 'after' hooks run after an exception?
             try:
-                return function(*args, **kwargs)
+                with multi_hook():
+                    return function(*args, **kwargs)
             finally:
+                # 'after' hooks still run after an exception
                 for after_hook in after:
                     after_hook()  # TODO: arguments
 
