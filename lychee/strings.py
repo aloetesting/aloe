@@ -54,7 +54,7 @@ def represent_table(table, indent=0, cell_wrap=lambda s: s):
             get_terminal_width(cell)
             for cell in column
         )
-        for column in zip(*table) # transpose
+        for column in zip(*table)  # transpose
     ]
 
     return u'\n'.join(

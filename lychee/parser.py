@@ -367,9 +367,10 @@ class TaggedBlock(Block):
                                   if tag.startswith('-~'))
         unwanted_tags = set(tag[1:] for tag in tags
                             if tag.startswith('-'))
-        required_tags = set(tag for tag in tags
-                            if not tag.startswith('-')
-                            and not tag.startswith('~'))
+        required_tags = set(
+            tag for tag in tags
+            if not tag.startswith('-') and not tag.startswith('~')
+        )
 
         # at least one of the required tags should appear in ours tags (i.e.
         # the intersection is not {})

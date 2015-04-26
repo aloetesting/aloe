@@ -138,8 +138,9 @@ class FileSystem(object):
         Examples::
 
         >>> from lychee.fs import FileSystem
-        >>> assert FileSystem.filename('/full/path/to/some_file.py') == 'some_file.py'
-        >>> assert FileSystem.filename('/full/path/to/some_file.py', False) == 'some_file'
+        >>> path = '/full/path/to/some_file.py'
+        >>> assert FileSystem.filename(path) == 'some_file.py'
+        >>> assert FileSystem.filename(path, False) == 'some_file'
 
         """
         fname = os.path.split(path)[1]
@@ -192,7 +193,8 @@ class FileSystem(object):
         '''Returns the absolute path for the given path.'''
         current_path = cls.current_dir()
         absolute_path = cls.abspath(path)
-        return re.sub("^" + re.escape(current_path), '', absolute_path).lstrip("/")
+        return re.sub("^" + re.escape(current_path), '', absolute_path).\
+            lstrip("/")
 
     @classmethod
     def join(cls, *args):
@@ -226,7 +228,10 @@ class FileSystem(object):
     def extract_zip(cls, filename, base_path='.', verbose=False):
         """Extracts a zip file into `base_path`"""
         base_path = cls.abspath(base_path)
-        output = lambda x: verbose and sys.stdout.write("%s\n" % x)
+
+        def output(x):
+            if verbose:
+                sys.stdout.write("%s\n" % x)
 
         cls.pushd(base_path)
         zfile = zipfile.ZipFile(filename)

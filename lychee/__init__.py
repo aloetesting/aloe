@@ -39,6 +39,7 @@ from lychee.runner import Runner
 
 world = threading.local()
 
+
 def main(argv=None):
     """
     Entry point for running Lychee.
