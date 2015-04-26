@@ -94,7 +94,7 @@ Feature: Big table
       | description                                                               |
       | this is such a huge description within a table, the maxlengh will be huge |
       | this is another description within a table                                |
-"""
+"""  # noqa
 
 FEATURE6 = """
 Feature: Big scenario outline
@@ -490,13 +490,13 @@ def test_feature_has_scenarios():
     assert isinstance(feature.scenarios, list)
     assert len(feature.scenarios) == 3
 
-    expected_scenario_names = [
+    expected_names = [
         "Renting a featured movie",
         "Renting a non-featured movie",
         "Renting two movies allows client to take one more without charge",
     ]
 
-    for scenario, expected_name in zip(feature.scenarios, expected_scenario_names):
+    for scenario, expected_name in zip(feature.scenarios, expected_names):
         assert isinstance(scenario, Scenario)
         assert scenario.name == expected_name
 
@@ -542,7 +542,9 @@ def test_can_parse_feature_description():
     assert_equals(step1.sentence, 'Given I have entered 3 into the calculator')
     assert_equals(step2.sentence, 'And I have entered 2 into the calculator')
     assert_equals(step3.sentence, 'When I press divide')
-    assert_equals(step4.sentence, 'Then the result should be 1.5 on the screen')
+    assert_equals(step4.sentence,
+                  'Then the result should be 1.5 on the screen')
+
 
 def test_scenarios_parsed_by_feature_has_feature():
     "Scenarios parsed by features has feature"
@@ -551,6 +553,7 @@ def test_scenarios_parsed_by_feature_has_feature():
 
     for scenario in feature.scenarios:
         assert_equals(scenario.feature, feature)
+
 
 def test_feature_max_length_on_scenario():
     """
@@ -561,6 +564,7 @@ def test_feature_max_length_on_scenario():
     feature = Feature.from_string(FEATURE1)
     assert_equals(feature.max_length, 76)
 
+
 def test_feature_max_length_on_feature_description():
     """
     The max length of a feature considering when one of the description lines
@@ -569,6 +573,7 @@ def test_feature_max_length_on_feature_description():
 
     feature = Feature.from_string(FEATURE2)
     assert_equals(feature.max_length, 47)
+
 
 def test_feature_max_length_on_feature_name():
     """
@@ -579,6 +584,7 @@ def test_feature_max_length_on_feature_name():
     feature = Feature.from_string(FEATURE3)
     assert_equals(feature.max_length, 78)
 
+
 def test_feature_max_length_on_step_sentence():
     """
     The max length of a feature considering when the some of the step sentences
@@ -587,6 +593,7 @@ def test_feature_max_length_on_step_sentence():
 
     feature = Feature.from_string(FEATURE4)
     assert_equals(feature.max_length, 55)
+
 
 def test_feature_max_length_on_step_with_table():
     """
@@ -597,6 +604,7 @@ def test_feature_max_length_on_step_with_table():
     feature = Feature.from_string(FEATURE5)
     assert_equals(feature.max_length, 83)
 
+
 def test_feature_max_length_on_step_with_table_keys():
     """
     The max length of a feature considering when the table keys of some of the
@@ -606,6 +614,7 @@ def test_feature_max_length_on_step_with_table_keys():
     feature = Feature.from_string(FEATURE7)
     assert_equals(feature.max_length, 74)
 
+
 def test_feature_max_length_on_scenario_outline():
     """
     The max length of a feature considering when the table of some of the
@@ -614,6 +623,7 @@ def test_feature_max_length_on_scenario_outline():
 
     feature = Feature.from_string(FEATURE6)
     assert_equals(feature.max_length, 79)
+
 
 def test_feature_max_length_on_scenario_outline_keys():
     """
@@ -710,6 +720,7 @@ def test_scenarios_with_extra_whitespace():
     assert_equals(type(scenario), Scenario)
     assert_equals(scenario.name, "Extra whitespace scenario")
 
+
 def test_scenarios_parsing():
     "Tags are parsed correctly"
     feature = Feature.from_string(FEATURE15)
@@ -735,6 +746,7 @@ def test_scenarios_parsing():
         ('Restart farm', [u'restart_farm']),
     ]
 
+
 def test_scenarios_with_special_characters():
     "Make sure that regex special characters in the scenario names are ignored"
     feature = Feature.from_string(FEATURE19)
@@ -742,6 +754,7 @@ def test_scenarios_with_special_characters():
     assert feature.scenarios[0].tags == ['runme1']
 
     assert feature.scenarios[1].tags == ['runme2']
+
 
 def test_background_parsing_with_mmf():
     feature = Feature.from_string(FEATURE16)
@@ -835,6 +848,7 @@ def test_scenario_post_email():
 
     assert scenario1.tags == []
     assert scenario2.tags == ['tag']
+
 
 def test_feature_first_scenario_tag_extraction():
     ("A feature object should be able to find the single tag "

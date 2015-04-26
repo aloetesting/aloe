@@ -50,7 +50,7 @@ Exemplos:
     | nome    | idade |
     | Gabriel | 22    |
     | João    | 30    |
-'''
+'''  # noqa
 
 SCENARIO_OUTLINE2 = u'''
 Esquema do Cenário: Cadastrar um aluno no banco de dados
@@ -63,7 +63,7 @@ Cenários:
     | nome    | idade |
     | Gabriel | 99    |
     | João    | 100   |
-'''
+'''  # noqa
 
 FEATURE = u'''
 Funcionalidade: Pesquisar alunos com matrícula vencida

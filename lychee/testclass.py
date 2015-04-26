@@ -96,8 +96,6 @@ class TestCase(unittest.TestCase):
         Construct a method running the scenario steps.
         """
 
-        call_background = lambda self: self.background()
-
         if scenario.outlines:
             source = 'def run_outlines(self):\n' + '\n'.join(
                 '    outline{i}(self)'.format(i=i)
@@ -106,7 +104,7 @@ class TestCase(unittest.TestCase):
 
             context = {
                 'outline' + str(i): cls.make_steps(steps,
-                                                   before=call_background)
+                                                   call_background=True)
                 for i, (_, steps) in enumerate(scenario.evaluated)
             }
 
@@ -119,14 +117,14 @@ class TestCase(unittest.TestCase):
             )
         else:
             result = cls.make_steps(scenario.steps,
-                                    before=call_background)
+                                    call_background=True)
 
         result.is_scenario = True
 
         return result
 
     @classmethod
-    def make_steps(cls, steps, before=None):
+    def make_steps(cls, steps, call_background=False):
         """
         Construct a method calling the specified steps.
 
@@ -146,8 +144,8 @@ class TestCase(unittest.TestCase):
         ]
 
         source = 'def run_steps(self):\n'
-        if before:
-            source += '    before(self)\n'
+        if call_background:
+            source += '    self.background()\n'
         source += '\n'.join(
             '    func{i}(step{i}, *args{i}, **kwargs{i})'.format(i=i)
             for i in range(len(step_definitions))
@@ -160,9 +158,7 @@ class TestCase(unittest.TestCase):
                 node.lineno = step.described_at.line
 
         # Supply all the step functions and arguments
-        context = {
-            'before': before,
-        }
+        context = {}
         for i, (step, func, args, kwargs) in enumerate(step_definitions):
             context.update({
                 k + str(i): v for k, v in {
