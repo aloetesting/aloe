@@ -27,6 +27,8 @@ standard_library.install_aliases()
 
 from contextlib import contextmanager
 
+from nose.tools import assert_equals
+
 from lychee import (
     after,
     around,
@@ -67,11 +69,29 @@ def after_step(*args):
     record_event('step', '}')
 
 
-@step(r'I emit a step event of "([^"]+)"')
-def emit_event(self, event):
-    record_event('step', event)
+@before.each_example
+def before_example(*args):
+    record_event('example', '{')
 
 
-@step(r'The step event sequence should be "([^"]+)"')
-def check_events(self, events):
-    assert ''.join(world.step) == events
+@around.each_example
+@contextmanager
+def around_example(*args):
+    record_event('example', '[')
+    yield
+    record_event('example', ']')
+
+
+@after.each_example
+def after_example(*args):
+    record_event('example', '}')
+
+
+@step(r'I emit an? (\w+) event of "([^"]+)"')
+def emit_event(self, kind, event):
+    record_event(kind, event)
+
+
+@step(r'The (\w+) event sequence should be "([^"]+)"')
+def check_events(self, kind, events):
+    assert_equals(''.join(getattr(world, kind)), events)
