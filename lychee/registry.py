@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+from builtins import bytes
 from builtins import super
 from builtins import str
 from future import standard_library
@@ -232,6 +233,10 @@ def step(step_func_or_sentence):
     * with function doc (second example)
     * with the function name exploded by underscores (third example)
     """
+    if isinstance(step_func_or_sentence, bytes):
+        # Python 2 strings, convert to str
+        step_func_or_sentence = step_func_or_sentence.decode()
+
     if isinstance(step_func_or_sentence, str):
         return lambda func: STEP_REGISTRY.load(step_func_or_sentence, func)
     else:
