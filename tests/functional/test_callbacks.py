@@ -43,3 +43,10 @@ class CallbackTest(FeatureTest):
         """
 
         self.assert_feature_success('features/step_callbacks.feature')
+
+    def test_example_callbacks(self):
+        """
+        Test example callbacks execution order.
+        """
+
+        self.assert_feature_success('features/example_callbacks.feature')
