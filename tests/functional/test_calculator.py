@@ -25,48 +25,13 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
-import os
-import unittest
-from contextlib import contextmanager
-
-from lychee.runner import Runner
+from . import FeatureTest
 
 
-class CalculatorTest(unittest.TestCase):
+class CalculatorTest(FeatureTest):
     """
     Test that calculator feature works as expected.
     """
-
-    def setUp(self):
-        """
-        Ensure inner Nose doesn't redirect output.
-        """
-
-        os.environ['NOSE_NOCAPTURE'] = '1'
-
-    @staticmethod
-    @contextmanager
-    def in_directory(directory):
-        """
-        A context manager to change the current directory.
-        """
-
-        # TODO: This should be a decorator on the function/class
-
-        cwd = os.getcwd()
-        os.chdir(directory)
-        try:
-            yield
-        finally:
-            os.chdir(cwd)
-
-    def run_features(self, *features):
-        """
-        Run the specified features.
-        """
-
-        return Runner(exit=False,
-                      argv=['lychee'] + list(features))
 
     def test_calculator(self):
         """
