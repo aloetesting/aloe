@@ -48,8 +48,8 @@ class TestCase(unittest.TestCase):
 
         background = cls.make_background(feature.background)
         scenarios = [
-            cls.make_scenario(scenario)
-            for scenario in feature.scenarios
+            cls.make_scenario(scenario, i + 1)
+            for i, scenario in enumerate(feature.scenarios)
         ]
 
         class_name = feature.name
@@ -87,9 +87,11 @@ class TestCase(unittest.TestCase):
         return result
 
     @classmethod
-    def make_scenario(cls, scenario):
+    def make_scenario(cls, scenario, index):
         """
         Construct a method running the scenario steps.
+
+        index is the 1-based number of the scenario in the feature.
         """
 
         if scenario.outlines:
@@ -116,6 +118,7 @@ class TestCase(unittest.TestCase):
                                     call_background=True)
 
         result.is_scenario = True
+        result.scenario_index = index
 
         return result
 
