@@ -35,7 +35,7 @@ Scénario: Ajout de plusieurs cursus dans la base de mon université
     Quand je consolide la base dans 'cursus.txt'
     Alors je vois que la 1er ligne de 'cursus.txt' contient 'Science de l'Informatique:5
     Et je vois que la 2em ligne de 'cursus.txt' contient 'Nutrition:4'
-"""
+"""  # noqa
 
 OUTLINED_SCENARIO = u"""
 Plan du Scénario: Ajouter 2 nombres
@@ -115,6 +115,7 @@ Fonctionnalité: Faire plusieur choses en même temps
         | 0       | 40      | add    | 40     |
 """
 
+
 def parse_scenario(string, language=None):
     feature = u"""
     Fonctionnalité: parse_scenario
@@ -124,6 +125,7 @@ def parse_scenario(string, language=None):
     feature = Feature.from_string(feature, language=language)
 
     return feature.scenarios[0]
+
 
 def test_language_french():
     """
@@ -138,6 +140,7 @@ def test_language_french():
     assert_equals(lang.FEATURE, u'Fonctionnalité')
     assert_equals(lang.SCENARIO, u'Scénario')
     assert_equals(lang.EXAMPLES, u'Exemples')
+
 
 def test_scenario_fr_from_string():
     """
@@ -159,6 +162,7 @@ def test_scenario_fr_from_string():
         ]
     )
 
+
 def test_scenario_outline1_fr_from_string():
     """
     Language: FR -> Scenario.from_string, with scenario outline, first case
@@ -174,11 +178,15 @@ def test_scenario_outline1_fr_from_string():
     assert_equals(
         scenario.outlines,
         [
-            {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
-            {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
-            {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
+            {u'input_1': u'20', u'input_2': u'30',
+             u'bouton': u'add', u'output': u'50'},
+            {u'input_1': u'2', u'input_2': u'5',
+             u'bouton': u'add', u'output': u'7'},
+            {u'input_1': u'0', u'input_2': u'40',
+             u'bouton': u'add', u'output': u'40'},
         ]
     )
+
 
 def test_scenario_outline2_fr_from_string():
     """
@@ -195,11 +203,15 @@ def test_scenario_outline2_fr_from_string():
     assert_equals(
         scenario.outlines,
         [
-            {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
-            {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
-            {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
+            {u'input_1': u'20', u'input_2': u'30',
+             u'bouton': u'add', u'output': u'50'},
+            {u'input_1': u'2', u'input_2': u'5',
+             u'bouton': u'add', u'output': u'7'},
+            {u'input_1': u'0', u'input_2': u'40',
+             u'bouton': u'add', u'output': u'40'},
         ]
     )
+
 
 def test_scenario_outline3_fr_from_string():
     """
@@ -216,11 +228,15 @@ def test_scenario_outline3_fr_from_string():
     assert_equals(
         scenario.outlines,
         [
-            {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
-            {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
-            {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
+            {u'input_1': u'20', u'input_2': u'30',
+             u'bouton': u'add', u'output': u'50'},
+            {u'input_1': u'2', u'input_2': u'5',
+             u'bouton': u'add', u'output': u'7'},
+            {u'input_1': u'0', u'input_2': u'40',
+             u'bouton': u'add', u'output': u'40'},
         ]
     )
+
 
 def test_feature_fr_from_string():
     """
@@ -253,11 +269,15 @@ def test_feature_fr_from_string():
     assert_equals(
         scenario.outlines,
         [
-            {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
-            {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
-            {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
+            {u'input_1': u'20', u'input_2': u'30',
+             u'bouton': u'add', u'output': u'50'},
+            {u'input_1': u'2', u'input_2': u'5',
+             u'bouton': u'add', u'output': u'7'},
+            {u'input_1': u'0', u'input_2': u'40',
+             u'bouton': u'add', u'output': u'40'},
         ]
     )
+
 
 def test_feature_fr_from_string2():
     """
@@ -290,8 +310,11 @@ def test_feature_fr_from_string2():
     assert_equals(
         scenario.outlines,
         [
-            {u'input_1':u'20',u'input_2':u'30',u'bouton':u'add',u'output':u'50'},
-            {u'input_1':u'2',u'input_2':u'5',u'bouton':u'add',u'output':u'7'},
-            {u'input_1':u'0',u'input_2':u'40',u'bouton':u'add',u'output':u'40'},
+            {u'input_1': u'20', u'input_2': u'30',
+             u'bouton': u'add', u'output': u'50'},
+            {u'input_1': u'2', u'input_2': u'5',
+             u'bouton': u'add', u'output': u'7'},
+            {u'input_1': u'0', u'input_2': u'40',
+             u'bouton': u'add', u'output': u'40'},
         ]
     )
