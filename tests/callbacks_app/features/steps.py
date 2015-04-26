@@ -29,6 +29,7 @@ from contextlib import contextmanager
 
 from lychee import (
     after,
+    around,
     before,
     step,
     world,
@@ -51,6 +52,14 @@ def record_event(kind, value):
 @before.each_step
 def before_step(*args):
     record_event('step', '{')
+
+
+@around.each_step
+@contextmanager
+def around_step(*args):
+    record_event('step', '[')
+    yield
+    record_event('step', ']')
 
 
 @after.each_step
