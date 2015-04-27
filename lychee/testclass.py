@@ -52,14 +52,17 @@ class TestCase(unittest.TestCase):
             for i, scenario in enumerate(feature.scenarios)
         ]
 
+        setUpClass, tearDownClass = CALLBACK_REGISTRY.before_after('feature')
+        setUpClass.__name__ = 'setUpClass'
+        tearDownClass.__name__ = 'tearDownClass'
+
         class_name = feature.name
         if sys.version_info < (3, 0):
             class_name = class_name.encode()
 
         # TODO: Make a method?
-        # TODO: inject line/file information
         return type(class_name, (cls,), cls.make_members(
-            [background] + scenarios))
+            [background, setUpClass, tearDownClass] + scenarios))
 
     @classmethod
     def make_members(cls, members):
