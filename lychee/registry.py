@@ -140,6 +140,36 @@ class CallbackDict(dict):
 
         return wrapped
 
+    def before_after(self, what):
+        """
+        Return a pair of functions to execute before and after the event.
+        """
+
+        before = self[what]['before'].values()
+        around = self[what]['around'].values()
+        after = self[what]['after'].values()
+
+        multi_hook = multi_manager(*around)  # TODO: pass arguments to each
+
+        # Save in a closure for both functions
+        around_hook = [None]
+
+        def before_func():
+            for before_hook in before:
+                before_hook()
+
+            around_hook[0] = multi_hook()
+            around_hook[0].__enter__()
+
+        def after_func():
+            around_hook[0].__exit__(None, None, None)
+            around_hook[0] = None
+
+            for after_hook in after:
+                after_hook()
+
+        return before_func, after_func
+
 
 class StepDict(dict):
     def load(self, step, func):
@@ -272,6 +302,7 @@ class CallbackDecorator(object):
 
     each_step = make_decorator('step')
     each_example = make_decorator('example')
+    each_feature = make_decorator('feature')
     # TODO: More situations
 
 
