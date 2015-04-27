@@ -29,6 +29,8 @@ import os
 import unittest
 from functools import wraps
 
+from lychee import world
+from lychee.registry import clear as clear_registry
 from lychee.runner import Runner
 
 
@@ -101,6 +103,9 @@ class FeatureTest(unittest.TestCase):
         """
         Run the specified features.
         """
+
+        clear_registry()
+        world.__dict__.clear()
 
         return Runner(exit=False,
                       argv=['lychee'] + list(features))

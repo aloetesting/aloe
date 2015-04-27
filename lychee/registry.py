@@ -71,8 +71,8 @@ class CallbackDict(dict):
             for what in HOOK_WHAT
         })
 
-    @staticmethod
-    def _function_id(func):
+    @classmethod
+    def _function_id(cls, func):
         """
         A unique identifier of a function to prevent adding the same hook
         twice.
@@ -80,6 +80,10 @@ class CallbackDict(dict):
         To support dynamically generated functions, take the variables from
         the function closure into account.
         """
+
+        if hasattr(func, '__wrapped__'):
+            return cls._function_id(func.__wrapped__)
+
         return (
             func.__code__.co_filename,
             func.__code__.co_firstlineno,
@@ -277,6 +281,13 @@ before = CallbackDecorator('before')
 
 
 def clear():
+    """
+    Clear the registry.
+    """
+
+    # TODO: When priority is implemented and Lychee has essential steps
+    # that should not be cleared, can clear everything below certain priority.
+
     STEP_REGISTRY.clear()
     CALLBACK_REGISTRY.clear()
 
