@@ -29,12 +29,12 @@ from future import standard_library
 standard_library.install_aliases()
 
 import ast
-import sys
 import unittest
 
 from lychee.codegen import make_function
 from lychee.parser import Feature
 from lychee.registry import CALLBACK_REGISTRY, STEP_REGISTRY
+from lychee.utils import always_str
 
 
 class TestCase(unittest.TestCase):
@@ -56,29 +56,23 @@ class TestCase(unittest.TestCase):
             for i, scenario in enumerate(feature.scenarios)
         ]
 
-        setUpClass, tearDownClass = CALLBACK_REGISTRY.before_after('feature')
-        setUpClass.__name__ = 'setUpClass'
-        tearDownClass.__name__ = 'tearDownClass'
+        before_feature, after_feature = \
+            CALLBACK_REGISTRY.before_after('feature')
 
-        class_name = feature.name
-        if sys.version_info < (3, 0):
-            class_name = class_name.encode()
-
-        # TODO: Make a method?
-        return type(class_name, (cls,), cls.make_members(
-            [background, setUpClass, tearDownClass] + scenarios))
-
-    @classmethod
-    def make_members(cls, members):
-        """
-        Convert a list of test methods to a dictionary suitable for type
-        construction.
-        """
-
-        return {
-            m.__name__: m
-            for m in members
+        members = {
+            'background': background,
+            'setUpClass': staticmethod(before_feature),
+            'tearDownClass': staticmethod(after_feature),
         }
+
+        members.update({
+            scenario.__name__: scenario
+            for scenario in scenarios
+        })
+
+        class_name = always_str(feature.name)
+
+        return type(class_name, (cls,), members)
 
     @classmethod
     def make_background(cls, background):
