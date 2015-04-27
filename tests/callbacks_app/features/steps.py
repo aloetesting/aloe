@@ -87,6 +87,24 @@ def after_example(*args):
     record_event('example', '}')
 
 
+@before.each_feature
+def before_feature(*args):
+    record_event('feature', '{')
+
+
+@around.each_feature
+@contextmanager
+def around_feature(*args):
+    record_event('feature', '[')
+    yield
+    record_event('feature', ']')
+
+
+@after.each_feature
+def after_feature(*args):
+    record_event('feature', '}')
+
+
 @step(r'I emit an? (\w+) event of "([^"]+)"')
 def emit_event(self, kind, event):
     record_event(kind, event)
