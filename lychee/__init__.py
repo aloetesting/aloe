@@ -40,7 +40,7 @@ from lychee.runner import Runner
 world = threading.local()
 
 
-def main(argv=None):
+def main(argv=None):  # pragma: no cover
     """
     Entry point for running Lychee.
     """
@@ -50,5 +50,5 @@ def main(argv=None):
 
     Runner(argv)
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     main()
