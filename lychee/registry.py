@@ -27,6 +27,7 @@ standard_library.install_aliases()
 import re
 from functools import wraps, partial
 
+from lychee.codegen import multi_manager
 from lychee.exceptions import (
     NoDefinitionFound,
     StepLoadingError,
@@ -65,8 +66,8 @@ class CallbackDict(dict):
             for what in HOOK_WHAT
         })
 
-    @staticmethod
-    def _function_id(func):
+    @classmethod
+    def _function_id(cls, func):
         """
         A unique identifier of a function to prevent adding the same hook
         twice.
@@ -74,6 +75,10 @@ class CallbackDict(dict):
         To support dynamically generated functions, take the variables from
         the function closure into account.
         """
+
+        if hasattr(func, '__wrapped__'):
+            return cls._function_id(func.__wrapped__)
+
         return (
             func.__code__.co_filename,
             func.__code__.co_firstlineno,
@@ -113,28 +118,52 @@ class CallbackDict(dict):
         around = self[what]['around'].values()
         after = self[what]['after'].values()
 
-        # Cannot loop 'with' statements without code generation
-        for with_hook in around:
-            @wraps(function)
-            def wrap_with(*args, **kwargs):
-                with with_hook():  # TODO: arguments
-                    return function(*args, **kwargs)
-
-            function = wrap_with
+        multi_hook = multi_manager(*around)  # TODO: pass arguments to each
 
         @wraps(function)
         def wrapped(*args, **kwargs):
             for before_hook in before:
                 before_hook()  # TODO: arguments
 
-            # TODO: do 'after' hooks run after an exception?
             try:
-                return function(*args, **kwargs)
+                with multi_hook():
+                    return function(*args, **kwargs)
             finally:
+                # 'after' hooks still run after an exception
                 for after_hook in after:
                     after_hook()  # TODO: arguments
 
         return wrapped
+
+    def before_after(self, what):
+        """
+        Return a pair of functions to execute before and after the event.
+        """
+
+        before = self[what]['before'].values()
+        around = self[what]['around'].values()
+        after = self[what]['after'].values()
+
+        multi_hook = multi_manager(*around)  # TODO: pass arguments to each
+
+        # Save in a closure for both functions
+        around_hook = [None]
+
+        def before_func():
+            for before_hook in before:
+                before_hook()
+
+            around_hook[0] = multi_hook()
+            around_hook[0].__enter__()
+
+        def after_func():
+            around_hook[0].__exit__(None, None, None)
+            around_hook[0] = None
+
+            for after_hook in after:
+                after_hook()
+
+        return before_func, after_func
 
 
 class StepDict(dict):
@@ -268,6 +297,7 @@ class CallbackDecorator(object):
 
     each_step = make_decorator('step')
     each_example = make_decorator('example')
+    each_feature = make_decorator('feature')
     # TODO: More situations
 
 
@@ -277,6 +307,13 @@ before = CallbackDecorator('before')
 
 
 def clear():
+    """
+    Clear the registry.
+    """
+
+    # TODO: When priority is implemented and Lychee has essential steps
+    # that should not be cleared, can clear everything below certain priority.
+
     STEP_REGISTRY.clear()
     CALLBACK_REGISTRY.clear()
 

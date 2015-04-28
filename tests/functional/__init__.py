@@ -27,9 +27,64 @@ standard_library.install_aliases()
 
 import os
 import unittest
-from contextlib import contextmanager
+from functools import wraps
 
+from lychee import world
+from lychee.registry import clear as clear_registry
 from lychee.runner import Runner
+
+
+def in_directory(directory):
+    """
+    A decorator to change the current directory.
+    """
+
+    def wrapper(func_or_class):
+        """
+        Wrap a function or a test case class to execute in a different
+        directory.
+        """
+
+        if issubclass(func_or_class, unittest.TestCase):
+            # Wrap setUp/tearDown
+            old_setup = func_or_class.setUp
+            old_teardown = func_or_class.tearDown
+
+            @wraps(old_setup)
+            def setUp(self):
+                self._last_wd = os.getcwd()
+                os.chdir(directory)
+                old_setup(self)
+
+            @wraps(old_teardown)
+            def tearDown(self):
+                old_teardown(self)
+                os.chdir(self._last_wd)
+                delattr(self, '_last_wd')
+
+            func_or_class.setUp = setUp
+            func_or_class.tearDown = tearDown
+
+            return func_or_class
+
+        else:
+            # Wrap a function
+            @wraps(func_or_class)
+            def wrapped(*args, **kwargs):
+                """
+                Execute the function in a different directory.
+                """
+
+                cwd = os.getcwd()
+                os.chdir(directory)
+                try:
+                    return func_or_class(*args, **kwargs)
+                finally:
+                    os.chdir(cwd)
+
+            return wrapped
+
+    return wrapper
 
 
 class FeatureTest(unittest.TestCase):
@@ -44,26 +99,29 @@ class FeatureTest(unittest.TestCase):
 
         os.environ['NOSE_NOCAPTURE'] = '1'
 
-    @staticmethod
-    @contextmanager
-    def in_directory(directory):
-        """
-        A context manager to change the current directory.
-        """
-
-        # TODO: This should be a decorator on the function/class
-
-        cwd = os.getcwd()
-        os.chdir(directory)
-        try:
-            yield
-        finally:
-            os.chdir(cwd)
-
     def run_features(self, *features):
         """
         Run the specified features.
         """
 
+        clear_registry()
+        world.__dict__.clear()
+
         return Runner(exit=False,
                       argv=['lychee'] + list(features))
+
+    def assert_feature_success(self, *features):
+        """
+        Assert that the specified features can be run successfully.
+        """
+
+        result = self.run_features(*features)
+        assert result.success
+
+    def assert_feature_fail(self, *features):
+        """
+        Assert that the specified features fail when run.
+        """
+
+        result = self.run_features(*features)
+        assert not result.success
