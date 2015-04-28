@@ -77,7 +77,7 @@ class FeatureLoader(object):
                               .format(e, filename)),
                     raise e
 
-            reload(module)  # always take fresh meat :)
+            reload(module)  # Make sure steps end hooks are registered
             sys.path.remove(root)
 
     def find_feature_files(self):

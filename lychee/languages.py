@@ -26,15 +26,15 @@ from __future__ import division
 from __future__ import absolute_import
 from builtins import open
 from builtins import next
-from builtins import str
 from future import standard_library
 standard_library.install_aliases()
 
 import json
 import os.path
-import sys
 
 from pyparsing import Keyword, Literal
+
+from lychee.utils import always_str
 
 
 class Language(object):
@@ -118,10 +118,7 @@ with open(i18n) as i18n:
 
             return comb
 
-        if sys.version_info < (3, 0):
-            name = name.encode()
-
-        locals()[name] = type(name, (Language,), {
+        locals()[name] = type(always_str(name), (Language,), {
             'code': lang,
             'native': defn['native'].title(),
             'FEATURE': build_keywords('feature'),
