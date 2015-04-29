@@ -34,13 +34,22 @@ class Runner(nose.core.TestProgram):
     A test runner collecting Gherkin tests.
     """
 
+    @staticmethod
+    def gherkin_plugin():
+        """
+        The plugin to add to the runner.
+        Hook point for tests.
+        """
+
+        return GherkinPlugin()
+
     def __init__(self, *args, **kwargs):
         """
         Enable Gherkin loading plugins and run the tests.
         """
 
         # Add Gherkin plugin
-        kwargs.setdefault('addplugins', []).append(GherkinPlugin())
+        kwargs.setdefault('addplugins', []).append(self.gherkin_plugin())
 
         # Ensure it's loaded
         env = kwargs.pop('env', os.environ)

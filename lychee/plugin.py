@@ -84,8 +84,11 @@ class GherkinPlugin(Plugin):
         Collect features from 'features' directories.
         """
 
-        if os.path.basename(directory) == 'features':
-            return True
+        directory = os.path.abspath(directory)
+        while directory != '/':
+            if os.path.basename(directory) == 'features':
+                return True
+            directory = os.path.dirname(directory)
 
     def wantFile(self, file):
         """
