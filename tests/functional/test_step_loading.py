@@ -25,6 +25,8 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
+import os
+
 from . import (
     FeatureTest,
     in_directory,
@@ -52,10 +54,16 @@ class StepLoadingTest(FeatureTest):
         self.assert_feature_success(
             'features/subdirectory/another_feature.feature')
 
-    def test_wrong_expectations(self):
+    def test_all_features(self):
         """
         Test running all the features without explicitly specifying them.
         """
 
-        # Run all features
-        self.assert_feature_success()
+        result = self.run_features()
+        assert result.success
+        assert result.tests_run == [
+            os.path.abspath(feature) for feature in (
+                'features/single_feature.feature',
+                'features/subdirectory/another_feature.feature',
+            )
+        ]
