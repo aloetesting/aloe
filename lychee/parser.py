@@ -97,7 +97,7 @@ class ParseLocation(object):
 
         if self._file:
             # TODO: Lettuce has this pluggable, for unit testing
-            return fs.FileSystem().relpath(self._file)
+            return fs.FileSystem.relpath(self._file)
         elif self.parent:
             if self.parent.feature.described_at is self:
                 return None

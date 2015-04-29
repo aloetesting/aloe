@@ -26,13 +26,6 @@ standard_library.install_aliases()
 import unicodedata
 
 
-def utf8_string(s):
-    if isinstance(s, bytes):
-        s = s.decode("utf-8")
-
-    return s
-
-
 def represent_table(table, indent=0, cell_wrap=lambda s: s):
     """
     Render a table
