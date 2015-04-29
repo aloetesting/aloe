@@ -45,12 +45,7 @@ class GherkinPlugin(Plugin):
     TEST_CLASS = TestCase
 
     def begin(self):
-        """
-        Load the steps.
-        """
-
-        loader = FeatureLoader('.')
-        loader.find_and_load_step_definitions()
+        self.steps_loaded = []
 
     def options(self, parser, env=os.environ):
         """
@@ -118,6 +113,12 @@ class GherkinPlugin(Plugin):
         """
         Load a feature from the feature file.
         """
+
+        # Ensure the steps corresponding to the feature file are loaded
+        steps_dir = FeatureLoader.find_steps_dir(file)
+        if steps_dir not in self.steps_loaded:
+            FeatureLoader.find_and_load_step_definitions(steps_dir)
+            self.steps_loaded.append(steps_dir)
 
         test = self.test_class.from_file(file)
 
