@@ -25,6 +25,8 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
+from nose.tools import assert_equals
+
 from . import (
     FeatureTest,
     in_directory,
@@ -58,3 +60,14 @@ class CallbackTest(FeatureTest):
 
         self.assert_feature_success('features/feature_callbacks_1.feature',
                                     'features/feature_callbacks_2.feature')
+
+    def test_all_callbacks(self):
+        """
+        Test 'all' callbacks.
+        """
+
+        self.assert_feature_success('features/all_callbacks_1.feature',
+                                    'features/all_callbacks_2.feature')
+
+        from lychee import world
+        assert_equals(''.join(world.all), '{[ABCD]}')
