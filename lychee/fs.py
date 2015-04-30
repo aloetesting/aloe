@@ -43,17 +43,34 @@ from os.path import abspath, join, dirname, curdir
 class FeatureLoader(object):
     """Loader class responsible for findind features and step
     definitions along a given path on filesystem"""
-    def __init__(self, base_dir):
-        self.base_dir = abspath(base_dir)
 
-    def find_and_load_step_definitions(self):
-        # find steps, possibly up several directories
-        base_dir = self.base_dir
+    @staticmethod
+    def find_steps_dir(feature_file):
+        """
+        Find the steps directory corresponding to the feature file.
+
+        This is the first directory upwards of the feature file
+        containing any Python files.
+
+        If no steps directory can be found, return the filesystem root.
+        """
+
+        base_dir = dirname(abspath(feature_file))
+
         while base_dir != '/':
             files = FileSystem.locate(base_dir, '*.py')
             if files:
                 break
-            base_dir = join(base_dir, '..')
+            base_dir = dirname(base_dir)
+
+        return base_dir
+
+    @staticmethod
+    def find_and_load_step_definitions(steps_dir):
+        """
+        Load the steps from the specified directory.
+        """
+        files = FileSystem.locate(steps_dir, '*.py')
 
         for filename in files:
             root = dirname(filename)

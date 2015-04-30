@@ -23,6 +23,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
+from builtins import super
 standard_library.install_aliases()
 
 import os
@@ -30,6 +31,7 @@ import unittest
 from functools import wraps
 
 from lychee import world
+from lychee.plugin import GherkinPlugin
 from lychee.registry import clear as clear_registry
 from lychee.runner import Runner
 
@@ -87,6 +89,41 @@ def in_directory(directory):
     return wrapper
 
 
+class TestGherkinPlugin(GherkinPlugin):
+    """
+    Test Gherkin plugin.
+    """
+
+    def loadTestsFromFile(self, file):
+        """
+        Record which tests were run.
+        """
+
+        for scenario in super().loadTestsFromFile(file):
+            yield scenario
+
+        self.runner.tests_run.append(file)
+
+
+class TestRunner(Runner):
+    """
+    A test test runner to store information about the tests run.
+    """
+
+    def gherkin_plugin(self):
+        """
+        Override the plugin class.
+        """
+
+        plugin = TestGherkinPlugin()
+        plugin.runner = self
+        return plugin
+
+    def __init__(self, *args, **kwargs):
+        self.tests_run = []
+        super().__init__(*args, **kwargs)
+
+
 class FeatureTest(unittest.TestCase):
     """
     Base class for tests running Gherkin features.
@@ -107,8 +144,8 @@ class FeatureTest(unittest.TestCase):
         clear_registry()
         world.__dict__.clear()
 
-        return Runner(exit=False,
-                      argv=['lychee'] + list(features))
+        return TestRunner(exit=False,
+                          argv=['lychee'] + list(features))
 
     def assert_feature_success(self, *features):
         """
