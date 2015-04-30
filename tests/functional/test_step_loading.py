@@ -15,49 +15,55 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Nose test runner with Gherkin plugin enabled.
+Test step loading.
 """
 
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-from builtins import super
 from future import standard_library
 standard_library.install_aliases()
 
 import os
 
-import nose.core
+from . import (
+    FeatureTest,
+    in_directory,
+)
 
-from lychee.plugin import GherkinPlugin
 
-
-class Runner(nose.core.TestProgram):
+@in_directory('tests/step_definition_app')
+class StepLoadingTest(FeatureTest):
     """
-    A test runner collecting Gherkin tests.
+    Test that calculator feature works as expected.
     """
 
-    @staticmethod
-    def gherkin_plugin():
+    def test_single_feature(self):
         """
-        The plugin to add to the runner.
-        Hook point for tests.
+        Test running a single feature.
         """
 
-        return GherkinPlugin()
+        self.assert_feature_success('features/single_feature.feature')
 
-    def __init__(self, *args, **kwargs):
+    def test_subdirectory_feature(self):
         """
-        Enable Gherkin loading plugins and run the tests.
+        Test running a feature in a subdirectory.
         """
 
-        # Add Gherkin plugin
-        kwargs.setdefault('addplugins', []).append(self.gherkin_plugin())
+        self.assert_feature_success(
+            'features/subdirectory/another_feature.feature')
 
-        # Ensure it's loaded
-        env = kwargs.pop('env', os.environ)
-        env['NOSE_WITH_GHERKIN'] = '1'
-        kwargs['env'] = env
+    def test_all_features(self):
+        """
+        Test running all the features without explicitly specifying them.
+        """
 
-        super().__init__(*args, **kwargs)
+        result = self.run_features()
+        assert result.success
+        assert result.tests_run == [
+            os.path.abspath(feature) for feature in (
+                'features/single_feature.feature',
+                'features/subdirectory/another_feature.feature',
+            )
+        ]
