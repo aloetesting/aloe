@@ -169,12 +169,12 @@ class CallbackDict(dict):
 class StepDict(dict):
     def load(self, step, func):
 
-        step = self._assert_is_step(step, func)
-        self[step] = func
+        step_re = self._assert_is_step(step, func)
+        self[step_re] = func
 
         try:
             func.sentence = step
-            func.unregister = partial(self.unload, step)
+            func.unregister = partial(self.unload, step_re)
         except AttributeError:
             # func might have been a bound method, no way to set attributes
             # on that
@@ -245,26 +245,30 @@ class StepDict(dict):
 
         raise NoDefinitionFound(step)
 
+    def step(self, step_func_or_sentence):
+        """
+        Decorates a function, so that it will become a new step
+        definition.
+        You give step sentence either (by priority):
+        * with step function argument
+        * with function doc
+        * with the function name exploded by underscores
+        """
+
+        if isinstance(step_func_or_sentence, bytes):
+            # Python 2 strings, convert to str
+            step_func_or_sentence = step_func_or_sentence.decode()
+
+        if isinstance(step_func_or_sentence, str):
+            return lambda func: self.load(step_func_or_sentence, func)
+        else:
+            return self.load_func(step_func_or_sentence)
+
 
 STEP_REGISTRY = StepDict()
 
 
-def step(step_func_or_sentence):
-    """Decorates a function, so that it will become a new step
-    definition.
-    You give step sentence either (by priority):
-    * with step function argument (first example)
-    * with function doc (second example)
-    * with the function name exploded by underscores (third example)
-    """
-    if isinstance(step_func_or_sentence, bytes):
-        # Python 2 strings, convert to str
-        step_func_or_sentence = step_func_or_sentence.decode()
-
-    if isinstance(step_func_or_sentence, str):
-        return lambda func: STEP_REGISTRY.load(step_func_or_sentence, func)
-    else:
-        return STEP_REGISTRY.load_func(step_func_or_sentence)
+step = STEP_REGISTRY.step
 
 
 CALLBACK_REGISTRY = CallbackDict()
