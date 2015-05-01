@@ -72,21 +72,24 @@ def after_step(*args):
 
 
 @before.each_example
-def before_example(*args):
+def before_example(scenario):
     record_event('example', '{')
+    record_event('example_names', ('before', scenario.name))
 
 
 @around.each_example
 @contextmanager
-def around_example(*args):
+def around_example(scenario):
     record_event('example', '[')
+    record_event('example_names', ('around', scenario.name))
     yield
     record_event('example', ']')
 
 
 @after.each_example
-def after_example(*args):
+def after_example(scenario):
     record_event('example', '}')
+    record_event('example_names', ('after', scenario.name))
 
 
 @before.each_feature
