@@ -31,6 +31,7 @@ import os
 from nose.plugins import Plugin
 
 from lychee.fs import FeatureLoader
+from lychee.registry import CALLBACK_REGISTRY
 from lychee.testclass import TestCase
 
 
@@ -46,6 +47,7 @@ class GherkinPlugin(Plugin):
 
     def begin(self):
         self.steps_loaded = []
+        self.context_level = 0
 
     def options(self, parser, env=os.environ):
         """
@@ -139,3 +141,29 @@ class GherkinPlugin(Plugin):
 
         for scenario in sorted(scenarios, key=key):
             yield test(scenario)
+
+    def startContext(self, context):
+        """
+        On the first context, run the "before all" callbacks.
+        """
+
+        # TODO: Is there a better method to do something before _and after_ all
+        # the tests have been run?
+
+        if self.context_level == 0:
+            before_all, after_all = CALLBACK_REGISTRY.before_after('all')
+            before_all()
+            self.after_hook = after_all
+
+        self.context_level += 1
+
+    def stopContext(self, context):
+        """
+        On the last context, run the "after all" callbacks.
+        """
+
+        self.context_level -= 1
+
+        if self.context_level == 0:
+            self.after_hook()
+            delattr(self, 'after_hook')

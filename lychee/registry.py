@@ -303,7 +303,7 @@ class CallbackDecorator(object):
     each_step = make_decorator('step')
     each_example = make_decorator('example')
     each_feature = make_decorator('feature')
-    # TODO: More situations
+    all = make_decorator('all')
 
 
 after = CallbackDecorator('after')
