@@ -181,3 +181,39 @@ def test_StepDict_can_exclude_callable_object_when_load_steps():
     steps.load_steps(no_step)
 
     assert len(steps) == 0
+
+
+def test_unload_reload():
+    """
+    Test unloading and then reloading the step.
+    """
+
+    def step():
+        pass
+
+    class StepDefinition(object):
+        sentence = 'My step 1'
+
+    steps = StepDict()
+
+    # Load
+    steps.step(r'My step (\d)')(step)
+
+    assert len(steps) == 1
+    assert steps.match_step(StepDefinition) == (step, ('1',), {})
+
+    # Unload
+    step.unregister()
+
+    assert len(steps) == 0
+
+    # Should be a no-op
+    step.unregister()
+
+    assert len(steps) == 0
+
+    # Reload
+    steps.step(step.sentence)(step)
+
+    assert len(steps) == 1
+    assert steps.match_step(StepDefinition) == (step, ('1',), {})
