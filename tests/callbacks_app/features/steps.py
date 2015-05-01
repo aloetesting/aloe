@@ -27,7 +27,7 @@ standard_library.install_aliases()
 
 from contextlib import contextmanager
 
-from nose.tools import assert_equals
+from nose.tools import assert_equals, assert_is_instance
 
 from lychee import (
     after,
@@ -90,38 +90,41 @@ def after_example(*args):
 
 
 @before.each_feature
-def before_feature(*args):
+def before_feature(feature):
     record_event('feature', '{')
+    record_event('feature_names', ('before', feature.name))
 
 
 @around.each_feature
 @contextmanager
-def around_feature(*args):
+def around_feature(feature):
     record_event('feature', '[')
+    record_event('feature_names', ('around', feature.name))
     yield
     record_event('feature', ']')
 
 
 @after.each_feature
-def after_feature(*args):
+def after_feature(feature):
     record_event('feature', '}')
+    record_event('feature_names', ('after', feature.name))
 
 
 @before.all
-def before_all(*args):
+def before_all():
     record_event('"all"', '{')
 
 
 @around.all
 @contextmanager
-def around_all(*args):
+def around_all():
     record_event('"all"', '[')
     yield
     record_event('"all"', ']')
 
 
 @after.all
-def after_all(*args):
+def after_all():
     record_event('"all"', '}')
 
 
