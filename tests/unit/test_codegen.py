@@ -108,7 +108,10 @@ class TestIndent(unittest.TestCase):
         )))
 
 
-class TestMultiWith(unittest.TestCase):
+class TestMultiManager(unittest.TestCase):
+    """
+    Test multi_manager.
+    """
 
     @staticmethod
     def good_cm(order, i):
@@ -149,6 +152,9 @@ class TestMultiWith(unittest.TestCase):
         with multi_manager()() as result:
             self.assertEqual(result, ())
 
+        with multi_manager()('foo', 'bar') as result:
+            self.assertEqual(result, ())
+
     def test_exceptions(self):
         order = []
 
@@ -164,3 +170,17 @@ class TestMultiWith(unittest.TestCase):
             'before cm 1',
             'after cm 1',
         ])
+
+    def test_args(self):
+        """
+        Test passing arguments to the invoked managers.
+        """
+
+        @contextmanager
+        def yield_args(*args):
+            yield args
+
+        with multi_manager(yield_args, yield_args)('foo', 'bar') \
+                as (args1, args2):
+            self.assertEqual(args1, ('foo', 'bar'))
+            self.assertEqual(args2, ('foo', 'bar'))
