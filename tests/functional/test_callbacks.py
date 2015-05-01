@@ -27,6 +27,7 @@ standard_library.install_aliases()
 
 from nose.tools import assert_equals
 
+from lychee import world
 from . import (
     FeatureTest,
     in_directory,
@@ -61,6 +62,15 @@ class CallbackTest(FeatureTest):
         self.assert_feature_success('features/feature_callbacks_1.feature',
                                     'features/feature_callbacks_2.feature')
 
+        self.assertEquals(world.feature_names, [
+            ('before', 'Feature callbacks (preparation)'),
+            ('around', 'Feature callbacks (preparation)'),
+            ('after', 'Feature callbacks (preparation)'),
+            ('before', 'Feature callbacks (test)'),
+            ('around', 'Feature callbacks (test)'),
+            ('after', 'Feature callbacks (test)'),
+        ])
+
     def test_all_callbacks(self):
         """
         Test 'all' callbacks.
@@ -69,5 +79,4 @@ class CallbackTest(FeatureTest):
         self.assert_feature_success('features/all_callbacks_1.feature',
                                     'features/all_callbacks_2.feature')
 
-        from lychee import world
         assert_equals(''.join(world.all), '{[ABCD]}')

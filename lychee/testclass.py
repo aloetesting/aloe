@@ -43,6 +43,14 @@ class TestCase(unittest.TestCase):
     """
 
     @classmethod
+    def setUpClass(cls):
+        cls.before_feature(cls.feature)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.after_feature(cls.feature)
+
+    @classmethod
     def from_file(cls, file):
         """
         Construct a test class from a feature file.
@@ -60,9 +68,10 @@ class TestCase(unittest.TestCase):
             CALLBACK_REGISTRY.before_after('feature')
 
         members = {
+            'feature': feature,
             'background': background,
-            'setUpClass': staticmethod(before_feature),
-            'tearDownClass': staticmethod(after_feature),
+            'before_feature': staticmethod(before_feature),
+            'after_feature': staticmethod(after_feature),
         }
 
         members.update({
