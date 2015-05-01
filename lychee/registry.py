@@ -111,7 +111,7 @@ class CallbackDict(dict):
                 else:
                     callback_list.pop(name, None)
 
-    def wrap(self, what, function, *args):
+    def wrap(self, what, function, *hook_args, **hook_kwargs):
         """
         Return a function that executes all the callbacks in proper relations
         to the given test part.
@@ -124,20 +124,20 @@ class CallbackDict(dict):
         around = self[what]['around'].values()
         after = self[what]['after'].values()
 
-        multi_hook = multi_manager(*around)  # TODO: pass arguments to each
+        multi_hook = multi_manager(*around)
 
         @wraps(function)
         def wrapped(*args, **kwargs):
             for before_hook in before:
-                before_hook()  # TODO: arguments
+                before_hook(*hook_args, **hook_kwargs)
 
             try:
-                with multi_hook():
+                with multi_hook(*hook_args, **hook_kwargs):
                     return function(*args, **kwargs)
             finally:
                 # 'after' hooks still run after an exception
                 for after_hook in after:
-                    after_hook()  # TODO: arguments
+                    after_hook(*hook_args, **hook_kwargs)
 
         return wrapped
 

@@ -270,6 +270,6 @@ class CallbackDictTest(unittest.TestCase):
             ('before', 'hook_arg1', 'hook_arg2'),
             ('around_before', 'hook_arg1', 'hook_arg2'),
             ('wrapped', 'wrap_arg1', 'wrap_arg2'),
-            ('around_before', 'hook_arg1', 'hook_arg2'),
+            ('around_after', 'hook_arg1', 'hook_arg2'),
             ('after', 'hook_arg1', 'hook_arg2'),
         ])
