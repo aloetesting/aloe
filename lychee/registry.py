@@ -117,9 +117,6 @@ class CallbackDict(dict):
         to the given test part.
         """
 
-        # TODO: Code generation (not trivial as need to preserve the line
-        # numbers later)?
-
         before = self[what]['before'].values()
         around = self[what]['around'].values()
         after = self[what]['after'].values()
@@ -150,24 +147,24 @@ class CallbackDict(dict):
         around = self[what]['around'].values()
         after = self[what]['after'].values()
 
-        multi_hook = multi_manager(*around)  # TODO: pass arguments to each
+        multi_hook = multi_manager(*around)
 
         # Save in a closure for both functions
         around_hook = [None]
 
-        def before_func():
+        def before_func(*args, **kwargs):
             for before_hook in before:
-                before_hook()
+                before_hook(*args, **kwargs)
 
-            around_hook[0] = multi_hook()
+            around_hook[0] = multi_hook(*args, **kwargs)
             around_hook[0].__enter__()
 
-        def after_func():
+        def after_func(*args, **kwargs):
             around_hook[0].__exit__(None, None, None)
             around_hook[0] = None
 
             for after_hook in after:
-                after_hook()
+                after_hook(*args, **kwargs)
 
         return before_func, after_func
 

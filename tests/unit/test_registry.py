@@ -273,3 +273,37 @@ class CallbackDictTest(unittest.TestCase):
             ('around_after', 'hook_arg1', 'hook_arg2'),
             ('after', 'hook_arg1', 'hook_arg2'),
         ])
+
+    def test_before_after(self):
+        """
+        Test before_after.
+        """
+
+        sequence = []
+
+        @self.before.all
+        def before_call(*args):
+            sequence.append(('before',) + args)
+
+        @self.around.all
+        @contextmanager
+        def around_call(*args):
+            sequence.append(('around_before',) + args)
+            yield
+            sequence.append(('around_after',) + args)
+
+        @self.after.all
+        def after_call(*args):
+            sequence.append(('after',) + args)
+
+        before, after = self.callbacks.before_after('all')
+
+        before('before_arg1', 'before_arg2')
+        after('after_arg1', 'after_arg2')
+
+        self.assertEqual(sequence, [
+            ('before', 'before_arg1', 'before_arg2'),
+            ('around_before', 'before_arg1', 'before_arg2'),
+            ('around_after', 'before_arg1', 'before_arg2'),
+            ('after', 'after_arg1', 'after_arg2'),
+        ])
