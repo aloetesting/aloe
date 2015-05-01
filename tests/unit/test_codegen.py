@@ -109,31 +109,58 @@ class TestIndent(unittest.TestCase):
 
 
 class TestMultiWith(unittest.TestCase):
+
+    @staticmethod
+    def good_cm(order, i):
+        @contextmanager
+        def cm():
+            order.append('before cm {0}'.format(i))
+            try:
+                yield 'from cm {0}'.format(i)
+            finally:
+                order.append('after cm {0}'.format(i))
+
+        return cm
+
+    @staticmethod
+    def bad_cm(order):
+        @contextmanager
+        def cm():
+            raise Exception
+
     def test_multi_manager(self):
         order = []
 
-        def sample_cm(i):
-            @contextmanager
-            def cm():
-                order.append('before cm {0}'.format(i))
-                yield 'from cm {0}'.format(i)
-                order.append('after cm {0}'.format(i))
-
-            return cm
-
-        multi_cm = multi_manager(sample_cm(1), sample_cm(2))
+        multi_cm = multi_manager(self.good_cm(order, 1),
+                                 self.good_cm(order, 2))
 
         with multi_cm() as (r1, r2):
-            assert r1 == 'from cm 1'
-            assert r2 == 'from cm 2'
+            self.assertEqual(r1, 'from cm 1')
+            self.assertEqual(r2, 'from cm 2')
 
-        assert order == [
+        self.assertEqual(order, [
             'before cm 1',
             'before cm 2',
             'after cm 2',
             'after cm 1',
-        ]
+        ])
 
     def test_empty(self):
         with multi_manager()() as result:
-            assert result == ()
+            self.assertEqual(result, ())
+
+    def test_exceptions(self):
+        order = []
+
+        multi_cm = multi_manager(self.good_cm(order, 1),
+                                 self.bad_cm(order),
+                                 self.good_cm(order, 3))
+
+        with self.assertRaises(Exception):
+            with multi_cm() as (r1, r2):
+                raise AssertionError("Should not succeed")
+
+        self.assertEqual(order, [
+            'before cm 1',
+            'after cm 1',
+        ])
