@@ -174,12 +174,12 @@ class CallbackDict(dict):
 class StepDict(dict):
     def load(self, step, func):
 
-        step = self._assert_is_step(step, func)
-        self[step] = func
+        step_re = self._assert_is_step(step, func)
+        self[step_re] = func
 
         try:
             func.sentence = step
-            func.unregister = partial(self.unload, step)
+            func.unregister = partial(self.unload, step_re)
         except AttributeError:
             # func might have been a bound method, no way to set attributes
             # on that
