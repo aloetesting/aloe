@@ -44,6 +44,8 @@ def record_event(kind, value):
     callback execution.
     """
 
+    kind = kind.replace('"', '')
+
     if not hasattr(world, kind):
         setattr(world, kind, [])
     events = getattr(world, kind)
@@ -105,11 +107,30 @@ def after_feature(*args):
     record_event('feature', '}')
 
 
-@step(r'I emit an? (\w+) event of "([^"]+)"')
+@before.all
+def before_all(*args):
+    record_event('"all"', '{')
+
+
+@around.all
+@contextmanager
+def around_all(*args):
+    record_event('"all"', '[')
+    yield
+    record_event('"all"', ']')
+
+
+@after.all
+def after_all(*args):
+    record_event('"all"', '}')
+
+
+@step(r'I emit an? ([^ ]+) event of "([^"]+)"')
 def emit_event(self, kind, event):
     record_event(kind, event)
 
 
-@step(r'The (\w+) event sequence should be "([^"]+)"')
+@step(r'The ([^ ]+) event sequence should be "([^"]+)"')
 def check_events(self, kind, events):
+    kind = kind.replace('"', '')
     assert_equals(''.join(getattr(world, kind)), events)
