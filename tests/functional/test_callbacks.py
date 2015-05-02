@@ -25,8 +25,12 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
+import operator
+from functools import reduce
+
 from nose.tools import assert_equals
 
+from lychee import world
 from . import (
     FeatureTest,
     in_directory,
@@ -39,6 +43,20 @@ class CallbackTest(FeatureTest):
     Test callbacks functionality.
     """
 
+    @staticmethod
+    def name_sequence(names):
+        """
+        Build a "before-around-after" list.
+        """
+
+        return reduce(operator.add, (
+            [
+                (when, name)
+                for when in ('before', 'around', 'after')
+            ]
+            for name in names
+        ))
+
     def test_step_callbacks(self):
         """
         Test step callbacks execution order.
@@ -46,12 +64,27 @@ class CallbackTest(FeatureTest):
 
         self.assert_feature_success('features/step_callbacks.feature')
 
+        self.assertEquals(world.step_names, self.name_sequence([
+            'Given I emit a step event of "A"',
+            'And I emit a step event of "B"',
+            'Then the step event sequence should be "{[A]}{[B]}{["',
+        ]))
+
     def test_example_callbacks(self):
         """
         Test example callbacks execution order.
         """
 
         self.assert_feature_success('features/example_callbacks.feature')
+
+        self.assertEquals(world.example_names, self.name_sequence([
+            'Scenario: Example callbacks in a simple scenario, steps=3',
+            'Outline: Example callbacks in a scenario with examples ' +
+            '(event=C), steps=2',
+            'Outline: Example callbacks in a scenario with examples ' +
+            '(event=D), steps=2',
+            'Scenario: Check the events from previous example, steps=1',
+        ]))
 
     def test_feature_callbacks(self):
         """
@@ -61,6 +94,11 @@ class CallbackTest(FeatureTest):
         self.assert_feature_success('features/feature_callbacks_1.feature',
                                     'features/feature_callbacks_2.feature')
 
+        self.assertEquals(world.feature_names, self.name_sequence([
+            'Feature callbacks (preparation)',
+            'Feature callbacks (test)',
+        ]))
+
     def test_all_callbacks(self):
         """
         Test 'all' callbacks.
@@ -69,5 +107,4 @@ class CallbackTest(FeatureTest):
         self.assert_feature_success('features/all_callbacks_1.feature',
                                     'features/all_callbacks_2.feature')
 
-        from lychee import world
         assert_equals(''.join(world.all), '{[ABCD]}')

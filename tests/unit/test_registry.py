@@ -23,11 +23,17 @@ from future import standard_library
 standard_library.install_aliases()
 
 import re
-
-from lychee.registry import StepDict
-from lychee.exceptions import StepLoadingError
+import unittest
+from contextlib import contextmanager
 
 from nose.tools import assert_raises, assert_equal
+
+from lychee.registry import (
+    CallbackDecorator,
+    CallbackDict,
+    StepDict,
+)
+from lychee.exceptions import StepLoadingError
 
 
 def test_StepDict_raise_StepLoadingError_if_first_argument_is_not_a_regex():
@@ -217,3 +223,87 @@ def test_unload_reload():
 
     assert len(steps) == 1
     assert steps.match_step(StepDefinition) == (step, ('1',), {})
+
+
+class CallbackDictTest(unittest.TestCase):
+    """
+    Test callback dictionary.
+    """
+
+    def setUp(self):
+        self.callbacks = CallbackDict()
+
+        self.before = CallbackDecorator(self.callbacks, 'before')
+        self.around = CallbackDecorator(self.callbacks, 'around')
+        self.after = CallbackDecorator(self.callbacks, 'after')
+
+    def test_wrap(self):
+        """
+        Test wrapping functions.
+        """
+
+        sequence = []
+
+        @self.before.all
+        def before_call(*args):
+            sequence.append(('before',) + args)
+
+        @self.around.all
+        @contextmanager
+        def around_call(*args):
+            sequence.append(('around_before',) + args)
+            yield
+            sequence.append(('around_after',) + args)
+
+        @self.after.all
+        def after_call(*args):
+            sequence.append(('after',) + args)
+
+        def wrapped(*args):
+            sequence.append(('wrapped',) + args)
+
+        wrap = self.callbacks.wrap('all', wrapped, 'hook_arg1', 'hook_arg2')
+
+        wrap('wrap_arg1', 'wrap_arg2')
+
+        self.assertEqual(sequence, [
+            ('before', 'hook_arg1', 'hook_arg2'),
+            ('around_before', 'hook_arg1', 'hook_arg2'),
+            ('wrapped', 'wrap_arg1', 'wrap_arg2'),
+            ('around_after', 'hook_arg1', 'hook_arg2'),
+            ('after', 'hook_arg1', 'hook_arg2'),
+        ])
+
+    def test_before_after(self):
+        """
+        Test before_after.
+        """
+
+        sequence = []
+
+        @self.before.all
+        def before_call(*args):
+            sequence.append(('before',) + args)
+
+        @self.around.all
+        @contextmanager
+        def around_call(*args):
+            sequence.append(('around_before',) + args)
+            yield
+            sequence.append(('around_after',) + args)
+
+        @self.after.all
+        def after_call(*args):
+            sequence.append(('after',) + args)
+
+        before, after = self.callbacks.before_after('all')
+
+        before('before_arg1', 'before_arg2')
+        after('after_arg1', 'after_arg2')
+
+        self.assertEqual(sequence, [
+            ('before', 'before_arg1', 'before_arg2'),
+            ('around_before', 'before_arg1', 'before_arg2'),
+            ('around_after', 'before_arg1', 'before_arg2'),
+            ('after', 'after_arg1', 'after_arg2'),
+        ])

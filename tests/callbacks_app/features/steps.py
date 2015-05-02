@@ -54,74 +54,96 @@ def record_event(kind, value):
 
 
 @before.each_step
-def before_step(*args):
+def before_step(step):
     record_event('step', '{')
+    record_event('step_names', ('before', step.sentence))
 
 
 @around.each_step
 @contextmanager
-def around_step(*args):
+def around_step(step):
     record_event('step', '[')
+    record_event('step_names', ('around', step.sentence))
     yield
     record_event('step', ']')
 
 
 @after.each_step
-def after_step(*args):
+def after_step(step):
     record_event('step', '}')
+    record_event('step_names', ('after', step.sentence))
+
+
+def record_example_event(when, scenario, outline, steps):
+    if outline:
+        result = "Outline: " + scenario.name
+        result += ' (' + \
+            ', '.join('='.join((k, v)) for k, v in outline.items()) + \
+            ')'
+    else:
+        result = "Scenario: " + scenario.name
+
+    result += ", steps={}".format(len(steps))
+    record_event('example_names', (when, result))
 
 
 @before.each_example
-def before_example(*args):
+def before_example(scenario, outline, steps):
     record_event('example', '{')
+    record_example_event('before', scenario, outline, steps)
 
 
 @around.each_example
 @contextmanager
-def around_example(*args):
+def around_example(scenario, outline, steps):
     record_event('example', '[')
+    record_example_event('around', scenario, outline, steps)
     yield
     record_event('example', ']')
 
 
 @after.each_example
-def after_example(*args):
+def after_example(scenario, outline, steps):
     record_event('example', '}')
+    record_example_event('after', scenario, outline, steps)
 
 
 @before.each_feature
-def before_feature(*args):
+def before_feature(feature):
     record_event('feature', '{')
+    record_event('feature_names', ('before', feature.name))
 
 
 @around.each_feature
 @contextmanager
-def around_feature(*args):
+def around_feature(feature):
     record_event('feature', '[')
+    record_event('feature_names', ('around', feature.name))
     yield
     record_event('feature', ']')
 
 
 @after.each_feature
-def after_feature(*args):
+def after_feature(feature):
     record_event('feature', '}')
+    record_event('feature_names', ('after', feature.name))
 
 
 @before.all
-def before_all(*args):
+def before_all():
     record_event('"all"', '{')
 
 
 @around.all
 @contextmanager
-def around_all(*args):
+def around_all():
     record_event('"all"', '[')
     yield
     record_event('"all"', ']')
 
 
 @after.all
-def after_all(*args):
+def after_all():
     record_event('"all"', '}')
 
 

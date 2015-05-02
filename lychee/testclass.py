@@ -43,6 +43,14 @@ class TestCase(unittest.TestCase):
     """
 
     @classmethod
+    def setUpClass(cls):
+        cls.before_feature(cls.feature)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.after_feature(cls.feature)
+
+    @classmethod
     def from_file(cls, file):
         """
         Construct a test class from a feature file.
@@ -60,9 +68,10 @@ class TestCase(unittest.TestCase):
             CALLBACK_REGISTRY.before_after('feature')
 
         members = {
+            'feature': feature,
             'background': background,
-            'setUpClass': staticmethod(before_feature),
-            'tearDownClass': staticmethod(after_feature),
+            'before_feature': staticmethod(before_feature),
+            'after_feature': staticmethod(after_feature),
         }
 
         members.update({
@@ -103,8 +112,9 @@ class TestCase(unittest.TestCase):
 
             context = {
                 'outline' + str(i): cls.make_steps(steps,
-                                                   call_background=True)
-                for i, (_, steps) in enumerate(scenario.evaluated)
+                                                   call_background=True,
+                                                   outline=outline)
+                for i, (outline, steps) in enumerate(scenario.evaluated)
             }
 
             # TODO: Line numbers?
@@ -124,7 +134,7 @@ class TestCase(unittest.TestCase):
         return result
 
     @classmethod
-    def make_steps(cls, steps, call_background=False):
+    def make_steps(cls, steps, call_background=False, outline=None):
         """
         Construct a method calling the specified steps.
 
@@ -136,7 +146,7 @@ class TestCase(unittest.TestCase):
         first_step = steps[0]
 
         step_definitions = [
-            (step, CALLBACK_REGISTRY.wrap('step', func), args, kwargs)
+            (step, CALLBACK_REGISTRY.wrap('step', func, step), args, kwargs)
             for step, func, args, kwargs in (
                 (step,) + STEP_REGISTRY.match_step(step)
                 for step in steps
@@ -171,9 +181,11 @@ class TestCase(unittest.TestCase):
 
         # Function name
         try:
-            func_name = first_step.scenario.name
+            step_container = first_step.scenario
+            func_name = step_container.name
         except AttributeError:
             # This is a background step
+            step_container = first_step.background
             func_name = 'background'
 
         run_steps = make_function(
@@ -183,6 +195,7 @@ class TestCase(unittest.TestCase):
             name=func_name,
         )
 
-        run_steps = CALLBACK_REGISTRY.wrap('example', run_steps)
+        run_steps = CALLBACK_REGISTRY.wrap('example', run_steps,
+                                           step_container, outline, steps)
 
         return run_steps
