@@ -78,10 +78,12 @@ class CallbackTest(FeatureTest):
         self.assert_feature_success('features/example_callbacks.feature')
 
         self.assertEquals(world.example_names, self.name_sequence([
-            'Example callbacks in a simple scenario',
-            'Example callbacks in a scenario with examples',
-            'Example callbacks in a scenario with examples',
-            'Check the events from previous example',
+            'Scenario: Example callbacks in a simple scenario, steps=3',
+            'Outline: Example callbacks in a scenario with examples ' +
+            '(event=C), steps=2',
+            'Outline: Example callbacks in a scenario with examples ' +
+            '(event=D), steps=2',
+            'Scenario: Check the events from previous example, steps=1',
         ]))
 
     def test_feature_callbacks(self):

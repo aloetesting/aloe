@@ -74,25 +74,38 @@ def after_step(step):
     record_event('step_names', ('after', step.sentence))
 
 
+def record_example_event(when, scenario, outline, steps):
+    if outline:
+        result = "Outline: " + scenario.name
+        result += ' (' + \
+            ', '.join('='.join((k, v)) for k, v in outline.items()) + \
+            ')'
+    else:
+        result = "Scenario: " + scenario.name
+
+    result += ", steps={}".format(len(steps))
+    record_event('example_names', (when, result))
+
+
 @before.each_example
-def before_example(scenario):
+def before_example(scenario, outline, steps):
     record_event('example', '{')
-    record_event('example_names', ('before', scenario.name))
+    record_example_event('before', scenario, outline, steps)
 
 
 @around.each_example
 @contextmanager
-def around_example(scenario):
+def around_example(scenario, outline, steps):
     record_event('example', '[')
-    record_event('example_names', ('around', scenario.name))
+    record_example_event('around', scenario, outline, steps)
     yield
     record_event('example', ']')
 
 
 @after.each_example
-def after_example(scenario):
+def after_example(scenario, outline, steps):
     record_event('example', '}')
-    record_event('example_names', ('after', scenario.name))
+    record_example_event('after', scenario, outline, steps)
 
 
 @before.each_feature

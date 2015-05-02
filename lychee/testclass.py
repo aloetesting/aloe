@@ -112,8 +112,9 @@ class TestCase(unittest.TestCase):
 
             context = {
                 'outline' + str(i): cls.make_steps(steps,
-                                                   call_background=True)
-                for i, (_, steps) in enumerate(scenario.evaluated)
+                                                   call_background=True,
+                                                   outline=outline)
+                for i, (outline, steps) in enumerate(scenario.evaluated)
             }
 
             # TODO: Line numbers?
@@ -133,7 +134,7 @@ class TestCase(unittest.TestCase):
         return result
 
     @classmethod
-    def make_steps(cls, steps, call_background=False):
+    def make_steps(cls, steps, call_background=False, outline=None):
         """
         Construct a method calling the specified steps.
 
@@ -195,6 +196,6 @@ class TestCase(unittest.TestCase):
         )
 
         run_steps = CALLBACK_REGISTRY.wrap('example', run_steps,
-                                           step_container)
+                                           step_container, outline, steps)
 
         return run_steps
