@@ -139,6 +139,7 @@ class TestCase(unittest.TestCase):
 
         assert len(steps) > 0
         first_step = steps[0]
+        scenario = first_step.scenario
 
         step_definitions = [
             (step, CALLBACK_REGISTRY.wrap('step', func), args, kwargs)
@@ -188,6 +189,6 @@ class TestCase(unittest.TestCase):
             name=func_name,
         )
 
-        run_steps = CALLBACK_REGISTRY.wrap('example', run_steps)
+        run_steps = CALLBACK_REGISTRY.wrap('example', run_steps, scenario)
 
         return run_steps
