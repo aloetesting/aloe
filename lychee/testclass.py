@@ -139,7 +139,6 @@ class TestCase(unittest.TestCase):
 
         assert len(steps) > 0
         first_step = steps[0]
-        scenario = first_step.scenario
 
         step_definitions = [
             (step, CALLBACK_REGISTRY.wrap('step', func), args, kwargs)
@@ -177,9 +176,11 @@ class TestCase(unittest.TestCase):
 
         # Function name
         try:
-            func_name = first_step.scenario.name
+            step_container = first_step.scenario
+            func_name = step_container.name
         except AttributeError:
             # This is a background step
+            step_container = first_step.background
             func_name = 'background'
 
         run_steps = make_function(
@@ -189,6 +190,7 @@ class TestCase(unittest.TestCase):
             name=func_name,
         )
 
-        run_steps = CALLBACK_REGISTRY.wrap('example', run_steps, scenario)
+        run_steps = CALLBACK_REGISTRY.wrap('example', run_steps,
+                                           step_container)
 
         return run_steps
