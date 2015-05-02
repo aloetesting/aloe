@@ -25,6 +25,9 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
+import operator
+from functools import reduce
+
 from nose.tools import assert_equals
 
 from lychee import world
@@ -40,12 +43,32 @@ class CallbackTest(FeatureTest):
     Test callbacks functionality.
     """
 
+    @staticmethod
+    def name_sequence(names):
+        """
+        Build a "before-around-after" list.
+        """
+
+        return reduce(operator.add, (
+            [
+                (when, name)
+                for when in ('before', 'around', 'after')
+            ]
+            for name in names
+        ))
+
     def test_step_callbacks(self):
         """
         Test step callbacks execution order.
         """
 
         self.assert_feature_success('features/step_callbacks.feature')
+
+        self.assertEquals(world.step_names, self.name_sequence([
+            'Given I emit a step event of "A"',
+            'And I emit a step event of "B"',
+            'Then the step event sequence should be "{[A]}{[B]}{["',
+        ]))
 
     def test_example_callbacks(self):
         """
@@ -54,20 +77,12 @@ class CallbackTest(FeatureTest):
 
         self.assert_feature_success('features/example_callbacks.feature')
 
-        self.assertEquals(world.example_names, [
-            ('before', 'Example callbacks in a simple scenario'),
-            ('around', 'Example callbacks in a simple scenario'),
-            ('after', 'Example callbacks in a simple scenario'),
-            ('before', 'Example callbacks in a scenario with examples'),
-            ('around', 'Example callbacks in a scenario with examples'),
-            ('after', 'Example callbacks in a scenario with examples'),
-            ('before', 'Example callbacks in a scenario with examples'),
-            ('around', 'Example callbacks in a scenario with examples'),
-            ('after', 'Example callbacks in a scenario with examples'),
-            ('before', 'Check the events from previous example'),
-            ('around', 'Check the events from previous example'),
-            ('after', 'Check the events from previous example'),
-        ])
+        self.assertEquals(world.example_names, self.name_sequence([
+            'Example callbacks in a simple scenario',
+            'Example callbacks in a scenario with examples',
+            'Example callbacks in a scenario with examples',
+            'Check the events from previous example',
+        ]))
 
     def test_feature_callbacks(self):
         """
@@ -77,14 +92,10 @@ class CallbackTest(FeatureTest):
         self.assert_feature_success('features/feature_callbacks_1.feature',
                                     'features/feature_callbacks_2.feature')
 
-        self.assertEquals(world.feature_names, [
-            ('before', 'Feature callbacks (preparation)'),
-            ('around', 'Feature callbacks (preparation)'),
-            ('after', 'Feature callbacks (preparation)'),
-            ('before', 'Feature callbacks (test)'),
-            ('around', 'Feature callbacks (test)'),
-            ('after', 'Feature callbacks (test)'),
-        ])
+        self.assertEquals(world.feature_names, self.name_sequence([
+            'Feature callbacks (preparation)',
+            'Feature callbacks (test)',
+        ]))
 
     def test_all_callbacks(self):
         """

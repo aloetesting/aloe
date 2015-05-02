@@ -141,7 +141,7 @@ class TestCase(unittest.TestCase):
         first_step = steps[0]
 
         step_definitions = [
-            (step, CALLBACK_REGISTRY.wrap('step', func), args, kwargs)
+            (step, CALLBACK_REGISTRY.wrap('step', func, step), args, kwargs)
             for step, func, args, kwargs in (
                 (step,) + STEP_REGISTRY.match_step(step)
                 for step in steps

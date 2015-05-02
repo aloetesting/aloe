@@ -27,7 +27,7 @@ standard_library.install_aliases()
 
 from contextlib import contextmanager
 
-from nose.tools import assert_equals, assert_is_instance
+from nose.tools import assert_equals
 
 from lychee import (
     after,
@@ -54,21 +54,24 @@ def record_event(kind, value):
 
 
 @before.each_step
-def before_step(*args):
+def before_step(step):
     record_event('step', '{')
+    record_event('step_names', ('before', step.sentence))
 
 
 @around.each_step
 @contextmanager
-def around_step(*args):
+def around_step(step):
     record_event('step', '[')
+    record_event('step_names', ('around', step.sentence))
     yield
     record_event('step', ']')
 
 
 @after.each_step
-def after_step(*args):
+def after_step(step):
     record_event('step', '}')
+    record_event('step_names', ('after', step.sentence))
 
 
 @before.each_example
