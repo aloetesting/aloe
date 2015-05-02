@@ -111,13 +111,13 @@ def multi_manager(*managers):
     if len(managers) == 0:
         source = remove_indent(
             """
-            def null_manager():
+            def null_manager(*args, **kwargs):
                 yield ()
             """
         )
     else:
         with_stmt = ', '.join(
-            "manager{i}() as result{i}".format(i=i)
+            "manager{i}(*args, **kwargs) as result{i}".format(i=i)
             for i in range(len(managers))
         )
 
@@ -128,7 +128,7 @@ def multi_manager(*managers):
 
         source = remove_indent(
             """
-            def multi_manager():
+            def multi_manager(*args, **kwargs):
                 with {with_stmt}:
                     yield {result_tuple}
             """

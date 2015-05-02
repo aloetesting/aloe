@@ -82,7 +82,8 @@ class CallbackDict(dict):
         return (
             func.__code__.co_filename,
             func.__code__.co_firstlineno,
-            tuple(c.cell_contents for c in func.__closure__ or ()),
+            # variables in the closure might not be hashable
+            tuple(str(c.cell_contents) for c in func.__closure__ or ()),
         )
 
     def append_to(self, what, when, function, name=None):
@@ -105,33 +106,30 @@ class CallbackDict(dict):
                 else:
                     callback_list.pop(name, None)
 
-    def wrap(self, what, function):
+    def wrap(self, what, function, *hook_args, **hook_kwargs):
         """
         Return a function that executes all the callbacks in proper relations
         to the given test part.
         """
 
-        # TODO: Code generation (not trivial as need to preserve the line
-        # numbers later)?
-
         before = self[what]['before'].values()
         around = self[what]['around'].values()
         after = self[what]['after'].values()
 
-        multi_hook = multi_manager(*around)  # TODO: pass arguments to each
+        multi_hook = multi_manager(*around)
 
         @wraps(function)
         def wrapped(*args, **kwargs):
             for before_hook in before:
-                before_hook()  # TODO: arguments
+                before_hook(*hook_args, **hook_kwargs)
 
             try:
-                with multi_hook():
+                with multi_hook(*hook_args, **hook_kwargs):
                     return function(*args, **kwargs)
             finally:
                 # 'after' hooks still run after an exception
                 for after_hook in after:
-                    after_hook()  # TODO: arguments
+                    after_hook(*hook_args, **hook_kwargs)
 
         return wrapped
 
@@ -144,24 +142,24 @@ class CallbackDict(dict):
         around = self[what]['around'].values()
         after = self[what]['after'].values()
 
-        multi_hook = multi_manager(*around)  # TODO: pass arguments to each
+        multi_hook = multi_manager(*around)
 
         # Save in a closure for both functions
         around_hook = [None]
 
-        def before_func():
+        def before_func(*args, **kwargs):
             for before_hook in before:
-                before_hook()
+                before_hook(*args, **kwargs)
 
-            around_hook[0] = multi_hook()
+            around_hook[0] = multi_hook(*args, **kwargs)
             around_hook[0].__enter__()
 
-        def after_func():
+        def after_func(*args, **kwargs):
             around_hook[0].__exit__(None, None, None)
             around_hook[0] = None
 
             for after_hook in after:
-                after_hook()
+                after_hook(*args, **kwargs)
 
         return before_func, after_func
 
@@ -279,7 +277,8 @@ class CallbackDecorator(object):
     Add functions to the appropriate callback lists.
     """
 
-    def __init__(self, when):
+    def __init__(self, registry, when):
+        self.registry = registry
         self.when = when
 
     def _decorate(self, what, function, name=None):
@@ -287,7 +286,7 @@ class CallbackDecorator(object):
         Add the specified function (with name if given) to the callback list.
         """
 
-        CALLBACK_REGISTRY.append_to(what, self.when, function, name=name)
+        self.registry.append_to(what, self.when, function, name=name)
         return function
 
     def make_decorator(what):
@@ -305,9 +304,9 @@ class CallbackDecorator(object):
     all = make_decorator('all')
 
 
-after = CallbackDecorator('after')
-around = CallbackDecorator('around')
-before = CallbackDecorator('before')
+after = CallbackDecorator(CALLBACK_REGISTRY, 'after')
+around = CallbackDecorator(CALLBACK_REGISTRY, 'around')
+before = CallbackDecorator(CALLBACK_REGISTRY, 'before')
 
 
 def clear():
