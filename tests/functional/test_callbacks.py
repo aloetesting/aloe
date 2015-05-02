@@ -66,7 +66,7 @@ class CallbackTest(FeatureTest):
             ('after', 'Example callbacks in a scenario with examples'),
             ('before', 'Check the events from previous example'),
             ('around', 'Check the events from previous example'),
-            ('after',  'Check the events from previous example'),
+            ('after', 'Check the events from previous example'),
         ])
 
     def test_feature_callbacks(self):
