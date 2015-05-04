@@ -50,6 +50,25 @@ class TestCase(unittest.TestCase):
     def tearDownClass(cls):
         cls.after_feature(cls.feature)
 
+    def behave_as(self, context_step, string):
+        """
+        Run the steps described by the given string in the context of the
+        step.
+        """
+
+        steps = context_step.parse_steps_from_string(string)
+
+        for step in steps:
+            # TODO: what attributes do the steps need?
+            try:
+                step.scenario = context_step.scenario
+            except AttributeError:
+                step.background = context_step.background
+
+            step, func, args, kwargs = self.find_step(step)
+
+            func(step, *args, **kwargs)
+
     @classmethod
     def from_file(cls, file):
         """
@@ -133,6 +152,22 @@ class TestCase(unittest.TestCase):
 
         return result
 
+    @staticmethod
+    def find_step(step):
+        """
+        Find a definition for the step.
+
+        Returns a tuple of: (step, func, args, kwargs), where:
+        - step is the original step
+        - func is the function to run (wrapped in callbacks)
+        - args and kwargs are the arguments to pass to the function
+        """
+
+        func, args, kwargs = STEP_REGISTRY.match_step(step)
+        func = CALLBACK_REGISTRY.wrap('step', func, step)
+
+        return (step, func, args, kwargs)
+
     @classmethod
     def make_steps(cls, steps, call_background=False, outline=None):
         """
@@ -146,11 +181,8 @@ class TestCase(unittest.TestCase):
         first_step = steps[0]
 
         step_definitions = [
-            (step, CALLBACK_REGISTRY.wrap('step', func, step), args, kwargs)
-            for step, func, args, kwargs in (
-                (step,) + STEP_REGISTRY.match_step(step)
-                for step in steps
-            )
+            cls.find_step(step)
+            for step in steps
         ]
 
         source = 'def run_steps(self):\n'
