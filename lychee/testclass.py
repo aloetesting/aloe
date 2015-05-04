@@ -46,7 +46,8 @@ class TestCase(unittest.TestCase):
     def tearDownClass(cls):
         cls.after_feature(cls.feature)
 
-    def behave_as(self, context_step, string):
+    @classmethod
+    def behave_as(cls, context_step, string):
         """
         Run the steps described by the given string in the context of the
         step.
@@ -61,7 +62,7 @@ class TestCase(unittest.TestCase):
             except AttributeError:
                 step.background = context_step.background
 
-            step, func, args, kwargs = self.find_step(step)
+            step, func, args, kwargs = cls.prepare_step(step)
 
             func(step, *args, **kwargs)
 
@@ -148,8 +149,8 @@ class TestCase(unittest.TestCase):
 
         return result
 
-    @staticmethod
-    def find_step(step):
+    @classmethod
+    def prepare_step(cls, step):
         """
         Find a definition for the step.
 
@@ -161,6 +162,9 @@ class TestCase(unittest.TestCase):
 
         func, args, kwargs = STEP_REGISTRY.match_step(step)
         func = CALLBACK_REGISTRY.wrap('step', func, step)
+
+        # TODO: This can be made prettier
+        step.behave_as = lambda string: cls.behave_as(step, string)
 
         return (step, func, args, kwargs)
 
@@ -177,7 +181,7 @@ class TestCase(unittest.TestCase):
         first_step = steps[0]
 
         step_definitions = [
-            cls.find_step(step)
+            cls.prepare_step(step)
             for step in steps
         ]
 
