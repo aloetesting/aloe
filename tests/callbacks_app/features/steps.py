@@ -155,7 +155,7 @@ def emit_event(self, kind, event):
 @step(r'I emit an? ([^ ]+) event for each letter in "([^"]+)"')
 def emit_event_letters(self, kind, letters):
     for letter in letters:
-        self.behave_as('I emit a {kind} event of {letter}'.format(
+        self.behave_as('Given I emit a {kind} event of "{letter}"'.format(
             kind=kind,
             letter=letter,
         ))
