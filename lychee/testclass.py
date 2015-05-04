@@ -21,16 +21,40 @@ from __future__ import absolute_import
 from builtins import zip
 from builtins import str
 from builtins import range
+from builtins import super
 from future import standard_library
 standard_library.install_aliases()
 
 import ast
 import unittest
+from functools import partial
 
 from lychee.codegen import make_function
-from lychee.parser import Feature
+from lychee.parser import Feature, Step
 from lychee.registry import CALLBACK_REGISTRY, STEP_REGISTRY
 from lychee.utils import always_str
+
+
+class TestStep(Step):
+    """
+    A step with additional functions for the callbacks.
+    """
+
+    def __init__(self, testclass, *args, **kwargs):
+        self.testclass = testclass
+        super().__init__(*args, **kwargs)
+
+    def behave_as(self, string):
+        self.testclass.behave_as(self, string)
+
+    def given(self, string):
+        self.behave_as('Given ' + string)
+
+    def when(self, string):
+        self.behave_as('When ' + string)
+
+    def then(self, string):
+        self.behave_as('Then ' + string)
 
 
 class TestCase(unittest.TestCase):
@@ -47,12 +71,48 @@ class TestCase(unittest.TestCase):
         cls.after_feature(cls.feature)
 
     @classmethod
+    def block_constructors(cls):
+        """
+        Constructors for the parsed blocks.
+        """
+
+        return {
+            'step': partial(TestStep, cls),
+        }
+
+    @classmethod
+    def behave_as(cls, context_step, string):
+        """
+        Run the steps described by the given string in the context of the
+        step.
+        """
+
+        steps = context_step.parse_steps_from_string(
+            string,
+            constructors=cls.block_constructors(),
+        )
+
+        for step in steps:
+            # TODO: what attributes do the steps need?
+            try:
+                step.scenario = context_step.scenario
+            except AttributeError:
+                step.background = context_step.background
+
+            step, func, args, kwargs = cls.prepare_step(step)
+
+            func(step, *args, **kwargs)
+
+    @classmethod
     def from_file(cls, file):
         """
         Construct a test class from a feature file.
         """
 
-        feature = Feature.from_file(file)
+        feature = Feature.from_file(
+            file,
+            constructors=cls.block_constructors(),
+        )
 
         background = cls.make_background(feature.background)
         scenarios = [
@@ -130,6 +190,22 @@ class TestCase(unittest.TestCase):
         return result
 
     @classmethod
+    def prepare_step(cls, step):
+        """
+        Find a definition for the step.
+
+        Returns a tuple of: (step, func, args, kwargs), where:
+        - step is the original step
+        - func is the function to run (wrapped in callbacks)
+        - args and kwargs are the arguments to pass to the function
+        """
+
+        func, args, kwargs = STEP_REGISTRY.match_step(step)
+        func = CALLBACK_REGISTRY.wrap('step', func, step)
+
+        return (step, func, args, kwargs)
+
+    @classmethod
     def make_steps(cls, steps, call_background=False, outline=None):
         """
         Construct a method calling the specified steps.
@@ -142,11 +218,8 @@ class TestCase(unittest.TestCase):
         first_step = steps[0]
 
         step_definitions = [
-            (step, CALLBACK_REGISTRY.wrap('step', func, step), args, kwargs)
-            for step, func, args, kwargs in (
-                (step,) + STEP_REGISTRY.match_step(step)
-                for step in steps
-            )
+            cls.prepare_step(step)
+            for step in steps
         ]
 
         source = 'def run_steps(self):\n'
