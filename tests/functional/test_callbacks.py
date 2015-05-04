@@ -124,5 +124,5 @@ class CallbackTest(FeatureTest):
         # The test fails
         self.run_features('features/step_failed.feature')
 
-        assert_equals(world.successful_steps, 2)
+        assert_equals(world.passing_steps, 2)
         assert_equals(world.failed_steps, 1)
