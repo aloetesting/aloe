@@ -108,3 +108,10 @@ class CallbackTest(FeatureTest):
                                     'features/all_callbacks_2.feature')
 
         assert_equals(''.join(world.all), '{[ABCD]}')
+
+    def test_behave_as(self):
+        """
+        Test 'behave_as' called on a step.
+        """
+
+        self.assert_feature_success('features/behave_as.feature')
