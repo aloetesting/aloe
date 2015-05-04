@@ -14,38 +14,38 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Filesystem-related utilities.
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-from builtins import open
 from future import standard_library
 standard_library.install_aliases()
 
-import re
 import os
-import imp
 import sys
-import codecs
 import fnmatch
-import zipfile
 
-from functools import wraps
 from glob import glob
+from importlib import import_module
 try:
     reload
 except NameError:
     from importlib import reload
 from os import walk
-from os.path import abspath, join, dirname, curdir
+from os.path import abspath, join, dirname
 
 
 class FeatureLoader(object):
     """Loader class responsible for findind features and step
     definitions along a given path on filesystem"""
 
-    @staticmethod
-    def find_steps_dir(feature_file):
+    @classmethod
+    def find_steps_dir(cls, feature_file):
         """
         Find the steps directory corresponding to the feature file.
 
@@ -58,60 +58,34 @@ class FeatureLoader(object):
         base_dir = dirname(abspath(feature_file))
 
         while base_dir != '/':
-            files = FileSystem.locate(base_dir, '*.py')
+            files = cls.locate(base_dir, '*.py')
             if files:
                 break
-            base_dir = dirname(base_dir)
+            base_dir = abspath(join(base_dir, '..'))
 
         return base_dir
 
-    @staticmethod
-    def find_and_load_step_definitions(steps_dir):
+    @classmethod
+    def find_and_load_step_definitions(cls, steps_dir):
         """
         Load the steps from the specified directory.
         """
-        files = FileSystem.locate(steps_dir, '*.py')
+        files = cls.locate(steps_dir, '*.py')
 
         for filename in files:
             root = dirname(filename)
             sys.path.insert(0, root)
-            to_load = FileSystem.filename(filename, with_extension=False)
-            try:
-                module = __import__(to_load)
-            except ValueError as e:
-                import traceback
-                err_msg = traceback.format_exc(e)
-                if 'empty module name' in err_msg.lower():
-                    continue
-                else:
-                    e.args = ('{0} when importing {1}'
-                              .format(e, filename)),
-                    raise e
-
-            reload(module)  # Make sure steps end hooks are registered
+            to_load = cls.filename(filename)
+            module = import_module(to_load)
+            reload(module)  # Make sure steps and hooks are registered
             sys.path.remove(root)
 
-
-class FileSystem(object):
-    """File system abstraction, mainly used for indirection, so that
-    lettuce can be well unit-tested :)
-    """
-
-    @classmethod
-    def relpath(cls, path):
-        '''Returns the absolute path for the given path.'''
-        current_path = abspath(curdir)
-        absolute_path = abspath(path)
-        return re.sub("^" + re.escape(current_path), '', absolute_path).\
-            lstrip("/")
-
-    @classmethod
-    def locate(cls, path, match, recursive=True):
+    @staticmethod
+    def locate(root_path, match, recursive=True):
         """Locate files recursively in a given path"""
-        root_path = abspath(path)
         if recursive:
             return_files = []
-            for path, dirs, files in walk(root_path):
+            for path, _, files in walk(root_path):
                 for filename in fnmatch.filter(files, match):
                     return_files.append(join(path, filename))
             return return_files
@@ -119,21 +93,11 @@ class FileSystem(object):
             return glob(join(root_path, match))
 
     @classmethod
-    def filename(cls, path, with_extension=True):
-        """Returns only the filename from a full path. If the argument
-        with_extension is False, return the filename without
-        extension.
-
-        Examples::
-
-        >>> from lychee.fs import FileSystem
-        >>> path = '/full/path/to/some_file.py'
-        >>> assert FileSystem.filename(path) == 'some_file.py'
-        >>> assert FileSystem.filename(path, False) == 'some_file'
-
+    def filename(cls, path):
+        """
+        Return only the filename from a full path, without extension.
         """
         fname = os.path.split(path)[1]
-        if not with_extension:
-            fname = os.path.splitext(fname)[0]
+        fname = os.path.splitext(fname)[0]
 
         return fname
