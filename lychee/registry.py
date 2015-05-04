@@ -39,8 +39,6 @@ HOOK_WHAT = (
     'all',
     'feature',
     'example',
-    'background',
-    'scenario',
     'step',
 )
 
