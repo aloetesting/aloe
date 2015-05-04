@@ -61,7 +61,7 @@ from pyparsing import (CharsNotIn,
 
 from fuzzywuzzy import fuzz
 
-from lychee import fs, languages, strings
+from lychee import languages, strings
 from lychee.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
 
 
@@ -159,14 +159,14 @@ class Step(Node):
         return str(self)
 
     @classmethod
-    def parse_steps_from_string(cls, string, language=None):
+    def parse_steps_from_string(cls, string, **kwargs):
         """
         Parse a number of steps, returns a list of steps
 
         This is used by step.behave_as
         """
 
-        tokens = parse(string=string, token='STATEMENTS', lang=language)
+        tokens = parse(string=string, token='STATEMENTS', **kwargs)
 
         return list(tokens[0])
 
@@ -569,20 +569,20 @@ class Description(Node):
 
 class Feature(TaggedBlock):
     @classmethod
-    def from_string(cls, string, language=None):
+    def from_string(cls, string, **kwargs):
         """
         Returns a Feature from a string
         """
 
-        return parse(string=string, token='FEATURE', lang=language)[0]
+        return parse(string=string, token='FEATURE', **kwargs)[0]
 
     @classmethod
-    def from_file(cls, filename, language=None):
+    def from_file(cls, filename, **kwargs):
         """
         Parse a file or filename
         """
 
-        self = parse(filename=filename, token='FEATURE', lang=language)[0]
+        self = parse(filename=filename, token='FEATURE', **kwargs)[0]
         self.described_at.file = filename
         return self
 
@@ -699,15 +699,33 @@ def guess_language(string=None, filename=None):
     return languages.English()
 
 
-def parse(string=None, filename=None, token=None, lang=None):
+def parse(string=None,
+          filename=None,
+          token='FEATURE',
+          language=None,
+          constructors=None):
     """
     Parse a token stream from or raise a SyntaxError
 
     This function includes the parser grammar.
     """
 
-    if not lang:
-        lang = guess_language(string, filename)
+    if not language:
+        language = guess_language(string, filename)
+
+    CONSTRUCTORS = {
+        'step': Step,
+        # TODO: Background and Scenario have __init__ and add_statements -
+        # which one to override?
+        'background': Background,
+        'scenario': Scenario,
+        # Same for Feature
+        'feature': Feature,
+        'description': Description,
+    }
+
+    if constructors is not None:
+        CONSTRUCTORS.update(constructors)
 
     #
     # End of Line
@@ -817,7 +835,7 @@ def parse(string=None, filename=None, token=None, lang=None):
     # instances in the steps based on the outline keys.
     #
     STATEMENT_SENTENCE = Group(
-        lang.STATEMENT +  # Given, When, Then, And
+        language.STATEMENT +  # Given, When, Then, And
         OneOrMore(UTFWORD.setWhitespaceChars(' \t') |
                   quotedString.setWhitespaceChars(' \t')) +
         EOL
@@ -827,7 +845,7 @@ def parse(string=None, filename=None, token=None, lang=None):
         STATEMENT_SENTENCE('sentence') +
         Optional(TABLE('table') | MULTILINE('multiline'))
     )
-    STATEMENT.setParseAction(Step)
+    STATEMENT.setParseAction(CONSTRUCTORS['step'])
 
     STATEMENTS = Group(ZeroOrMore(STATEMENT))
 
@@ -835,45 +853,45 @@ def parse(string=None, filename=None, token=None, lang=None):
     # Background:
     #
     BACKGROUND_DEFN = \
-        lang.BACKGROUND('keyword') + Suppress(':') + EOL
-    BACKGROUND_DEFN.setParseAction(Background)
+        language.BACKGROUND('keyword') + Suppress(':') + EOL
+    BACKGROUND_DEFN.setParseAction(CONSTRUCTORS['background'])
 
     BACKGROUND = Group(
         BACKGROUND_DEFN('node') +
         STATEMENTS('statements')
     )
-    BACKGROUND.setParseAction(Background.add_statements)
+    BACKGROUND.setParseAction(CONSTRUCTORS['background'].add_statements)
 
     #
     # Scenario: description
     #
     SCENARIO_DEFN = Group(
         Group(ZeroOrMore(TAG))('tags') +
-        lang.SCENARIO('keyword') + Suppress(':') +
+        language.SCENARIO('keyword') + Suppress(':') +
         restOfLine('name') +
         EOL
     )
-    SCENARIO_DEFN.setParseAction(Scenario)
+    SCENARIO_DEFN.setParseAction(CONSTRUCTORS['scenario'])
 
     SCENARIO = Group(
         SCENARIO_DEFN('node') +
         STATEMENTS('statements') +
         Group(ZeroOrMore(
-            Suppress(lang.EXAMPLES + ':') + EOL + TABLE
+            Suppress(language.EXAMPLES + ':') + EOL + TABLE
         ))('outlines')
     )
-    SCENARIO.setParseAction(Scenario.add_statements)
+    SCENARIO.setParseAction(CONSTRUCTORS['scenario'].add_statements)
 
     #
     # Feature: description
     #
     FEATURE_DEFN = Group(
         Group(ZeroOrMore(TAG))('tags') +
-        lang.FEATURE('keyword') + Suppress(':') +
+        language.FEATURE('keyword') + Suppress(':') +
         restOfLine('name') +
         EOL
     )
-    FEATURE_DEFN.setParseAction(Feature)
+    FEATURE_DEFN.setParseAction(CONSTRUCTORS['feature'])
 
     #
     # A description composed of zero or more lines, before the
@@ -885,7 +903,7 @@ def parse(string=None, filename=None, token=None, lang=None):
         EOL
     )
     DESCRIPTION = Group(ZeroOrMore(DESCRIPTION_LINE | EOL))
-    DESCRIPTION.setParseAction(Description)
+    DESCRIPTION.setParseAction(CONSTRUCTORS['description'])
 
     #
     # Complete feature file definition
@@ -897,16 +915,13 @@ def parse(string=None, filename=None, token=None, lang=None):
         Group(OneOrMore(SCENARIO))('scenarios') +
         stringEnd)
     FEATURE.ignore(pythonStyleComment)
-    FEATURE.setParseAction(Feature.add_blocks)
+    FEATURE.setParseAction(CONSTRUCTORS['feature'].add_blocks)
 
     #
     # Try parsing the string
     #
 
-    if not token:
-        token = FEATURE
-    else:
-        token = locals()[token]
+    token = locals()[token]
 
     try:
         if string:
