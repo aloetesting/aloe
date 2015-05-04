@@ -55,13 +55,13 @@ class FeatureLoader(object):
         If no steps directory can be found, return the filesystem root.
         """
 
-        base_dir = dirname(feature_file)
+        base_dir = dirname(abspath(feature_file))
 
-        while abspath(base_dir) != '/':
+        while base_dir != '/':
             files = cls.locate(base_dir, '*.py')
             if files:
                 break
-            base_dir = join(base_dir, '..')
+            base_dir = abspath(join(base_dir, '..'))
 
         return base_dir
 
@@ -77,7 +77,7 @@ class FeatureLoader(object):
             sys.path.insert(0, root)
             to_load = cls.filename(filename)
             module = import_module(to_load)
-            reload(module)  # Make sure steps end hooks are registered
+            reload(module)  # Make sure steps and hooks are registered
             sys.path.remove(root)
 
     @staticmethod
