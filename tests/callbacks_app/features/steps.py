@@ -165,3 +165,33 @@ def emit_event_letters(self, kind, letters):
 def check_events(self, kind, events):
     kind = kind.replace('"', '')
     assert_equals(''.join(getattr(world, kind)), events)
+
+
+@before.each_step
+def check_failed_before(self):
+    assert not hasattr(self, 'failed'), \
+        "Steps should not have 'failed' attribute before they run."
+
+
+@before.each_example
+def reset_failures_successes_count(scenario, outline, steps):
+    world.successful_steps = 0
+    world.failed_steps = 0
+
+
+@after.each_step
+def count_failures_successes(self):
+    if self.failed:
+        world.successful_steps += 1
+    else:
+        world.failed_steps += 1
+
+
+@step(r'I have a succeeding step')
+def good_step(self):
+    pass
+
+
+@step(r'I have a failing step')
+def bad_step(self):
+    assert False, "This step is meant to fail."
