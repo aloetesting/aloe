@@ -46,6 +46,8 @@ class TestStep(Step):
 
     def __init__(self, testclass, *args, **kwargs):
         self.testclass = testclass
+        self.failed = None
+        self.passed = None
         super().__init__(*args, **kwargs)
 
     def behave_as(self, string):
