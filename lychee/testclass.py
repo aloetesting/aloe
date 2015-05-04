@@ -21,16 +21,40 @@ from __future__ import absolute_import
 from builtins import zip
 from builtins import str
 from builtins import range
+from builtins import super
 from future import standard_library
 standard_library.install_aliases()
 
 import ast
 import unittest
+from functools import partial
 
 from lychee.codegen import make_function
-from lychee.parser import Feature
+from lychee.parser import Feature, Step
 from lychee.registry import CALLBACK_REGISTRY, STEP_REGISTRY
 from lychee.utils import always_str
+
+
+class TestStep(Step):
+    """
+    A step with additional functions for the callbacks.
+    """
+
+    def __init__(self, testclass, *args, **kwargs):
+        self.testclass = testclass
+        super().__init__(*args, **kwargs)
+
+    def behave_as(self, string):
+        self.testclass.behave_as(self, string)
+
+    def given(self, string):
+        self.behave_as('Given ' + string)
+
+    def when(self, string):
+        self.behave_as('When ' + string)
+
+    def then(self, string):
+        self.behave_as('Then ' + string)
 
 
 class TestCase(unittest.TestCase):
@@ -47,13 +71,26 @@ class TestCase(unittest.TestCase):
         cls.after_feature(cls.feature)
 
     @classmethod
+    def block_constructors(cls):
+        """
+        Constructors for the parsed blocks.
+        """
+
+        return {
+            'step': partial(TestStep, cls),
+        }
+
+    @classmethod
     def behave_as(cls, context_step, string):
         """
         Run the steps described by the given string in the context of the
         step.
         """
 
-        steps = context_step.parse_steps_from_string(string)
+        steps = context_step.parse_steps_from_string(
+            string,
+            constructors=cls.block_constructors(),
+        )
 
         for step in steps:
             # TODO: what attributes do the steps need?
@@ -72,7 +109,10 @@ class TestCase(unittest.TestCase):
         Construct a test class from a feature file.
         """
 
-        feature = Feature.from_file(file)
+        feature = Feature.from_file(
+            file,
+            constructors=cls.block_constructors(),
+        )
 
         background = cls.make_background(feature.background)
         scenarios = [
@@ -162,12 +202,6 @@ class TestCase(unittest.TestCase):
 
         func, args, kwargs = STEP_REGISTRY.match_step(step)
         func = CALLBACK_REGISTRY.wrap('step', func, step)
-
-        # TODO: This can be made prettier
-        step.behave_as = lambda string: cls.behave_as(step, string)
-        step.given = lambda string: cls.behave_as(step, 'Given ' + string)
-        step.when = lambda string: cls.behave_as(step, 'When ' + string)
-        step.then = lambda string: cls.behave_as(step, 'Then ' + string)
 
         return (step, func, args, kwargs)
 

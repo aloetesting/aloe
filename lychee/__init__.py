@@ -35,7 +35,6 @@ from lychee.registry import (
     before,
     step,
 )
-from lychee.runner import Runner
 
 world = threading.local()
 
@@ -48,6 +47,7 @@ def main(argv=None):  # pragma: no cover
     if argv is None:
         argv = sys.argv
 
+    from lychee.runner import Runner
     Runner(argv)
 
 if __name__ == '__main__':  # pragma: no cover
