@@ -165,6 +165,9 @@ class TestCase(unittest.TestCase):
 
         # TODO: This can be made prettier
         step.behave_as = lambda string: cls.behave_as(step, string)
+        step.given = lambda string: cls.behave_as(step, 'Given ' + string)
+        step.when = lambda string: cls.behave_as(step, 'When ' + string)
+        step.then = lambda string: cls.behave_as(step, 'Then ' + string)
 
         return (step, func, args, kwargs)
 
