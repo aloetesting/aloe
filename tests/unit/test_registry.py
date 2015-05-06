@@ -35,6 +35,8 @@ from lychee.registry import (
 )
 from lychee.exceptions import StepLoadingError
 
+from tests.utils import appender, before_after
+
 
 def test_StepDict_raise_StepLoadingError_if_first_argument_is_not_a_regex():
     """
@@ -244,23 +246,16 @@ class CallbackDictTest(unittest.TestCase):
 
         sequence = []
 
-        @self.before.all
-        def before_call(*args):
-            sequence.append(('before',) + args)
+        self.before.all(appender(sequence, 'before'))
 
-        @self.around.all
-        @contextmanager
-        def around_call(*args):
-            sequence.append(('around_before',) + args)
-            yield
-            sequence.append(('around_after',) + args)
+        self.around.all(before_after(
+            appender(sequence, 'around_before'),
+            appender(sequence, 'around_after')
+        ))
 
-        @self.after.all
-        def after_call(*args):
-            sequence.append(('after',) + args)
+        self.after.all(appender(sequence, 'after'))
 
-        def wrapped(*args):
-            sequence.append(('wrapped',) + args)
+        wrapped = appender(sequence, 'wrapped')
 
         wrap = self.callbacks.wrap('all', wrapped, 'hook_arg1', 'hook_arg2')
 
@@ -281,20 +276,14 @@ class CallbackDictTest(unittest.TestCase):
 
         sequence = []
 
-        @self.before.all
-        def before_call(*args):
-            sequence.append(('before',) + args)
+        self.before.all(appender(sequence, 'before'))
 
-        @self.around.all
-        @contextmanager
-        def around_call(*args):
-            sequence.append(('around_before',) + args)
-            yield
-            sequence.append(('around_after',) + args)
+        self.around.all(before_after(
+            appender(sequence, 'around_before'),
+            appender(sequence, 'around_after')
+        ))
 
-        @self.after.all
-        def after_call(*args):
-            sequence.append(('after',) + args)
+        self.after.all(appender(sequence, 'after'))
 
         before, after = self.callbacks.before_after('all')
 
