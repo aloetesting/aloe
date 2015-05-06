@@ -301,6 +301,8 @@ class CallbackDictTest(unittest.TestCase):
         Test callback priority.
         """
 
+        self.maxDiff = None
+
         sequence = []
 
         def before_after_hook(s):
@@ -310,12 +312,12 @@ class CallbackDictTest(unittest.TestCase):
             return before_after(before_after_hook('_before' + s),
                                 before_after_hook('_after' + s))
 
-        for when in ('before', 'after'):
+        for when in ('before', 'after', 'around'):
             add_callback = getattr(self, when).all
             if when == 'around':
-                hook = before_after_hook
-            else:
                 hook = around_hook
+            else:
+                hook = before_after_hook
 
             # Default priority is 0
             add_callback(hook('B1'))
@@ -326,8 +328,8 @@ class CallbackDictTest(unittest.TestCase):
             add_callback(hook('A2'), priority=-1)
 
             # Explicit higher (=later) priority
-            add_callback(hook('C1'), priority=-1)
-            add_callback(hook('C2'), priority=-1)
+            add_callback(hook('C1'), priority=1)
+            add_callback(hook('C2'), priority=1)
 
         wrap = self.callbacks.wrap('all', appender(sequence, 'wrapped'))
 

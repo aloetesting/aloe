@@ -25,6 +25,7 @@ from future import standard_library
 standard_library.install_aliases()
 
 import re
+from collections import OrderedDict
 from functools import wraps, partial
 
 from lychee.codegen import multi_manager
@@ -84,14 +85,16 @@ class CallbackDict(dict):
             tuple(str(c.cell_contents) for c in func.__closure__ or ()),
         )
 
-    def append_to(self, what, when, function, name=None):
+    def append_to(self, what, when, function, name=None, priority=0):
         """
         Add a callback for a particular type of hook.
         """
-        # TODO: support priority for hook ordering
         if name is None:
             name = self._function_id(function)
-        self[what][when].setdefault(name, function)
+
+        funcs = self[what][when].setdefault(priority, OrderedDict())
+        funcs.pop(name, None)
+        funcs[name] = function
 
     def clear(self, name=None):
         """
@@ -102,7 +105,18 @@ class CallbackDict(dict):
                 if name is None:
                     callback_list.clear()
                 else:
-                    callback_list.pop(name, None)
+                    for funcs in callback_list.values():
+                        funcs.pop(name, None)
+
+    def hook_list(self, what, when):
+        """
+        Get all the hooks for a certain event, sorted appropriately.
+        """
+        return tuple(
+            func
+            for priority in sorted(self[what][when].keys())
+            for func in self[what][when][priority].values()
+        )
 
     def wrap(self, what, function, *hook_args, **hook_kwargs):
         """
@@ -110,9 +124,9 @@ class CallbackDict(dict):
         to the given test part.
         """
 
-        before = self[what]['before'].values()
-        around = self[what]['around'].values()
-        after = self[what]['after'].values()
+        before = self.hook_list(what, 'before')
+        around = self.hook_list(what, 'around')
+        after = self.hook_list(what, 'after')
 
         multi_hook = multi_manager(*around)
 
@@ -126,7 +140,7 @@ class CallbackDict(dict):
                     return function(*args, **kwargs)
             finally:
                 # 'after' hooks still run after an exception
-                for after_hook in after:
+                for after_hook in reversed(after):
                     after_hook(*hook_args, **hook_kwargs)
 
         return wrapped
@@ -136,9 +150,9 @@ class CallbackDict(dict):
         Return a pair of functions to execute before and after the event.
         """
 
-        before = self[what]['before'].values()
-        around = self[what]['around'].values()
-        after = self[what]['after'].values()
+        before = self.hook_list(what, 'before')
+        around = self.hook_list(what, 'around')
+        after = self.hook_list(what, 'after')
 
         multi_hook = multi_manager(*around)
 
@@ -279,12 +293,12 @@ class CallbackDecorator(object):
         self.registry = registry
         self.when = when
 
-    def _decorate(self, what, function, name=None):
+    def _decorate(self, what, function, **kwargs):
         """
         Add the specified function (with name if given) to the callback list.
         """
 
-        self.registry.append_to(what, self.when, function, name=name)
+        self.registry.append_to(what, self.when, function, **kwargs)
         return function
 
     def make_decorator(what):
@@ -292,8 +306,8 @@ class CallbackDecorator(object):
         Make a decorator for a specific situation.
         """
 
-        def decorator(self, function, name=None):
-            return self._decorate(what, function, name=name)
+        def decorator(self, function, **kwargs):
+            return self._decorate(what, function, **kwargs)
         return decorator
 
     each_step = make_decorator('step')
