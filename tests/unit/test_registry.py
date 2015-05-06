@@ -296,3 +296,72 @@ class CallbackDictTest(unittest.TestCase):
             ('around_after', 'before_arg1', 'before_arg2'),
             ('after', 'after_arg1', 'after_arg2'),
         ])
+
+    def test_priority(self):
+        """
+        Test callback priority.
+        """
+
+        sequence = []
+
+        def before_after_hook(s):
+            return appender(sequence, when + s)
+
+        def around_hook(s):
+            return before_after(before_after_hook('_before' + s),
+                                before_after_hook('_after' + s))
+
+        for when in ('before', 'after'):
+            add_callback = getattr(self, when).all
+            if when == 'around':
+                hook = before_after_hook
+            else:
+                hook = around_hook
+
+            # Default priority is 0
+            add_callback(hook('B1'))
+            add_callback(hook('B2'))
+
+            # Explicit lower (=earlier) priority
+            add_callback(hook('A1'), priority=-1)
+            add_callback(hook('A2'), priority=-1)
+
+            # Explicit higher (=later) priority
+            add_callback(hook('C1'), priority=-1)
+            add_callback(hook('C2'), priority=-1)
+
+        wrap = self.callbacks.wrap('all', appender(sequence, 'wrapped'))
+
+        wrap()
+
+        self.assertEqual([item for (item,) in sequence], [
+            'beforeA1',
+            'beforeA2',
+            'beforeB1',
+            'beforeB2',
+            'beforeC1',
+            'beforeC2',
+
+            'around_beforeA1',
+            'around_beforeA2',
+            'around_beforeB1',
+            'around_beforeB2',
+            'around_beforeC1',
+            'around_beforeC2',
+
+            'wrapped',
+
+            'around_afterC2',
+            'around_afterC1',
+            'around_afterB2',
+            'around_afterB1',
+            'around_afterA2',
+            'around_afterA1',
+
+            'afterC2',
+            'afterC1',
+            'afterB2',
+            'afterB1',
+            'afterA2',
+            'afterA1',
+        ])
