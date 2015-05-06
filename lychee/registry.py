@@ -52,6 +52,19 @@ HOOK_WHEN = (
 )
 
 
+class PriorityClass(object):
+    """
+    Priority class constants.
+    """
+
+    SYSTEM_OUTER = -10  # System callbacks executing before others
+    USER = 0  # User callbacks
+    SYSTEM_INNER = 10  # System callbacks executing after others
+
+    # Note that for 'after' and the 'after' part of 'around' callbacks,
+    # the order is reversed
+
+
 class CallbackDict(dict):
     def __init__(self):
         """
@@ -289,16 +302,21 @@ class CallbackDecorator(object):
     Add functions to the appropriate callback lists.
     """
 
-    def __init__(self, registry, when):
+    def __init__(self, registry, when, priority_class=PriorityClass.USER):
         self.registry = registry
         self.when = when
+        self.priority_class = priority_class
 
-    def _decorate(self, what, function, **kwargs):
+    def _decorate(self, what, function, name=None, priority=0):
         """
         Add the specified function (with name if given) to the callback list.
         """
 
-        self.registry.append_to(what, self.when, function, **kwargs)
+        priority = (self.priority_class, priority)
+
+        self.registry.append_to(what, self.when, function,
+                                name=name,
+                                priority=priority)
         return function
 
     def make_decorator(what):
