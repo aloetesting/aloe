@@ -32,7 +32,10 @@ from functools import wraps
 
 from lychee import world
 from lychee.plugin import GherkinPlugin
-from lychee.registry import clear as clear_registry
+from lychee.registry import (
+    clear as clear_registry,
+    PriorityClass,
+)
 from lychee.runner import Runner
 
 
@@ -141,7 +144,7 @@ class FeatureTest(unittest.TestCase):
         Run the specified features.
         """
 
-        clear_registry()
+        clear_registry(priority_class=PriorityClass.USER)
         world.__dict__.clear()
 
         return TestRunner(exit=False,

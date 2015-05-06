@@ -114,17 +114,29 @@ class CallbackDict(dict):
         funcs.pop(name, None)
         funcs[name] = function
 
-    def clear(self, name=None):
+    def clear(self, name=None, priority_class=None):
         """
-        Remove all callbacks.
+        Remove matching callbacks.
+        If name is given, only remove callbacks with given name.
+        If a priority class is given, only remove ones with the given class.
         """
-        for action_dict in self.values():
-            for callback_list in action_dict.values():
-                if name is None:
-                    callback_list.clear()
+        for what_dict in self.values():
+            for when_dict in what_dict.values():
+                if priority_class is None:
+                    action_values = when_dict.values()
                 else:
-                    for funcs in callback_list.values():
-                        funcs.pop(name, None)
+                    action_values = (
+                        value
+                        for (pc, _), value
+                        in when_dict.items()
+                        if pc == priority_class
+                    )
+                for callback_list in action_values:
+                    if name is None:
+                        callback_list.clear()
+                    else:
+                        for funcs in callback_list.values():
+                            funcs.pop(name, None)
 
     def hook_list(self, what, when):
         """
@@ -344,16 +356,13 @@ around = CallbackDecorator(CALLBACK_REGISTRY, 'around')
 before = CallbackDecorator(CALLBACK_REGISTRY, 'before')
 
 
-def clear():
+def clear(priority_class=None):
     """
     Clear the registry.
     """
 
-    # TODO: When priority is implemented and Lychee has essential steps
-    # that should not be cleared, can clear everything below certain priority.
-
     STEP_REGISTRY.clear()
-    CALLBACK_REGISTRY.clear()
+    CALLBACK_REGISTRY.clear(priority_class=priority_class)
 
 
 def preserve_registry(func):
