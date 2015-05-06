@@ -325,45 +325,59 @@ class CallbackDictTest(unittest.TestCase):
             add_callback(hook('B2'))
 
             # Explicit lower (=earlier) priority
-            add_callback(hook('A1'), priority=-1)
-            add_callback(hook('A2'), priority=-1)
+            add_callback(hook('A1'), priority=-10)
+            add_callback(hook('A2'), priority=-10)
 
             # Explicit higher (=later) priority
-            add_callback(hook('C1'), priority=1)
-            add_callback(hook('C2'), priority=1)
+            add_callback(hook('C1'), priority=10)
+            add_callback(hook('C2'), priority=10)
+
+            # Add a callback with a different priority class
+            CallbackDecorator(self.callbacks, when,
+                              priority_class=-1).all(hook('Z1'))
+            CallbackDecorator(self.callbacks, when,
+                              priority_class=1).all(hook('D1'))
 
         wrap = self.callbacks.wrap('all', appender(sequence, 'wrapped'))
 
         wrap()
 
         self.assertEqual([item for (item,) in sequence], [
+            'beforeZ1',
             'beforeA1',
             'beforeA2',
             'beforeB1',
             'beforeB2',
             'beforeC1',
             'beforeC2',
+            'beforeD1',
 
+            'around_beforeZ1',
             'around_beforeA1',
             'around_beforeA2',
             'around_beforeB1',
             'around_beforeB2',
             'around_beforeC1',
             'around_beforeC2',
+            'around_beforeD1',
 
             'wrapped',
 
+            'around_afterD1',
             'around_afterC2',
             'around_afterC1',
             'around_afterB2',
             'around_afterB1',
             'around_afterA2',
             'around_afterA1',
+            'around_afterZ1',
 
+            'afterD1',
             'afterC2',
             'afterC1',
             'afterB2',
             'afterB1',
             'afterA2',
             'afterA1',
+            'afterZ1',
         ])
