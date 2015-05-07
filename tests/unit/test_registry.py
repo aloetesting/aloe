@@ -460,7 +460,7 @@ class CallbackDictTest(unittest.TestCase):
         # Only clear a particular name from the default priority class
         callbacks, sequence = prepare_hooks()
         callbacks.clear(priority_class=PriorityClass.USER,
-                             name='named')
+                        name='named')
         callbacks.wrap('all', appender(sequence, 'wrapped'))()
 
         self.assertEqual([item for (item,) in sequence], [
