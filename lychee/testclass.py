@@ -27,11 +27,17 @@ standard_library.install_aliases()
 
 import ast
 import unittest
+from contextlib import contextmanager
 from functools import partial
 
 from lychee.codegen import make_function
 from lychee.parser import Feature, Step
-from lychee.registry import CALLBACK_REGISTRY, STEP_REGISTRY
+from lychee.registry import (
+    CallbackDecorator,
+    CALLBACK_REGISTRY,
+    PriorityClass,
+    STEP_REGISTRY,
+)
 from lychee.utils import always_str
 
 
@@ -42,6 +48,8 @@ class TestStep(Step):
 
     def __init__(self, testclass, *args, **kwargs):
         self.testclass = testclass
+        self.failed = None
+        self.passed = None
         super().__init__(*args, **kwargs)
 
     def behave_as(self, string):
@@ -268,3 +276,26 @@ class TestCase(unittest.TestCase):
                                            step_container, outline, steps)
 
         return run_steps
+
+
+# A decorator to add callbacks which wrap the steps tighter than all the user
+# callbacks.
+inner_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
+                                 priority_class=PriorityClass.SYSTEM_INNER)
+
+
+@inner_around.each_step
+@contextmanager
+def set_passed_failed(step):
+    """
+    Set the 'failed' property of the step.
+    """
+
+    try:
+        yield
+        step.passed = True
+        step.failed = False
+    except:
+        step.passed = False
+        step.failed = True
+        raise

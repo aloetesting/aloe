@@ -25,6 +25,7 @@ from future import standard_library
 standard_library.install_aliases()
 
 import re
+from collections import OrderedDict
 from functools import wraps, partial
 
 from lychee.codegen import multi_manager
@@ -49,6 +50,19 @@ HOOK_WHEN = (
     'after',
     'around',
 )
+
+
+class PriorityClass(object):
+    """
+    Priority class constants.
+    """
+
+    SYSTEM_OUTER = -10  # System callbacks executing before others
+    USER = 0  # User callbacks
+    SYSTEM_INNER = 10  # System callbacks executing after others
+
+    # Note that for 'after' and the 'after' part of 'around' callbacks,
+    # the order is reversed
 
 
 class CallbackDict(dict):
@@ -84,25 +98,49 @@ class CallbackDict(dict):
             tuple(str(c.cell_contents) for c in func.__closure__ or ()),
         )
 
-    def append_to(self, what, when, function, name=None):
+    def append_to(self, what, when, function, name=None, priority=0):
         """
         Add a callback for a particular type of hook.
         """
-        # TODO: support priority for hook ordering
         if name is None:
             name = self._function_id(function)
-        self[what][when].setdefault(name, function)
 
-    def clear(self, name=None):
+        funcs = self[what][when].setdefault(priority, OrderedDict())
+        funcs.pop(name, None)
+        funcs[name] = function
+
+    def clear(self, name=None, priority_class=None):
         """
-        Remove all callbacks.
+        Remove matching callbacks.
+        If name is given, only remove callbacks with given name.
+        If a priority class is given, only remove ones with the given class.
         """
-        for action_dict in self.values():
-            for callback_list in action_dict.values():
-                if name is None:
-                    callback_list.clear()
+        for what_dict in self.values():
+            for when_dict in what_dict.values():
+                if priority_class is None:
+                    action_values = when_dict.values()
                 else:
-                    callback_list.pop(name, None)
+                    action_values = (
+                        value
+                        for (pc, _), value
+                        in when_dict.items()
+                        if pc == priority_class
+                    )
+                for callback_list in action_values:
+                    if name is None:
+                        callback_list.clear()
+                    else:
+                        callback_list.pop(name, None)
+
+    def hook_list(self, what, when):
+        """
+        Get all the hooks for a certain event, sorted appropriately.
+        """
+        return tuple(
+            func
+            for priority in sorted(self[what][when].keys())
+            for func in self[what][when][priority].values()
+        )
 
     def wrap(self, what, function, *hook_args, **hook_kwargs):
         """
@@ -110,9 +148,9 @@ class CallbackDict(dict):
         to the given test part.
         """
 
-        before = self[what]['before'].values()
-        around = self[what]['around'].values()
-        after = self[what]['after'].values()
+        before = self.hook_list(what, 'before')
+        around = self.hook_list(what, 'around')
+        after = self.hook_list(what, 'after')
 
         multi_hook = multi_manager(*around)
 
@@ -126,7 +164,7 @@ class CallbackDict(dict):
                     return function(*args, **kwargs)
             finally:
                 # 'after' hooks still run after an exception
-                for after_hook in after:
+                for after_hook in reversed(after):
                     after_hook(*hook_args, **hook_kwargs)
 
         return wrapped
@@ -136,9 +174,9 @@ class CallbackDict(dict):
         Return a pair of functions to execute before and after the event.
         """
 
-        before = self[what]['before'].values()
-        around = self[what]['around'].values()
-        after = self[what]['after'].values()
+        before = self.hook_list(what, 'before')
+        around = self.hook_list(what, 'around')
+        after = self.hook_list(what, 'after')
 
         multi_hook = multi_manager(*around)
 
@@ -275,16 +313,21 @@ class CallbackDecorator(object):
     Add functions to the appropriate callback lists.
     """
 
-    def __init__(self, registry, when):
+    def __init__(self, registry, when, priority_class=PriorityClass.USER):
         self.registry = registry
         self.when = when
+        self.priority_class = priority_class
 
-    def _decorate(self, what, function, name=None):
+    def _decorate(self, what, function, name=None, priority=0):
         """
         Add the specified function (with name if given) to the callback list.
         """
 
-        self.registry.append_to(what, self.when, function, name=name)
+        priority = (self.priority_class, priority)
+
+        self.registry.append_to(what, self.when, function,
+                                name=name,
+                                priority=priority)
         return function
 
     def make_decorator(what):
@@ -292,8 +335,8 @@ class CallbackDecorator(object):
         Make a decorator for a specific situation.
         """
 
-        def decorator(self, function, name=None):
-            return self._decorate(what, function, name=name)
+        def decorator(self, function, **kwargs):
+            return self._decorate(what, function, **kwargs)
         return decorator
 
     each_step = make_decorator('step')
@@ -305,38 +348,3 @@ class CallbackDecorator(object):
 after = CallbackDecorator(CALLBACK_REGISTRY, 'after')
 around = CallbackDecorator(CALLBACK_REGISTRY, 'around')
 before = CallbackDecorator(CALLBACK_REGISTRY, 'before')
-
-
-def clear():
-    """
-    Clear the registry.
-    """
-
-    # TODO: When priority is implemented and Lychee has essential steps
-    # that should not be cleared, can clear everything below certain priority.
-
-    STEP_REGISTRY.clear()
-    CALLBACK_REGISTRY.clear()
-
-
-def preserve_registry(func):
-    """
-    Create a registry context that will be unwrapped afterwards
-    """
-
-    @wraps(func)
-    def inner(*args, **kwargs):
-        step_registry = STEP_REGISTRY.copy()
-        call_registry = CALLBACK_REGISTRY.copy()
-
-        ret = func(*args, **kwargs)
-
-        STEP_REGISTRY.clear()
-        STEP_REGISTRY.update(step_registry)
-
-        CALLBACK_REGISTRY.clear()
-        CALLBACK_REGISTRY.update(call_registry)
-
-        return ret
-
-    return inner

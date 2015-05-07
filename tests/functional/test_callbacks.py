@@ -115,3 +115,14 @@ class CallbackTest(FeatureTest):
         """
 
         self.assert_feature_success('features/behave_as.feature')
+
+    def test_step_failed(self):
+        """
+        Test the value of step.failed.
+        """
+
+        # The test fails
+        self.run_features('features/step_failed.feature')
+
+        assert_equals(world.passing_steps, 2)
+        assert_equals(world.failed_steps, 1)

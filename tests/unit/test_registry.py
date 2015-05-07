@@ -30,9 +30,12 @@ from nose.tools import assert_raises, assert_equal
 from lychee.registry import (
     CallbackDecorator,
     CallbackDict,
+    PriorityClass,
     StepDict,
 )
 from lychee.exceptions import StepLoadingError
+
+from tests.utils import appender, before_after
 
 
 def test_StepDict_raise_StepLoadingError_if_first_argument_is_not_a_regex():
@@ -243,23 +246,16 @@ class CallbackDictTest(unittest.TestCase):
 
         sequence = []
 
-        @self.before.all
-        def before_call(*args):
-            sequence.append(('before',) + args)
+        self.before.all(appender(sequence, 'before'))
 
-        @self.around.all
-        @contextmanager
-        def around_call(*args):
-            sequence.append(('around_before',) + args)
-            yield
-            sequence.append(('around_after',) + args)
+        self.around.all(before_after(
+            appender(sequence, 'around_before'),
+            appender(sequence, 'around_after')
+        ))
 
-        @self.after.all
-        def after_call(*args):
-            sequence.append(('after',) + args)
+        self.after.all(appender(sequence, 'after'))
 
-        def wrapped(*args):
-            sequence.append(('wrapped',) + args)
+        wrapped = appender(sequence, 'wrapped')
 
         wrap = self.callbacks.wrap('all', wrapped, 'hook_arg1', 'hook_arg2')
 
@@ -280,20 +276,14 @@ class CallbackDictTest(unittest.TestCase):
 
         sequence = []
 
-        @self.before.all
-        def before_call(*args):
-            sequence.append(('before',) + args)
+        self.before.all(appender(sequence, 'before'))
 
-        @self.around.all
-        @contextmanager
-        def around_call(*args):
-            sequence.append(('around_before',) + args)
-            yield
-            sequence.append(('around_after',) + args)
+        self.around.all(before_after(
+            appender(sequence, 'around_before'),
+            appender(sequence, 'around_after')
+        ))
 
-        @self.after.all
-        def after_call(*args):
-            sequence.append(('after',) + args)
+        self.after.all(appender(sequence, 'after'))
 
         before, after = self.callbacks.before_after('all')
 
@@ -305,4 +295,227 @@ class CallbackDictTest(unittest.TestCase):
             ('around_before', 'before_arg1', 'before_arg2'),
             ('around_after', 'before_arg1', 'before_arg2'),
             ('after', 'after_arg1', 'after_arg2'),
+        ])
+
+    def test_priority(self):
+        """
+        Test callback priority.
+        """
+
+        self.maxDiff = None
+
+        sequence = []
+
+        def before_after_hook(s):
+            return appender(sequence, when + s)
+
+        def around_hook(s):
+            return before_after(before_after_hook('_before' + s),
+                                before_after_hook('_after' + s))
+
+        for when in ('before', 'after', 'around'):
+            add_callback = getattr(self, when).all
+            if when == 'around':
+                hook = around_hook
+            else:
+                hook = before_after_hook
+
+            # Default priority is 0
+            add_callback(hook('B1'))
+            add_callback(hook('B2'))
+
+            # Explicit lower (=earlier) priority
+            add_callback(hook('A1'), priority=-10)
+            add_callback(hook('A2'), priority=-10)
+
+            # Explicit higher (=later) priority
+            add_callback(hook('C1'), priority=10)
+            add_callback(hook('C2'), priority=10)
+
+            # Add a callback with a different priority class
+            CallbackDecorator(self.callbacks, when,
+                              priority_class=-1).all(hook('Z1'))
+            CallbackDecorator(self.callbacks, when,
+                              priority_class=1).all(hook('D1'))
+
+        wrap = self.callbacks.wrap('all', appender(sequence, 'wrapped'))
+
+        wrap()
+
+        self.assertEqual([item for (item,) in sequence], [
+            'beforeZ1',
+            'beforeA1',
+            'beforeA2',
+            'beforeB1',
+            'beforeB2',
+            'beforeC1',
+            'beforeC2',
+            'beforeD1',
+
+            'around_beforeZ1',
+            'around_beforeA1',
+            'around_beforeA2',
+            'around_beforeB1',
+            'around_beforeB2',
+            'around_beforeC1',
+            'around_beforeC2',
+            'around_beforeD1',
+
+            'wrapped',
+
+            'around_afterD1',
+            'around_afterC2',
+            'around_afterC1',
+            'around_afterB2',
+            'around_afterB1',
+            'around_afterA2',
+            'around_afterA1',
+            'around_afterZ1',
+
+            'afterD1',
+            'afterC2',
+            'afterC1',
+            'afterB2',
+            'afterB1',
+            'afterA2',
+            'afterA1',
+            'afterZ1',
+        ])
+
+    def test_clear(self):
+        """
+        Test clearing the registry.
+        """
+
+        def prepare_hooks():
+            callbacks = CallbackDict()
+            sequence = []
+
+            def before_after_hook(s):
+                return appender(sequence, when + s)
+
+            def around_hook(s):
+                return before_after(before_after_hook('_before' + s),
+                                    before_after_hook('_after' + s))
+
+            for when in ('before', 'after', 'around'):
+                add_callback = CallbackDecorator(callbacks, when).all
+                if when == 'around':
+                    hook = around_hook
+                else:
+                    hook = before_after_hook
+
+                # Default priority class
+                add_callback(hook('Default'))
+
+                # Default priority class, specifying a name
+                add_callback(hook('Named'), name='named')
+
+                # Different priority classes
+                CallbackDecorator(callbacks, when,
+                                  priority_class=-1).all(hook('Minus'))
+                CallbackDecorator(callbacks, when,
+                                  priority_class=1).all(hook('Plus'))
+
+                # Different priority class, specifying a name
+                CallbackDecorator(callbacks, when,
+                                  priority_class=1).all(hook('PlusNamed'),
+                                                        name='named')
+
+            return callbacks, sequence
+
+        # Verify ordering without clearing anything
+        callbacks, sequence = prepare_hooks()
+        callbacks.wrap('all', appender(sequence, 'wrapped'))()
+
+        self.assertEqual([item for (item,) in sequence], [
+            'beforeMinus',
+            'beforeDefault',
+            'beforeNamed',
+            'beforePlus',
+            'beforePlusNamed',
+
+            'around_beforeMinus',
+            'around_beforeDefault',
+            'around_beforeNamed',
+            'around_beforePlus',
+            'around_beforePlusNamed',
+
+            'wrapped',
+
+            'around_afterPlusNamed',
+            'around_afterPlus',
+            'around_afterNamed',
+            'around_afterDefault',
+            'around_afterMinus',
+
+            'afterPlusNamed',
+            'afterPlus',
+            'afterNamed',
+            'afterDefault',
+            'afterMinus',
+        ])
+
+        # Only clear a particular name from the default priority class
+        callbacks, sequence = prepare_hooks()
+        callbacks.clear(priority_class=PriorityClass.USER,
+                        name='named')
+        callbacks.wrap('all', appender(sequence, 'wrapped'))()
+
+        self.assertEqual([item for (item,) in sequence], [
+            'beforeMinus',
+            'beforeDefault',
+            'beforePlus',
+            'beforePlusNamed',
+
+            'around_beforeMinus',
+            'around_beforeDefault',
+            'around_beforePlus',
+            'around_beforePlusNamed',
+
+            'wrapped',
+
+            'around_afterPlusNamed',
+            'around_afterPlus',
+            'around_afterDefault',
+            'around_afterMinus',
+
+            'afterPlusNamed',
+            'afterPlus',
+            'afterDefault',
+            'afterMinus',
+        ])
+
+        # Only clear the default priority class
+        callbacks, sequence = prepare_hooks()
+        callbacks.clear(priority_class=PriorityClass.USER)
+        callbacks.wrap('all', appender(sequence, 'wrapped'))()
+
+        self.assertEqual([item for (item,) in sequence], [
+            'beforeMinus',
+            'beforePlus',
+            'beforePlusNamed',
+
+            'around_beforeMinus',
+            'around_beforePlus',
+            'around_beforePlusNamed',
+
+            'wrapped',
+
+            'around_afterPlusNamed',
+            'around_afterPlus',
+            'around_afterMinus',
+
+            'afterPlusNamed',
+            'afterPlus',
+            'afterMinus',
+        ])
+
+        # Clear all callbacks
+        callbacks, sequence = prepare_hooks()
+        callbacks.clear()
+        callbacks.wrap('all', appender(sequence, 'wrapped'))()
+
+        self.assertEqual([item for (item,) in sequence], [
+            'wrapped',
         ])
