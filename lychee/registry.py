@@ -354,35 +354,3 @@ class CallbackDecorator(object):
 after = CallbackDecorator(CALLBACK_REGISTRY, 'after')
 around = CallbackDecorator(CALLBACK_REGISTRY, 'around')
 before = CallbackDecorator(CALLBACK_REGISTRY, 'before')
-
-
-def clear(priority_class=None):
-    """
-    Clear the registry.
-    """
-
-    STEP_REGISTRY.clear()
-    CALLBACK_REGISTRY.clear(priority_class=priority_class)
-
-
-def preserve_registry(func):
-    """
-    Create a registry context that will be unwrapped afterwards
-    """
-
-    @wraps(func)
-    def inner(*args, **kwargs):
-        step_registry = STEP_REGISTRY.copy()
-        call_registry = CALLBACK_REGISTRY.copy()
-
-        ret = func(*args, **kwargs)
-
-        STEP_REGISTRY.clear()
-        STEP_REGISTRY.update(step_registry)
-
-        CALLBACK_REGISTRY.clear()
-        CALLBACK_REGISTRY.update(call_registry)
-
-        return ret
-
-    return inner
