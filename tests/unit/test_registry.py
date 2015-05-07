@@ -31,6 +31,7 @@ from nose.tools import assert_raises, assert_equal
 from lychee.registry import (
     CallbackDecorator,
     CallbackDict,
+    PriorityClass,
     StepDict,
 )
 from lychee.exceptions import StepLoadingError
@@ -380,4 +381,142 @@ class CallbackDictTest(unittest.TestCase):
             'afterA2',
             'afterA1',
             'afterZ1',
+        ])
+
+    def test_clear(self):
+        """
+        Test clearing the registry.
+        """
+
+        def prepare_hooks():
+            callbacks = CallbackDict()
+            sequence = []
+
+            def before_after_hook(s):
+                return appender(sequence, when + s)
+
+            def around_hook(s):
+                return before_after(before_after_hook('_before' + s),
+                                    before_after_hook('_after' + s))
+
+            for when in ('before', 'after', 'around'):
+                add_callback = CallbackDecorator(callbacks, when).all
+                if when == 'around':
+                    hook = around_hook
+                else:
+                    hook = before_after_hook
+
+                # Default priority class
+                add_callback(hook('Default'))
+
+                # Default priority class, specifying a name
+                add_callback(hook('Named'), name='named')
+
+                # Different priority classes
+                CallbackDecorator(callbacks, when,
+                                  priority_class=-1).all(hook('Minus'))
+                CallbackDecorator(callbacks, when,
+                                  priority_class=1).all(hook('Plus'))
+
+                # Different priority class, specifying a name
+                CallbackDecorator(callbacks, when,
+                                  priority_class=1).all(hook('PlusNamed'),
+                                                        name='named')
+
+            return callbacks, sequence
+
+        # Verify ordering without clearing anything
+        callbacks, sequence = prepare_hooks()
+        callbacks.wrap('all', appender(sequence, 'wrapped'))()
+
+        self.assertEqual([item for (item,) in sequence], [
+            'beforeMinus',
+            'beforeDefault',
+            'beforeNamed',
+            'beforePlus',
+            'beforePlusNamed',
+
+            'around_beforeMinus',
+            'around_beforeDefault',
+            'around_beforeNamed',
+            'around_beforePlus',
+            'around_beforePlusNamed',
+
+            'wrapped',
+
+            'around_afterPlusNamed',
+            'around_afterPlus',
+            'around_afterNamed',
+            'around_afterDefault',
+            'around_afterMinus',
+
+            'afterPlusNamed',
+            'afterPlus',
+            'afterNamed',
+            'afterDefault',
+            'afterMinus',
+        ])
+
+        # Only clear a particular name from the default priority class
+        callbacks, sequence = prepare_hooks()
+        callbacks.clear(priority_class=PriorityClass.USER,
+                             name='named')
+        callbacks.wrap('all', appender(sequence, 'wrapped'))()
+
+        self.assertEqual([item for (item,) in sequence], [
+            'beforeMinus',
+            'beforeDefault',
+            'beforePlus',
+            'beforePlusNamed',
+
+            'around_beforeMinus',
+            'around_beforeDefault',
+            'around_beforePlus',
+            'around_beforePlusNamed',
+
+            'wrapped',
+
+            'around_afterPlusNamed',
+            'around_afterPlus',
+            'around_afterDefault',
+            'around_afterMinus',
+
+            'afterPlusNamed',
+            'afterPlus',
+            'afterDefault',
+            'afterMinus',
+        ])
+
+        # Only clear the default priority class
+        callbacks, sequence = prepare_hooks()
+        callbacks.clear(priority_class=PriorityClass.USER)
+        callbacks.wrap('all', appender(sequence, 'wrapped'))()
+
+        self.assertEqual([item for (item,) in sequence], [
+            'beforeMinus',
+            'beforePlus',
+            'beforePlusNamed',
+
+            'around_beforeMinus',
+            'around_beforePlus',
+            'around_beforePlusNamed',
+
+            'wrapped',
+
+            'around_afterPlusNamed',
+            'around_afterPlus',
+            'around_afterMinus',
+
+            'afterPlusNamed',
+            'afterPlus',
+            'afterMinus',
+        ])
+
+        # Clear all callbacks
+        callbacks, sequence = prepare_hooks()
+        callbacks.clear()
+        callbacks.wrap('all', appender(sequence, 'wrapped'))()
+
+        self.assertEqual([item for (item,) in sequence], [
+            'wrapped',
         ])

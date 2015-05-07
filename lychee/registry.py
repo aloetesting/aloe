@@ -135,8 +135,7 @@ class CallbackDict(dict):
                     if name is None:
                         callback_list.clear()
                     else:
-                        for funcs in callback_list.values():
-                            funcs.pop(name, None)
+                        callback_list.pop(name, None)
 
     def hook_list(self, what, when):
         """
