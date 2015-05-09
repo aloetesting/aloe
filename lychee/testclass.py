@@ -160,7 +160,7 @@ class TestCase(unittest.TestCase):
         if background is None:
             result = make_function('def background(self): pass')
         else:
-            result = cls.make_steps(background.steps)
+            result = cls.make_steps(background, background.steps)
 
         return result
 
@@ -179,7 +179,8 @@ class TestCase(unittest.TestCase):
             )
 
             context = {
-                'outline' + str(i): cls.make_steps(steps,
+                'outline' + str(i): cls.make_steps(scenario,
+                                                   steps,
                                                    call_background=True,
                                                    outline=outline)
                 for i, (outline, steps) in enumerate(scenario.evaluated)
@@ -193,7 +194,8 @@ class TestCase(unittest.TestCase):
                 name=scenario.name,
             )
         else:
-            result = cls.make_steps(scenario.steps,
+            result = cls.make_steps(scenario,
+                                    scenario.steps,
                                     call_background=True)
 
         result.is_scenario = True
@@ -218,7 +220,8 @@ class TestCase(unittest.TestCase):
         return (step, func, args, kwargs)
 
     @classmethod
-    def make_steps(cls, steps, call_background=False, outline=None):
+    def make_steps(cls, step_container, steps,
+                   call_background=False, outline=None):
         """
         Construct a method calling the specified steps.
 
@@ -227,7 +230,6 @@ class TestCase(unittest.TestCase):
         """
 
         assert len(steps) > 0
-        first_step = steps[0]
 
         step_definitions = [
             cls.prepare_step(step)
@@ -262,12 +264,12 @@ class TestCase(unittest.TestCase):
 
         # Function name
         try:
-            step_container = first_step.scenario
             func_name = step_container.name
+            is_background = False
         except AttributeError:
             # This is a background step
-            step_container = first_step.background
             func_name = 'background'
+            is_background = True
 
         run_steps = make_function(
             source=source,
@@ -276,8 +278,9 @@ class TestCase(unittest.TestCase):
             name=func_name,
         )
 
-        run_steps = CALLBACK_REGISTRY.wrap('example', run_steps,
-                                           step_container, outline, steps)
+        if not is_background:
+            run_steps = CALLBACK_REGISTRY.wrap('example', run_steps,
+                                               step_container, outline, steps)
 
         return run_steps
 
