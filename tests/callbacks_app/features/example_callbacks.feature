@@ -2,10 +2,13 @@ Feature: Example callbacks
 
   Test example callbacks
 
+  Background:
+    Given I emit an example event of "Z"
+
   Scenario: Example callbacks in a simple scenario
-    Given I emit an example event of "A"
+    When I emit an example event of "A"
     And I emit an example event of "B"
-    Then the example event sequence should be "{[AB"
+    Then the example event sequence should be "{[ZAB"
 
   Scenario Outline: Example callbacks in a scenario with examples
     Given I emit an example event of "<event>"
@@ -18,5 +21,5 @@ Feature: Example callbacks
       | D     |
 
   Scenario: Check the events from previous example
-    # Last two brackets are from the current example
-    Then the example event sequence should be "{[AB]}{[CE]}{[DE]}{["
+    # The unbalanced bit at the end is from the current example
+    Then the example event sequence should be "{[ZAB]}{[ZCE]}{[ZDE]}{[Z"
