@@ -46,8 +46,14 @@ class TestStep(Step):
     A step with additional functions for the callbacks.
     """
 
-    def __init__(self, testclass, *args, **kwargs):
-        self.testclass = testclass
+    @property
+    def testclass(self):
+        try:
+            return self.scenario.feature.testclass
+        except AttributeError:
+            return self.background.feature.testclass
+
+    def __init__(self, *args, **kwargs):
         self.failed = None
         self.passed = None
         super().__init__(*args, **kwargs)
@@ -72,10 +78,13 @@ class TestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        super().setUpClass()
+        cls.feature.testclass = cls
         cls.before_feature(cls.feature)
 
     @classmethod
     def tearDownClass(cls):
+        super().tearDownClass()
         cls.after_feature(cls.feature)
 
     @classmethod
@@ -85,7 +94,7 @@ class TestCase(unittest.TestCase):
         """
 
         return {
-            'step': partial(TestStep, cls),
+            'step': TestStep,
         }
 
     @classmethod
