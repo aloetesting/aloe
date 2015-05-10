@@ -31,6 +31,7 @@ from functools import reduce
 from nose.tools import assert_equals
 
 from lychee import world
+from lychee.testclass import TestCase
 from . import (
     FeatureTest,
     in_directory,
@@ -70,6 +71,12 @@ class CallbackTest(FeatureTest):
             'Then the step event sequence should be "{[A]}{[B]}{["',
         ]))
 
+        # Check step.testclass
+        self.assertEquals(len(world.step_testclasses), 3)
+        for testclass in world.feature_testclasses:
+            self.assertTrue(issubclass(testclass, TestCase))
+            self.assertEquals(testclass.__name__, "Step callbacks")
+
     def test_example_callbacks(self):
         """
         Test example callbacks execution order.
@@ -88,16 +95,24 @@ class CallbackTest(FeatureTest):
 
     def test_feature_callbacks(self):
         """
-        Test feature callbacks execution order.
+        Test feature callbacks execution order and arguments.
         """
 
         self.assert_feature_success('features/feature_callbacks_1.feature',
                                     'features/feature_callbacks_2.feature')
 
-        self.assertEquals(world.feature_names, self.name_sequence([
+        names = (
             'Feature callbacks (preparation)',
             'Feature callbacks (test)',
-        ]))
+        )
+
+        self.assertEquals(world.feature_names, self.name_sequence(names))
+
+        # Check feature.testclass
+        self.assertEquals(len(world.feature_testclasses), 2)
+        for feature_name, testclass in zip(names, world.feature_testclasses):
+            self.assertTrue(issubclass(testclass, TestCase))
+            self.assertEquals(testclass.__name__, feature_name)
 
     def test_all_callbacks(self):
         """

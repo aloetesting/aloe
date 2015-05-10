@@ -57,6 +57,7 @@ def record_event(kind, value):
 def before_step(step):
     record_event('step', '{')
     record_event('step_names', ('before', step.sentence))
+    record_event('step_testclasses', step.testclass)
 
 
 @around.each_step
@@ -112,6 +113,7 @@ def after_example(scenario, outline, steps):
 def before_feature(feature):
     record_event('feature', '{')
     record_event('feature_names', ('before', feature.name))
+    record_event('feature_testclasses', feature.testclass)
 
 
 @around.each_feature
