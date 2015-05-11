@@ -23,3 +23,15 @@ after_success:
     - coveralls
 
 sudo: false
+
+deploy:
+    provider: pypi
+    user: koterpillar
+    password:
+        secure: "ngmlqV8hod71n7GudGTaW9Re1DXJZvA2XaFOW4FqRbJydkPWdXbZw1FoPiZM8UFQCgWc9D1MuGzs17+cVobe3YWOSW7OG5G7oJBMuLlJ+zDExHb4UusYDi2ADBK2R46ukd1A002sb4ns7X3SC2w1v1oMEp3HIKFGvRVVUf+PfK0="
+    server: https://pypi.python.org/pypi
+    on:
+        tags: true
+        all_branches: true
+        python: 3.4
+        condition: "\"$TRAVIS_TAG\" = \"v$(python setup.py --version)\""
