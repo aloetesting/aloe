@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
-# Copyright (C) <2010-2012>  Gabriel Falcão <gabriel@nacaolivre.org>
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
+# Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,39 +15,43 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Main module.
+Exception classes
 """
 
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+from builtins import super
 from future import standard_library
 standard_library.install_aliases()
 
-import sys
-import threading
 
-from lychee.registry import (
-    after,
-    around,
-    before,
-    step,
-)
+class LettuceSyntaxError(SyntaxError):
+    def __init__(self, filename, string):
+        self.filename = filename
+        self.string = string
 
-world = threading.local()
+        msg = "Syntax error at: {filename}\n{string}".format(
+            filename=filename, string=string)
+
+        super().__init__(msg)
 
 
-def main(argv=None):  # pragma: no cover
+class LettuceSyntaxWarning(SyntaxWarning):
+    pass
+
+
+class StepLoadingError(Exception):
+    """Raised when a step cannot be loaded."""
+    pass
+
+
+class NoDefinitionFound(Exception):
     """
-    Entry point for running Lychee.
+    Exception raised when there is no suitable step definition for a step.
     """
 
-    if argv is None:
-        argv = sys.argv
-
-    from lychee.runner import Runner
-    Runner(argv)
-
-if __name__ == '__main__':  # pragma: no cover
-    main()
+    def __init__(self, step):
+        self.step = step
+        super().__init__('The step r"%s" is not defined' % self.step.sentence)

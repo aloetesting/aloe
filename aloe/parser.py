@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2014>  Danielle Madeley <danielle@madeley.id.au>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -61,8 +61,8 @@ from pyparsing import (CharsNotIn,
 
 from fuzzywuzzy import fuzz
 
-from lychee import languages, strings
-from lychee.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
+from aloe import languages, strings
+from aloe.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
 
 
 # TODO: is this needed?

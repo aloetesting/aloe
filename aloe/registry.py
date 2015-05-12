@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2010-2012>  Gabriel Falcão <gabriel@nacaolivre.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -33,8 +33,8 @@ import re
 from collections import OrderedDict
 from functools import wraps, partial
 
-from lychee.codegen import multi_manager
-from lychee.exceptions import (
+from aloe.codegen import multi_manager
+from aloe.exceptions import (
     NoDefinitionFound,
     StepLoadingError,
 )

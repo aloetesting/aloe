@@ -1,4 +1,4 @@
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Exception classes
+Nose test runner with Gherkin plugin enabled.
 """
 
 from __future__ import unicode_literals
@@ -26,32 +26,38 @@ from builtins import super
 from future import standard_library
 standard_library.install_aliases()
 
+import os
 
-class LettuceSyntaxError(SyntaxError):
-    def __init__(self, filename, string):
-        self.filename = filename
-        self.string = string
+import nose.core
 
-        msg = "Syntax error at: {filename}\n{string}".format(
-            filename=filename, string=string)
-
-        super().__init__(msg)
+from aloe.plugin import GherkinPlugin
 
 
-class LettuceSyntaxWarning(SyntaxWarning):
-    pass
-
-
-class StepLoadingError(Exception):
-    """Raised when a step cannot be loaded."""
-    pass
-
-
-class NoDefinitionFound(Exception):
+class Runner(nose.core.TestProgram):
     """
-    Exception raised when there is no suitable step definition for a step.
+    A test runner collecting Gherkin tests.
     """
 
-    def __init__(self, step):
-        self.step = step
-        super().__init__('The step r"%s" is not defined' % self.step.sentence)
+    @staticmethod
+    def gherkin_plugin():
+        """
+        The plugin to add to the runner.
+        Hook point for tests.
+        """
+
+        return GherkinPlugin()
+
+    def __init__(self, *args, **kwargs):
+        """
+        Enable Gherkin loading plugins and run the tests.
+        """
+
+        # Add Gherkin plugin
+        kwargs.setdefault('addplugins', []).append(self.gherkin_plugin())
+
+        # Ensure it's loaded
+        env = kwargs.pop('env', os.environ)
+        env['NOSE_WITH_GHERKIN'] = '1'
+        kwargs['env'] = env
+
+        super().__init__(*args, **kwargs)
