@@ -1,4 +1,4 @@
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ import ast
 import re
 from contextlib import contextmanager
 
-from lychee.utils import always_str
+from aloe.utils import always_str
 
 
 FUNCTION_DEF_SAMPLE = ast.parse('def func(): pass')

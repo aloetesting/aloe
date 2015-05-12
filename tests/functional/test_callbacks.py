@@ -1,4 +1,4 @@
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -30,8 +30,8 @@ from functools import reduce
 
 from nose.tools import assert_equals
 
-from lychee import world
-from lychee.testclass import TestCase
+from aloe import world
+from aloe.testclass import TestCase
 from . import (
     FeatureTest,
     in_directory,

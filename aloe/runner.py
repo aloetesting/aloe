@@ -1,4 +1,4 @@
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@ import os
 
 import nose.core
 
-from lychee.plugin import GherkinPlugin
+from aloe.plugin import GherkinPlugin
 
 
 class Runner(nose.core.TestProgram):

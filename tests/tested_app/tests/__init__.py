@@ -1,4 +1,4 @@
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@ class NormalTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """
-        Prevent the test from running in the main (Lychee) test suite.
+        Prevent the test from running in the main (Aloe) test suite.
         """
 
         if 'tested_app' not in os.getcwd():
