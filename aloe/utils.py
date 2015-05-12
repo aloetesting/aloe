@@ -15,35 +15,23 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Steps for testing the basic Gherkin test functionality.
+Miscellaneous utilities.
 """
 
-from __future__ import unicode_literals
 from __future__ import print_function
+from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
-from future import standard_library
-standard_library.install_aliases()
 
-from aloe import before, step, world
+import sys
 
 
-@before.each_example
-def clear(*args):
-    world.numbers = []
-    world.result = 0
+def always_str(value):
+    """
+    Make an str on either Python 2 or Python 3.
+    """
 
-
-@step(r'I have entered (\d+) into the calculator')
-def enter_number(self, number):
-    world.numbers.append(float(number))
-
-
-@step(r'I press add')
-def press_add(self):
-    world.result = sum(world.numbers)
-
-
-@step(r'The result should be (\d+) on the screen')
-def assert_result(self, result):
-    assert world.result == float(result)
+    if sys.version_info >= (3, 0):
+        return value
+    else:
+        return value.encode()

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2010-2012>  Gabriel Falcão <gabriel@nacaolivre.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -23,8 +23,8 @@ from builtins import zip
 from future import standard_library
 standard_library.install_aliases()
 
-from lychee.parser import Step, Scenario, Feature
-from lychee.exceptions import LettuceSyntaxError
+from aloe.parser import Step, Scenario, Feature
+from aloe.exceptions import LettuceSyntaxError
 
 from nose.tools import assert_equals
 from nose.tools import assert_raises

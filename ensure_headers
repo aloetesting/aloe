@@ -9,10 +9,10 @@ from __future__ import print_function
 import datetime
 import os
 
-FILES = ('lychee', 'tests', 'setup.py')
+FILES = ('aloe', 'tests', 'setup.py')
 
 DESCRIPTION = """
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 """.strip('\n')
 
 OLD_DESCRIPTION = """

@@ -1,4 +1,4 @@
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -34,15 +34,15 @@ import unittest
 from contextlib import contextmanager
 from functools import partial
 
-from lychee.codegen import make_function
-from lychee.parser import Feature, Step
-from lychee.registry import (
+from aloe.codegen import make_function
+from aloe.parser import Feature, Step
+from aloe.registry import (
     CallbackDecorator,
     CALLBACK_REGISTRY,
     PriorityClass,
     STEP_REGISTRY,
 )
-from lychee.utils import always_str
+from aloe.utils import always_str
 
 
 class TestStep(Step):

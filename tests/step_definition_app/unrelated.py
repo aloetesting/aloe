@@ -1,4 +1,4 @@
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -18,5 +18,5 @@
 Unrelated module from the step definition test app.
 """
 
-# If this module is imported by Lychee, it will cause an error.
+# If this module is imported by Aloe, it will cause an error.
 raise Exception("This module should not be loaded when searching for steps.")

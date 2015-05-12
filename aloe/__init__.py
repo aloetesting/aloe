@@ -1,5 +1,6 @@
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
-# Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
+# -*- coding: utf-8 -*-
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
+# Copyright (C) <2010-2012>  Gabriel Falcão <gabriel@nacaolivre.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,23 +16,39 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Miscellaneous utilities.
+Main module.
 """
 
-from __future__ import print_function
 from __future__ import unicode_literals
+from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
 
 import sys
+import threading
+
+from aloe.registry import (
+    after,
+    around,
+    before,
+    step,
+)
+
+world = threading.local()
 
 
-def always_str(value):
+def main(argv=None):  # pragma: no cover
     """
-    Make an str on either Python 2 or Python 3.
+    Entry point for running Aloe.
     """
 
-    if sys.version_info >= (3, 0):
-        return value
-    else:
-        return value.encode()
+    if argv is None:
+        argv = sys.argv
+
+    from aloe.runner import Runner
+    Runner(argv)
+
+if __name__ == '__main__':  # pragma: no cover
+    main()
