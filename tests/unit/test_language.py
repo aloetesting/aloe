@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2010-2012>  Gabriel Falcão <gabriel@nacaolivre.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,7 +25,7 @@ from pyparsing import Keyword
 
 from nose.tools import assert_equals
 
-from lychee.languages import Language
+from aloe.languages import Language
 
 
 def test_language_is_english_by_default():

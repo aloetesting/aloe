@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2010-2012>  Gabriel Falcão <gabriel@nacaolivre.org>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -25,8 +25,8 @@ standard_library.install_aliases()
 
 from nose.tools import assert_equals
 
-from lychee.languages import Language
-from lychee.parser import Feature
+from aloe.languages import Language
+from aloe.parser import Feature
 
 SCENARIO = u"""
 Cenário: Consolidar o banco de dados de cursos universitários em arquivo texto

@@ -1,4 +1,4 @@
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -30,14 +30,14 @@ import os
 import unittest
 from functools import wraps
 
-from lychee import world
-from lychee.plugin import GherkinPlugin
-from lychee.registry import (
+from aloe import world
+from aloe.plugin import GherkinPlugin
+from aloe.registry import (
     CALLBACK_REGISTRY,
     PriorityClass,
     STEP_REGISTRY,
 )
-from lychee.runner import Runner
+from aloe.runner import Runner
 
 
 def in_directory(directory):
@@ -150,7 +150,7 @@ class FeatureTest(unittest.TestCase):
         world.__dict__.clear()
 
         return TestRunner(exit=False,
-                          argv=['lychee'] + list(features))
+                          argv=['aloe'] + list(features))
 
     def assert_feature_success(self, *features):
         """

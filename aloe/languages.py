@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2010-2012>  Gabriel Falcão <gabriel@nacaolivre.org>
 # Copyright (C) <2014>  Danielle Madeley <danielle@madeley.id.au>
 #
@@ -29,7 +29,7 @@ import os.path
 
 from pyparsing import Keyword, Literal
 
-from lychee.utils import always_str
+from aloe.utils import always_str
 
 
 class Language(object):

@@ -1,4 +1,4 @@
-# Lychee - Cucumber runner for Python based on Lettuce and Nose
+# Aloe - Cucumber runner for Python based on Lettuce and Nose
 # Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -23,12 +23,12 @@ from setuptools import setup, find_packages
 with open('requirements.txt') as requirements, \
         open('test_requirements.txt') as test_requirements:
     setup(
-        name='lychee',
+        name='aloe',
         version='0.0.1',
         description='Gherkin runner compatible with Lettuce',
         author='Alexey Kotlyarov',
         author_email='a@koterpillar.com',
-        url='https://github.com/koterpillar/lychee',
+        url='https://github.com/koterpillar/aloe',
         long_description=open('README.md').read(),
         classifiers=[
             'License :: OSI Approved :: ' +
@@ -37,7 +37,7 @@ with open('requirements.txt') as requirements, \
 
         packages=find_packages(exclude=['tests']),
         package_data={
-            'lychee': [
+            'aloe': [
                 'README.md',
                 'requirements.txt',
                 'test_requirements.txt',
@@ -46,7 +46,7 @@ with open('requirements.txt') as requirements, \
 
         entry_points={
             'console_scripts': [
-                'lychee = lychee:main',
+                'aloe = aloe:main',
             ],
         },
 
