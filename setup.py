@@ -24,7 +24,7 @@ with open('requirements.txt') as requirements, \
         open('test_requirements.txt') as test_requirements:
     setup(
         name='aloe',
-        version='0.0.1',
+        version='0.0.2',
         description='Gherkin runner compatible with Lettuce',
         author='Alexey Kotlyarov',
         author_email='a@koterpillar.com',
