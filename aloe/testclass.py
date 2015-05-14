@@ -80,6 +80,8 @@ class TestCase(unittest.TestCase):
     The base test class for tests compiled from Gherkin features.
     """
 
+    # Methods for the use of the tested code
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -90,16 +92,6 @@ class TestCase(unittest.TestCase):
     def tearDownClass(cls):
         super().tearDownClass()
         cls.after_feature(cls.feature)
-
-    @classmethod
-    def block_constructors(cls):
-        """
-        Constructors for the parsed blocks.
-        """
-
-        return {
-            'step': TestStep,
-        }
 
     @classmethod
     def behave_as(cls, context_step, string):
@@ -123,6 +115,18 @@ class TestCase(unittest.TestCase):
             step, func, args, kwargs = cls.prepare_step(step)
 
             func(step, *args, **kwargs)
+
+    # Methods for generating test classes
+
+    @classmethod
+    def block_constructors(cls):
+        """
+        Constructors for the parsed blocks.
+        """
+
+        return {
+            'step': TestStep,
+        }
 
     @classmethod
     def from_file(cls, file):
@@ -292,6 +296,31 @@ class TestCase(unittest.TestCase):
                                                step_container, outline, steps)
 
         return run_steps
+
+    @classmethod
+    def scenarios(cls):
+        """
+        Enumerate all the scenario method names in the test class, in the
+        order they were declared in the feature, together with their indices.
+        """
+
+        attrs = {
+            name: getattr(cls, name)
+            for name in cls.__dict__
+        }
+
+        scenarios = {
+            name: method
+            for (name, method) in attrs.items()
+            if getattr(method, 'is_scenario', False)
+        }
+
+        with_indices = [
+            (method.scenario_index, name)
+            for name, method in scenarios.items()
+        ]
+
+        return sorted(with_indices)
 
 
 # A decorator to add callbacks which wrap the steps tighter than all the user
