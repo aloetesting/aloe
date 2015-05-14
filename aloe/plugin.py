@@ -59,13 +59,19 @@ class GherkinPlugin(Plugin):
             dest='test_class_name',
             default=env.get('NOSE_GHERKIN_CLASS', test_class_name),
             metavar='TEST_CLASS',
-            help='Base class to use for the generated tests.',
+            help='Base class to use for the generated tests',
         )
         parser.add_option(
             '--no-ignore-python', action='store_false',
             dest='ignore_python',
             default=True,
-            help='Run Python and Gherkin tests together.',
+            help='Run Python and Gherkin tests together',
+        )
+        parser.add_option(
+            '-n', '--scenario-indices', action='store',
+            dest='scenario_indices',
+            default='',
+            help='Only run scenarios with these indices (comma-separated)',
         )
 
     def configure(self, options, conf):
@@ -80,6 +86,14 @@ class GherkinPlugin(Plugin):
         self.test_class = getattr(module, class_name)
 
         self.ignore_python = options.ignore_python
+
+        if options.scenario_indices:
+            self.scenario_indices = tuple(
+                int(index)
+                for index in options.scenario_indices.split(',')
+            )
+        else:
+            self.scenario_indices = None
 
     def wantDirectory(self, directory):
         """
@@ -136,7 +150,10 @@ class GherkinPlugin(Plugin):
             return getattr(test, method).scenario_index
 
         for scenario in sorted(scenarios, key=key):
-            yield test(scenario)
+            scenario_index = key(scenario)
+            if not self.scenario_indices or \
+                    scenario_index in self.scenario_indices:
+                yield test(scenario)
 
     def startContext(self, context):
         """
