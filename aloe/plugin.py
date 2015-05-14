@@ -137,23 +137,11 @@ class GherkinPlugin(Plugin):
 
         test = self.test_class.from_file(file)
 
-        scenarios = [
-            method for method in test.__dict__
-            if getattr(getattr(test, method), 'is_scenario', False)
-        ]
-
-        def key(method):
-            """
-            Scenario index to emit scenarios in proper order.
-            """
-
-            return getattr(test, method).scenario_index
-
-        for scenario in sorted(scenarios, key=key):
-            scenario_index = key(scenario)
+        # Filter the scenarios, if asked
+        for scenario_index, scenario_name in test.scenarios():
             if not self.scenario_indices or \
                     scenario_index in self.scenario_indices:
-                yield test(scenario)
+                yield test(scenario_name)
 
     def startContext(self, context):
         """
