@@ -25,7 +25,7 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
-from aloe import before, step, world
+from aloe import after, before, step, world
 
 
 @before.each_example
@@ -47,3 +47,14 @@ def press_add(self):
 @step(r'The result should be (\d+) on the screen')
 def assert_result(self, result):
     assert world.result == float(result)
+
+
+@after.each_example
+def record_all_results(scenario, outline, steps):
+    """
+    Record all results for the example
+    """
+
+    if not hasattr(world, 'all_results'):
+        world.all_results = []
+    world.all_results.append(world.result)
