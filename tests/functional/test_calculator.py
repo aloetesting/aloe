@@ -82,13 +82,14 @@ class CalculatorTest(FeatureTest):
         feature = 'features/scenario_index.feature'
 
         # Run a single scenario
-        self.assert_feature_success(feature, '-si', '1')
+        self.assert_feature_success(feature, '-n', '1')
         self.assertEqual(world.all_results, [10])
 
         # Run multiple scenarios
-        self.assert_feature_success(feature, '-si', '1', '2')
+        # TODO: Handling multi-valued options in Nose is tricky
+        self.assert_feature_success(feature, '-n', '1,2')
         self.assertEqual(world.all_results, [10, 20])
 
         # Run a scenario outline
-        self.assert_feature_success(feature, '-si', '3')
+        self.assert_feature_success(feature, '-n', '3')
         self.assertEqual(world.all_results, [30, 40])
