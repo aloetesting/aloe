@@ -21,6 +21,8 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
+from aloe import world
+
 from . import (
     FeatureTest,
     in_directory,
@@ -67,3 +69,22 @@ class CalculatorTest(FeatureTest):
         """
 
         self.assert_feature_success('tests')
+
+    def test_scenario_indices(self):
+        """
+        Test specifying the scenario indices to run.
+        """
+
+        feature = 'features/scenario_index.feature'
+
+        # Run a single scenario
+        self.assert_feature_success(feature, '-si', '1')
+        self.assertEqual(world.all_results, [10])
+
+        # Run multiple scenarios
+        self.assert_feature_success(feature, '-si', '1', '2')
+        self.assertEqual(world.all_results, [10, 20])
+
+        # Run a scenario outline
+        self.assert_feature_success(feature, '-si', '3')
+        self.assertEqual(world.all_results, [30, 40])
