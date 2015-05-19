@@ -41,6 +41,7 @@ with open('requirements.txt') as requirements, \
                 'README.md',
                 'requirements.txt',
                 'test_requirements.txt',
+                'aloe/i18n.json',
             ],
         },
 
