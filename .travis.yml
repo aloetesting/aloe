@@ -18,6 +18,7 @@ script:
     - coverage erase
     - coverage run -m nose
     - coverage report
+    - ./tools/check_installs
 
 after_success:
     - coveralls
