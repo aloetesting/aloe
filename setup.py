@@ -36,14 +36,7 @@ with open('requirements.txt') as requirements, \
         ],
 
         packages=find_packages(exclude=['tests']),
-        package_data={
-            'aloe': [
-                'README.md',
-                'requirements.txt',
-                'test_requirements.txt',
-                'aloe/i18n.json',
-            ],
-        },
+        include_package_data=True,
 
         entry_points={
             'console_scripts': [
