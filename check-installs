@@ -1,0 +1,19 @@
+#!/bin/sh -e
+# Check that the package installs
+
+# Build the distribution
+# TODO: put the archive in a separate directory
+python setup.py sdist
+
+# Prepare a clean virtual environment
+deactivate || true
+trap 'rm -rf check_install_venv' EXIT
+rm -rf check_install_venv
+virtualenv check_install_venv
+. check_install_venv/bin/activate
+
+# Install the package
+pip install dist/*.tar.gz
+
+# Smoke test
+aloe --version
