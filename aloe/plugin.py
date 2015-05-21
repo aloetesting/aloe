@@ -24,6 +24,8 @@ standard_library.install_aliases()
 
 import os
 
+from importlib import import_module
+
 from nose.plugins import Plugin
 
 from aloe.fs import FeatureLoader
@@ -82,7 +84,7 @@ class GherkinPlugin(Plugin):
         super().configure(options, conf)
 
         module_name, class_name = options.test_class_name.rsplit('.', 1)
-        module = __import__(module_name, fromlist=(class_name,))
+        module = import_module(module_name)
         self.test_class = getattr(module, class_name)
 
         self.ignore_python = options.ignore_python
