@@ -18,17 +18,18 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import zip
 from builtins import str
 from builtins import range
 from builtins import super
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 
 import ast
 import unittest
 from contextlib import contextmanager
-from functools import partial
 
 from aloe.codegen import make_function
 from aloe.parser import Feature, Step
@@ -48,26 +49,34 @@ class TestStep(Step):
 
     @property
     def testclass(self):
+        """
+        The test class containing this step (in a scenario or a background).
+        """
         try:
             return self.scenario.feature.testclass
         except AttributeError:
             return self.background.feature.testclass
 
     def __init__(self, *args, **kwargs):
+        """Initialize the step status."""
         self.failed = None
         self.passed = None
         super().__init__(*args, **kwargs)
 
     def behave_as(self, string):
+        """Run the specified step in the current context."""
         self.testclass.behave_as(self, string)
 
     def given(self, string):
+        """Run the specified 'Given' step in the current context."""
         self.behave_as('Given ' + string)
 
     def when(self, string):
+        """Run the specified 'When' step in the current context."""
         self.behave_as('When ' + string)
 
     def then(self, string):
+        """Run the specified 'Then' step in the current context."""
         self.behave_as('Then ' + string)
 
 
@@ -101,8 +110,8 @@ class TestCase(unittest.TestCase):
             constructors=cls.block_constructors(),
         )
 
+        # Copy necessary attributes onto new steps
         for step in steps:
-            # TODO: what attributes do the steps need?
             try:
                 step.scenario = context_step.scenario
             except AttributeError:
@@ -195,7 +204,8 @@ class TestCase(unittest.TestCase):
                 for i, (outline, steps) in enumerate(scenario.evaluated)
             }
 
-            # TODO: Line numbers?
+            # TODO: Line numbers of the outline lines aren't preserved, because
+            # the Outline tokens don't store the information
             result = make_function(
                 source=source,
                 context=context,
@@ -321,8 +331,10 @@ class TestCase(unittest.TestCase):
 
 # A decorator to add callbacks which wrap the steps tighter than all the user
 # callbacks.
+# pylint:disable=invalid-name
 inner_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
                                  priority_class=PriorityClass.SYSTEM_INNER)
+# pylint:enable=invalid-name
 
 
 @inner_around.each_step

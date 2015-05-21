@@ -36,7 +36,7 @@ from aloe.registry import (
     step,
 )
 
-world = threading.local()
+world = threading.local()  # pylint:disable=invalid-name
 
 
 def main(argv=None):  # pragma: no cover
