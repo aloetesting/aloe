@@ -44,11 +44,13 @@ def make_function(source, context=None, source_file=None, name=None):
 
     func = ast.parse(source)
 
-    # TODO: Check that generated code is a function
+    # Check that generated code is a function
+    # pylint:disable=unidiomatic-typecheck
     if type(func) != type(FUNCTION_DEF_SAMPLE) \
             or len(func.body) != 1 \
             or type(func.body[0]) != type(FUNCTION_DEF_SAMPLE.body[0]):
         raise ValueError("source must be a function definition.")
+    # pylint:enable=unidiomatic-typecheck
 
     # Set or record the function name
     if name is not None:
@@ -63,7 +65,7 @@ def make_function(source, context=None, source_file=None, name=None):
     context = context or {}
 
     code = compile(func, source_file, 'exec')
-    eval(code, context)
+    eval(code, context)  # pylint:disable=eval-used
 
     return context[name]
 

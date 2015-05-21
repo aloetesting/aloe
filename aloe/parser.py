@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import range
 from builtins import super
 from builtins import open
@@ -31,6 +32,7 @@ from builtins import dict
 from builtins import str
 from builtins import map
 from builtins import zip
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 
@@ -108,6 +110,7 @@ class ParseLocation(object):
 
     @file.setter
     def file(self, value):
+        """Set the file."""
         self._file = value
 
 
@@ -560,9 +563,11 @@ class Description(Node):
     @memoizedproperty
     def max_length(self):
         try:
-            return max(strings.get_terminal_width(
-                self.represent_line(n, annotate=False))
-                for n, _ in enumerate(self.lines))
+            return max(
+                strings.get_terminal_width(
+                    self.represent_line(n, annotate=False))
+                for n, _ in enumerate(self.lines)
+            )
         except ValueError:
             return 0
 

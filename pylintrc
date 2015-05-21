@@ -1,0 +1,11 @@
+[MASTER]
+load-plugins=pylint_mccabe
+
+[REPORTS]
+output-format=colorized
+
+[MESSAGES CONTROL]
+disable=
+    fixme,
+    locally-disabled,
+    locally-enabled,
