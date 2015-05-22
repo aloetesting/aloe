@@ -22,7 +22,9 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import super
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 
@@ -42,19 +44,29 @@ class GherkinPlugin(Plugin):
     Collect Gherkin tests.
     """
 
+    # Nose interface has non-Pythonic names
+    # pylint:disable=invalid-name,unused-argument
+
     name = 'gherkin'
     enableOpt = 'gherkin'
 
     TEST_CLASS = TestCase
 
     def begin(self):
+        """
+        Start the test suite, resetting internal state.
+        """
+
         self.steps_loaded = []
         self.context_level = 0
 
-    def options(self, parser, env=os.environ):
+    def options(self, parser, env=None):
         """
         Register the plugin options.
         """
+
+        if env is None:
+            env = os.environ
 
         super().options(parser, env)
 

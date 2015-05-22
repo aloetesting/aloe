@@ -6,6 +6,9 @@ output-format=colorized
 
 [MESSAGES CONTROL]
 disable=
+    attribute-defined-outside-init,
     fixme,
     locally-disabled,
     locally-enabled,
+    no-self-use,
+    too-few-public-methods,

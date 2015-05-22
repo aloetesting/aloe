@@ -23,9 +23,11 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import bytes
 from builtins import super
 from builtins import str
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 
@@ -71,6 +73,10 @@ class PriorityClass(object):
 
 
 class CallbackDict(dict):
+    """
+    A collection of callbacks for all situations.
+    """
+
     def __init__(self):
         """
         Initialize the callback lists for every kind of situation.
@@ -153,15 +159,16 @@ class CallbackDict(dict):
         to the given test part.
         """
 
-        before = self.hook_list(what, 'before')
-        around = self.hook_list(what, 'around')
-        after = self.hook_list(what, 'after')
+        before_hooks = self.hook_list(what, 'before')
+        around_hooks = self.hook_list(what, 'around')
+        after_hooks = self.hook_list(what, 'after')
 
-        multi_hook = multi_manager(*around)
+        multi_hook = multi_manager(*around_hooks)
 
         @wraps(function)
         def wrapped(*args, **kwargs):
-            for before_hook in before:
+            """Run all the hooks in proper relations to the event."""
+            for before_hook in before_hooks:
                 before_hook(*hook_args, **hook_kwargs)
 
             try:
@@ -169,7 +176,7 @@ class CallbackDict(dict):
                     return function(*args, **kwargs)
             finally:
                 # 'after' hooks still run after an exception
-                for after_hook in reversed(after):
+                for after_hook in reversed(after_hooks):
                     after_hook(*hook_args, **hook_kwargs)
 
         return wrapped
@@ -179,40 +186,47 @@ class CallbackDict(dict):
         Return a pair of functions to execute before and after the event.
         """
 
-        before = self.hook_list(what, 'before')
-        around = self.hook_list(what, 'around')
-        after = self.hook_list(what, 'after')
+        before_hooks = self.hook_list(what, 'before')
+        around_hooks = self.hook_list(what, 'around')
+        after_hooks = self.hook_list(what, 'after')
 
-        multi_hook = multi_manager(*around)
+        multi_hook = multi_manager(*around_hooks)
 
         # Save in a closure for both functions
         around_hook = [None]
 
         def before_func(*args, **kwargs):
-            for before_hook in before:
+            """All hooks to be called before the event."""
+            for before_hook in before_hooks:
                 before_hook(*args, **kwargs)
 
             around_hook[0] = multi_hook(*args, **kwargs)
             around_hook[0].__enter__()
 
         def after_func(*args, **kwargs):
+            """All hooks to be called after the event."""
             around_hook[0].__exit__(None, None, None)
             around_hook[0] = None
 
-            for after_hook in after:
+            for after_hook in after_hooks:
                 after_hook(*args, **kwargs)
 
         return before_func, after_func
 
 
 class StepDict(dict):
-    def load(self, step, func):
+    """
+    A mapping of step sentences to their definitions.
+    """
 
-        step_re = self._assert_is_step(step, func)
+    def load(self, sentence, func):
+        """Add a mapping between a step sentence and a function."""
+
+        step_re = self._assert_is_step(sentence, func)
         self[step_re] = func
 
         try:
-            func.sentence = step
+            func.sentence = sentence
             func.unregister = partial(self.unload, step_re)
         except AttributeError:
             # func might have been a bound method, no way to set attributes
@@ -221,17 +235,20 @@ class StepDict(dict):
 
         return func
 
-    def unload(self, step):
+    def unload(self, sentence):
+        """Remove a mapping for a given step sentence, if it exists."""
         try:
-            del self[step]
+            del self[sentence]
         except KeyError:
             pass
 
     def load_func(self, func):
-        regex = self._extract_sentence(func)
-        return self.load(regex, func)
+        """Load a step from a function."""
+        sentence = self._extract_sentence(func)
+        return self.load(sentence, func)
 
     def load_steps(self, obj):
+        """Load steps from an object."""
         exclude = getattr(obj, "exclude", [])
         for attr in dir(obj):
             if self._attr_is_step(attr, obj) and attr not in exclude:
@@ -240,6 +257,7 @@ class StepDict(dict):
         return obj
 
     def _extract_sentence(self, func):
+        """Extract the step sentence from a function."""
         func = getattr(func, '__func__', func)
         sentence = getattr(func, '__doc__', None)
         if sentence is None:
@@ -247,27 +265,30 @@ class StepDict(dict):
             sentence = sentence[0].upper() + sentence[1:]
         return sentence
 
-    def _assert_is_step(self, step, func):
+    def _assert_is_step(self, sentence, func):
+        """Compile a step definition or raise an error."""
         try:
-            return re.compile(step, re.I | re.U)
-        except re.error as e:
+            return re.compile(sentence, re.I | re.U)
+        except re.error as exc:
             raise StepLoadingError("Error when trying to compile:\n"
                                    "  regex: %r\n"
                                    "  for function: %s\n"
-                                   "  error: %s" % (step, func, e))
+                                   "  error: %s" % (sentence, func, exc))
 
     def _attr_is_step(self, attr, obj):
+        """Test whether an object's attribute is a step."""
         return attr[0] != '_' and self._is_func_or_method(getattr(obj, attr))
 
     def _is_func_or_method(self, func):
+        """Test whether an object is a function or a method."""
         func_dir = dir(func)
         return callable(func) and (
-            "func_name" in func_dir or
-            "__func__" in func_dir)
+            'func_name' in func_dir or
+            '__func__' in func_dir)
 
     def match_step(self, step):
         """
-        Find a function and arguments to call for a specified step.
+        Find a function and arguments to call for a specified Step.
 
         Returns a tuple of (function, args, kwargs).
         """
@@ -341,6 +362,7 @@ class CallbackDecorator(object):
         """
 
         def decorator(self, function, **kwargs):
+            """Decorator method for a particular situation."""
             return self._decorate(what, function, **kwargs)
         return decorator
 
@@ -350,6 +372,9 @@ class CallbackDecorator(object):
     all = make_decorator('all')
 
 
+# These are functions, not constants
+# pylint:disable=invalid-name
 after = CallbackDecorator(CALLBACK_REGISTRY, 'after')
 around = CallbackDecorator(CALLBACK_REGISTRY, 'around')
 before = CallbackDecorator(CALLBACK_REGISTRY, 'before')
+# pylint:enable=invalid-name
