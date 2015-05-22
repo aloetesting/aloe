@@ -67,7 +67,7 @@ from aloe import languages, strings
 from aloe.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
 
 # Pyparsing has strange naming guidelines
-# pylint:disable=invalid-name
+# pylint:disable=invalid-name,unused-argument
 
 # Pylint is thoroughly confused about members
 # pylint:disable=no-member
@@ -663,6 +663,7 @@ class Feature(TaggedBlock):
             *[scenario.max_length for scenario in self.scenarios]
         )
 
+    # pylint:disable=arguments-differ
     def represented(self, indent=0, annotate=True, description=True):
         s = super().represented(indent=indent, annotate=annotate)
 

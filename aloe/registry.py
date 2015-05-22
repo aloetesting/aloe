@@ -359,13 +359,17 @@ class CallbackDecorator(object):
                                 priority=priority)
         return function
 
-    def make_decorator(what):
+    def make_decorator(what):  # pylint:disable=no-self-argument
         """
         Make a decorator for a specific situation.
+
+        NOTE: This is not a method of this class, just used to generate
+        methods.
         """
 
         def decorator(self, function, **kwargs):
             """Decorator method for a particular situation."""
+            # pylint:disable=protected-access
             return self._decorate(what, function, **kwargs)
         return decorator
 
