@@ -7,6 +7,7 @@ output-format=colorized
 [MESSAGES CONTROL]
 disable=
     attribute-defined-outside-init,
+    duplicate-code,
     fixme,
     locally-disabled,
     locally-enabled,
