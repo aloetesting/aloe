@@ -109,6 +109,7 @@ class CallbackDict(dict):
             tuple(str(c.cell_contents) for c in func.__closure__ or ()),
         )
 
+    # pylint:disable=too-many-arguments
     def append_to(self, what, when, function, name=None, priority=0):
         """
         Add a callback for a particular type of hook.
@@ -119,6 +120,7 @@ class CallbackDict(dict):
         funcs = self[what][when].setdefault(priority, OrderedDict())
         funcs.pop(name, None)
         funcs[name] = function
+    # pylint:enable=too-many-arguments
 
     def clear(self, name=None, priority_class=None):
         """
@@ -286,7 +288,7 @@ class StepDict(dict):
             'func_name' in func_dir or
             '__func__' in func_dir)
 
-    def match_step(self, step):
+    def match_step(self, step_):
         """
         Find a function and arguments to call for a specified Step.
 
@@ -294,7 +296,7 @@ class StepDict(dict):
         """
 
         for regex, func in self.items():
-            matched = regex.search(step.sentence)
+            matched = regex.search(step_.sentence)
             if matched:
                 kwargs = matched.groupdict()
                 if kwargs:
@@ -303,7 +305,7 @@ class StepDict(dict):
                     args = matched.groups()
                     return (func, args, {})
 
-        raise NoDefinitionFound(step)
+        raise NoDefinitionFound(step_)
 
     def step(self, step_func_or_sentence):
         """
