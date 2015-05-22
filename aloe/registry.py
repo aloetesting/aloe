@@ -328,7 +328,10 @@ class StepDict(dict):
 STEP_REGISTRY = StepDict()
 
 
+# This is a function, not a constant
+# pylint:disable=invalid-name
 step = STEP_REGISTRY.step
+# pylint:enable=invalid-name
 
 
 CALLBACK_REGISTRY = CallbackDict()
