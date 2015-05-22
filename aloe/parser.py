@@ -700,7 +700,7 @@ def guess_language(string=None, filename=None):
         # try English
         pass
 
-    return languages.English()
+    return languages.Language(code='en')
 
 
 def parse(string=None,
