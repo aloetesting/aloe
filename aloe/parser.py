@@ -716,6 +716,11 @@ def guess_language(string=None, filename=None):
     return languages.Language(code=code)
 
 
+# TODO: This should be a class inheriting from aloe.languages.Language and
+# defining all the additional token types. Then the 'constructors' argument can
+# be replaced by subclassing (in aloe.testclass).
+# pylint:disable=too-complex,too-many-locals
+
 def parse(string=None,
           filename=None,
           token='FEATURE',
