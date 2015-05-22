@@ -20,8 +20,11 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import open
 from builtins import next
+from builtins import str
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 import json
@@ -58,11 +61,11 @@ class Language(object):
         return self.__class__.__name__
 
     def print_keywords(self):
-        print(u'FEATURE', unicode(self.FEATURE))
-        print(u'BACKGROUND', unicode(self.BACKGROUND))
-        print(u'SCENARIO', unicode(self.SCENARIO))
-        print(u'EXAMPLES', unicode(self.EXAMPLES))
-        print(u'STATEMENT', unicode(self.STATEMENT))
+        print(u'FEATURE', self.FEATURE)
+        print(u'BACKGROUND', self.BACKGROUND)
+        print(u'SCENARIO', self.SCENARIO)
+        print(u'EXAMPLES', self.EXAMPLES)
+        print(u'STATEMENT', self.STATEMENT)
 
     def __implement_me__(self):
         raise NotImplementedError("Language isn't complete")
@@ -72,9 +75,8 @@ class Language(object):
 
 
 # Load languages from JSON definitions
-i18n = os.path.join(os.path.dirname(__file__),
-                    'i18n.json')
-with open(i18n) as i18n:
+I18N_FILE = os.path.join(os.path.dirname(__file__), 'i18n.json')
+with open(I18N_FILE) as i18n:
     i18n = json.load(i18n)
 
     for lang, defn in i18n.items():

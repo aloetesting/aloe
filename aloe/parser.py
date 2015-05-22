@@ -41,11 +41,11 @@ from copy import deepcopy
 from collections import OrderedDict
 from warnings import warn
 
+import pyparsing
 from pyparsing import (CharsNotIn,
                        col,
                        Group,
                        Keyword,
-                       line,
                        lineEnd,
                        lineno,
                        OneOrMore,
@@ -65,13 +65,15 @@ from fuzzywuzzy import fuzz
 from aloe import languages, strings
 from aloe.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
 
+# Pyparsing has strange naming guidelines
+# pylint:disable=invalid-name
 
 # TODO: is this needed?
 memoizedproperty = property
 
 
-unicodePrintables = u''.join(chr(c) for c in range(65536)
-                             if not chr(c).isspace())
+unicodePrintables = ''.join(chr(c) for c in range(65536)
+                            if not chr(c).isspace())
 
 
 class ParseLocation(object):
@@ -120,7 +122,7 @@ class Node(object):
 
     def __init__(self, s, loc, tokens):
         self.described_at = ParseLocation(self, s, loc)
-        self.text = line(loc, s)
+        self.text = pyparsing.line(loc, s)
 
     def represented(self, indent=0, annotate=True):
         """
@@ -332,6 +334,7 @@ class TaggedBlock(Block):
 
     @property
     def tags(self):
+        """Tags for the scenario, feature, etc."""
         return self._tags
 
     def represented(self, indent=0, annotate=True):
@@ -659,9 +662,6 @@ class Feature(TaggedBlock):
 
         return s
 
-    def represent_description(self, **kwargs):
-        return self.description_node.represented(**kwargs)
-
 
 def guess_language(string=None, filename=None):
     """
@@ -752,6 +752,7 @@ def parse(string=None,
     # Table cells need to be able to handle escaped tokens such as \| and \n
     #
     def handle_esc_char(tokens):
+        """Handle escaped tokens, such as \\| and \\n, in table cells."""
         token = tokens[0]
 
         if token == r'\|':
@@ -772,7 +773,7 @@ def parse(string=None,
     # and recombine the cell afterwards
     #
     CELL = OneOrMore(CharsNotIn('|\n\\') + Optional(ESC_CHAR))
-    CELL.setParseAction(lambda tokens: u''.join(tokens))
+    CELL.setParseAction(''.join)
 
     TABLE_ROW = Suppress('|') + OneOrMore(CELL + Suppress('|')) + EOL
     TABLE_ROW.setParseAction(lambda tokens: [v.strip() for v in tokens])
