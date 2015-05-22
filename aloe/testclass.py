@@ -120,9 +120,11 @@ class TestCase(unittest.TestCase):
             except AttributeError:
                 step.background = context_step.background
 
-            step, func, args, kwargs = cls.prepare_step(step)
+            definition = cls.prepare_step(step)
 
-            func(step, *args, **kwargs)
+            definition['func'](definition['step'],
+                               *definition['args'],
+                               **definition['kwargs'])
 
     # Methods for generating test classes
 
@@ -181,7 +183,9 @@ class TestCase(unittest.TestCase):
         if background is None:
             result = make_function('def background(self): pass')
         else:
-            result = cls.make_steps(background, background.steps)
+            result = cls.make_steps(background,
+                                    background.steps,
+                                    is_background=True)
 
         return result
 
@@ -202,7 +206,7 @@ class TestCase(unittest.TestCase):
             context = {
                 'outline' + str(i): cls.make_steps(scenario,
                                                    steps,
-                                                   call_background=True,
+                                                   is_background=False,
                                                    outline=outline)
                 for i, (outline, steps) in enumerate(scenario.evaluated)
             }
@@ -218,7 +222,7 @@ class TestCase(unittest.TestCase):
         else:
             result = cls.make_steps(scenario,
                                     scenario.steps,
-                                    call_background=True)
+                                    is_background=False)
 
         result.is_scenario = True
         result.scenario_index = index
@@ -230,7 +234,7 @@ class TestCase(unittest.TestCase):
         """
         Find a definition for the step.
 
-        Returns a tuple of: (step, func, args, kwargs), where:
+        Returns a dictionary of: step, func, args, kwargs, where:
         - step is the original step
         - func is the function to run (wrapped in callbacks)
         - args and kwargs are the arguments to pass to the function
@@ -239,13 +243,19 @@ class TestCase(unittest.TestCase):
         func, args, kwargs = STEP_REGISTRY.match_step(step)
         func = CALLBACK_REGISTRY.wrap('step', func, step)
 
-        return (step, func, args, kwargs)
+        return {
+            'step': step,
+            'func': func,
+            'args': args,
+            'kwargs': kwargs,
+        }
 
     @classmethod
     def make_steps(cls, step_container, steps,
-                   call_background=False, outline=None):
+                   is_background, outline=None):
         """
-        Construct a method calling the specified steps.
+        Construct either a scenario or a background calling the specified
+        steps.
 
         The method will have debugging information corresponding to the lines
         in the feature file.
@@ -259,7 +269,7 @@ class TestCase(unittest.TestCase):
         ]
 
         source = 'def run_steps(self):\n'
-        if call_background:
+        if not is_background:
             source += '    self.background()\n'
         source += '\n'.join(
             '    func{i}(step{i}, *args{i}, **kwargs{i})'.format(i=i)
@@ -274,29 +284,20 @@ class TestCase(unittest.TestCase):
 
         # Supply all the step functions and arguments
         context = {}
-        for i, (step, func, args, kwargs) in enumerate(step_definitions):
+        for i, definition in enumerate(step_definitions):
             context.update({
-                k + str(i): v for k, v in {
-                    'step': step,
-                    'func': func,
-                    'args': args,
-                    'kwargs': kwargs,
-                }.items()
+                k + str(i): v for k, v in definition.items()
             })
 
-        # Function name
-        try:
-            func_name = step_container.name
-            is_background = False
-        except AttributeError:
-            # This is a background step
+        if is_background:
             func_name = 'background'
-            is_background = True
+        else:
+            func_name = step_container.name
 
         run_steps = make_function(
             source=source,
             context=context,
-            source_file=step.described_at.file,
+            source_file=step_container.described_at.file,
             name=func_name,
         )
 

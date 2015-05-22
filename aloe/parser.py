@@ -686,6 +686,9 @@ def guess_language(string=None, filename=None):
     phrase.
     """
 
+    # Default
+    code = 'en'
+
     LANG_PARSER = ZeroOrMore(
         Suppress('#') + (
             ((Suppress(Keyword('language')) + Suppress(':') +
@@ -703,16 +706,13 @@ def guess_language(string=None, filename=None):
         else:
             raise RuntimeError("Must pass string or filename")
 
-        code = tokens.language
-
-        if code != '':
-            return languages.Language(code=code)
+        if tokens.language != '':
+            code = tokens.language
 
     except ParseException:
-        # try English
         pass
 
-    return languages.Language(code='en')
+    return languages.Language(code=code)
 
 
 def parse(string=None,
