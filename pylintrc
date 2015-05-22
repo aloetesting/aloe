@@ -13,3 +13,8 @@ disable=
     locally-enabled,
     no-self-use,
     too-few-public-methods,
+    RP0101,
+    RP0401,
+    RP0402,
+    RP0701,
+    RP0801,
