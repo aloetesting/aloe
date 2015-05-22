@@ -41,6 +41,9 @@ from aloe.registry import (
 )
 from aloe.utils import always_str
 
+# Pylint is thoroughly confused about members
+# pylint:disable=no-member
+
 
 class TestStep(Step):
     """

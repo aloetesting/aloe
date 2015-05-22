@@ -68,6 +68,9 @@ from aloe.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
 # Pyparsing has strange naming guidelines
 # pylint:disable=invalid-name
 
+# Pylint is thoroughly confused about members
+# pylint:disable=no-member
+
 # TODO: is this needed?
 memoizedproperty = property
 
@@ -403,10 +406,13 @@ class TaggedBlock(Block):
 
 
 class Background(Block):
+    """Scenario background."""
     pass
 
 
 class Scenario(TaggedBlock):
+    """Scenario."""
+
     @classmethod
     def add_statements(cls, tokens):
         token = tokens[0]
@@ -564,6 +570,9 @@ class Description(Node):
 
     @memoizedproperty
     def max_length(self):
+        """
+        The maximum length of all description lines.
+        """
         try:
             return max(
                 strings.get_terminal_width(
@@ -575,6 +584,8 @@ class Description(Node):
 
 
 class Feature(TaggedBlock):
+    """Gherkin feature."""
+
     @classmethod
     def from_string(cls, string, **kwargs):
         """
