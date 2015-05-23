@@ -15,15 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Test basic Language functions.
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from pyparsing import Keyword
 
-from nose.tools import assert_equals
+from nose.tools import assert_equal
 
 from aloe.languages import Language
 
@@ -33,8 +36,8 @@ def test_language_is_english_by_default():
 
     lang = Language()
 
-    assert_equals(lang.code, 'en')
-    assert_equals(lang.name, 'English')
-    assert_equals(lang.native, 'English')
-    assert_equals(lang.FEATURE, 'Feature')
-    assert_equals(lang.SCENARIO, 'Scenario')
+    assert_equal(lang.code, 'en')
+    assert_equal(lang.name, 'English')
+    assert_equal(lang.native, 'English')
+    assert_equal(lang.FEATURE, 'Feature')
+    assert_equal(lang.SCENARIO, 'Scenario')

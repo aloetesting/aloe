@@ -14,15 +14,19 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Test Russian language parsing.
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-from builtins import str
 from future import standard_library
 standard_library.install_aliases()
 
-from nose.tools import assert_equals
+from nose.tools import assert_equal
 from aloe.languages import Language
 from aloe.parser import Feature
 
@@ -66,6 +70,7 @@ FEATURE = u'''
 
 
 def parse_scenario(string, language=None):
+    """Parse a scenario, prefixing it with a feature header."""
     feature = u"""
     Функция: parse_scenario
     """
@@ -82,13 +87,13 @@ def test_language_russian():
 
     lang = Language('ru')
 
-    assert_equals(lang.code, u'ru')
-    assert_equals(lang.name, u'Russian')
-    assert_equals(lang.native, u'Русский')
-    assert_equals(lang.FEATURE, u'Функционал')
-    assert_equals(str(lang.SCENARIO),
-                  u'{"Сценарий" ^ "Структура сценария"}')
-    assert_equals(lang.EXAMPLES, u'Примеры')
+    assert_equal(lang.code, u'ru')
+    assert_equal(lang.name, u'Russian')
+    assert_equal(lang.native, u'Русский')
+    assert_equal(lang.FEATURE, u'Функционал')
+    assert_equal(lang.SCENARIO,
+                 '{"Сценарий" ^ "Структура сценария"}')
+    assert_equal(lang.EXAMPLES, u'Примеры')
 
 
 def test_scenario_ru_from_string():
@@ -96,14 +101,14 @@ def test_scenario_ru_from_string():
     Language: RU -> Scenario.from_string
     """
 
-    ru = Language('ru')
-    scenario = parse_scenario(SCENARIO, language=ru)
+    lang = Language('ru')
+    scenario = parse_scenario(SCENARIO, language=lang)
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         u'Сохранение базы курсов универитета в текстовый файл'
     )
-    assert_equals(
+    assert_equal(
         scenario.steps[0].hashes,
         [
             {u'Название': u'Матан',
@@ -119,14 +124,14 @@ def test_scenario_outline1_ru_from_string():
     Language: RU -> Scenario.from_string, with scenario outline, first case
     """
 
-    ru = Language('ru')
-    scenario = parse_scenario(SCENARIO_OUTLINE1, language=ru)
+    lang = Language('ru')
+    scenario = parse_scenario(SCENARIO_OUTLINE1, language=lang)
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         u'Заполнение пользователей в базу'
     )
-    assert_equals(
+    assert_equal(
         scenario.outlines,
         [
             {u'имя': u'Вася', u'возраст': '22'},
@@ -140,15 +145,15 @@ def test_feature_ru_from_string():
     Language: RU -> Feature.from_string
     """
 
-    ru = Language('ru')
-    feature = Feature.from_string(FEATURE, language=ru)
+    lang = Language('ru')
+    feature = Feature.from_string(FEATURE, language=lang)
 
-    assert_equals(
+    assert_equal(
         feature.name,
         u'Деление чисел'
     )
 
-    assert_equals(
+    assert_equal(
         feature.description,
         u"Поскольку деление сложный процесс и люди часто допускают ошибки\n"
         u"Нужно дать им возможность делить на калькуляторе"
@@ -156,12 +161,12 @@ def test_feature_ru_from_string():
 
     (scenario, ) = feature.scenarios
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         u'Целочисленное деление'
     )
 
-    assert_equals(
+    assert_equal(
         scenario.steps[-1].hashes,
         [
             {u'делимое': '100', u'делитель': '2', u'частное': '50'},

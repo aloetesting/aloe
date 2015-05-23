@@ -14,6 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Test step and callback registry.
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -23,9 +28,13 @@ standard_library.install_aliases()
 
 import re
 import unittest
-from contextlib import contextmanager
 
-from nose.tools import assert_raises, assert_equal
+from nose.tools import (
+    assert_equal,
+    assert_in,
+    assert_not_in,
+    assert_raises,
+)
 
 from aloe.registry import (
     CallbackDecorator,
@@ -55,14 +64,14 @@ def test_StepDict_can_load_a_step_composed_of_a_regex_and_a_function():
     """
     steps = StepDict()
 
-    def func():
+    def func():  # pylint:disable=missing-docstring
         return ""
 
     step = "a step to test"
     steps.load(step, func)
 
     step = re.compile(step, re.I | re.U)
-    assert (step in steps)
+    assert_in(step, steps)
     assert_equal(steps[step], func)
 
 
@@ -72,7 +81,7 @@ def test_StepDict_load_a_step_return_the_given_function():
     """
     steps = StepDict()
 
-    def func():
+    def func():  # pylint:disable=missing-docstring
         return ""
 
     assert_equal(steps.load("another step", func), func)
@@ -80,19 +89,19 @@ def test_StepDict_load_a_step_return_the_given_function():
 
 def test_StepDict_can_extract_a_step_sentence_from_function_name():
     """
-    lettuce.STEP_REGISTRY._extract_sentence(func) parse func name and return
+    lettuce.STEP_REGISTRY.extract_sentence(func) parse func name and return
     a sentence
     """
     steps = StepDict()
 
-    def a_step_sentence():
+    def a_step_sentence():  # pylint:disable=missing-docstring
         pass
-    assert_equal("A step sentence", steps._extract_sentence(a_step_sentence))
+    assert_equal("A step sentence", steps.extract_sentence(a_step_sentence))
 
 
 def test_StepDict_can_extract_a_step_sentence_from_function_doc():
     """
-    lettuce.STEP_REGISTRY._extract_sentence(func) parse func doc and return
+    lettuce.STEP_REGISTRY.extract_sentence(func) parse func doc and return
     a sentence
     """
     steps = StepDict()
@@ -100,7 +109,7 @@ def test_StepDict_can_extract_a_step_sentence_from_function_doc():
     def a_step_func():
         """A step sentence"""
         pass
-    assert_equal("A step sentence", steps._extract_sentence(a_step_func))
+    assert_equal("A step sentence", steps.extract_sentence(a_step_func))
 
 
 def test_StepDict_can_load_a_step_from_a_function():
@@ -110,13 +119,13 @@ def test_StepDict_can_load_a_step_from_a_function():
     """
     steps = StepDict()
 
-    def a_step_to_test():
+    def a_step_to_test():  # pylint:disable=missing-docstring
         pass
 
     steps.load_func(a_step_to_test)
 
     expected_sentence = re.compile("A step to test", re.I | re.U)
-    assert (expected_sentence in steps)
+    assert_in(expected_sentence, steps)
     assert_equal(steps[expected_sentence], a_step_to_test)
 
 
@@ -128,8 +137,9 @@ def test_StepDict_can_load_steps_from_an_object():
     steps = StepDict()
 
     class LotsOfSteps(object):
+        """A class defining some steps."""
 
-        def step_1(self):
+        def step_1(self):  # pylint:disable=missing-docstring
             pass
 
         def step_2(self):
@@ -141,8 +151,8 @@ def test_StepDict_can_load_steps_from_an_object():
 
     expected_sentence1 = re.compile("Step 1", re.I | re.U)
     expected_sentence2 = re.compile("Doing something", re.I | re.U)
-    assert (expected_sentence1 in steps)
-    assert (expected_sentence2 in steps)
+    assert_in(expected_sentence1, steps)
+    assert_in(expected_sentence2, steps)
     assert_equal(steps[expected_sentence1], step_list.step_1)
     assert_equal(steps[expected_sentence2], step_list.step_2)
 
@@ -155,9 +165,10 @@ def test_StepDict_can_exclude_methods_when_load_steps():
     steps = StepDict()
 
     class LotsOfSteps(object):
+        """A class defining some steps."""
         exclude = ["step_1"]
 
-        def step_1(self):
+        def step_1(self):  # pylint:disable=missing-docstring
             pass
 
         def step_2(self):
@@ -169,8 +180,8 @@ def test_StepDict_can_exclude_methods_when_load_steps():
 
     expected_sentence1 = re.compile("Step 1", re.I | re.U)
     expected_sentence2 = re.compile("Doing something", re.I | re.U)
-    assert (expected_sentence1 not in steps)
-    assert (expected_sentence2 in steps)
+    assert_not_in(expected_sentence1, steps)
+    assert_in(expected_sentence2, steps)
 
 
 def test_StepDict_can_exclude_callable_object_when_load_steps():
@@ -181,7 +192,9 @@ def test_StepDict_can_exclude_callable_object_when_load_steps():
     steps = StepDict()
 
     class NoStep(object):
+        """A class defining something that's not a step."""
         class NotAStep(object):
+            """A callable which isn't a step."""
             def __call__(self):
                 pass
 
@@ -196,10 +209,11 @@ def test_unload_reload():
     Test unloading and then reloading the step.
     """
 
-    def step():
+    def step():  # pylint:disable=missing-docstring
         pass
 
     class StepDefinition(object):
+        """A step definition object to match."""
         sentence = 'My step 1'
 
     steps = StepDict()
@@ -209,6 +223,9 @@ def test_unload_reload():
 
     assert len(steps) == 1
     assert steps.match_step(StepDefinition) == (step, ('1',), {})
+
+    # Members added to step by registering it
+    # pylint:disable=no-member
 
     # Unload
     step.unregister()
@@ -297,6 +314,19 @@ class CallbackDictTest(unittest.TestCase):
             ('after', 'after_arg1', 'after_arg2'),
         ])
 
+    @staticmethod
+    def before_after_hook(sequence, when):
+        """A before/after hook appending to a sequence."""
+        return lambda name: appender(sequence, when + name)
+
+    @classmethod
+    def around_hook(cls, sequence):
+        """An around hook appending to a sequence."""
+        return lambda name: before_after(
+            cls.before_after_hook(sequence, '_before' + name),
+            cls.before_after_hook(sequence, '_after' + name)
+        )
+
     def test_priority(self):
         """
         Test callback priority.
@@ -306,19 +336,12 @@ class CallbackDictTest(unittest.TestCase):
 
         sequence = []
 
-        def before_after_hook(s):
-            return appender(sequence, when + s)
-
-        def around_hook(s):
-            return before_after(before_after_hook('_before' + s),
-                                before_after_hook('_after' + s))
-
         for when in ('before', 'after', 'around'):
             add_callback = getattr(self, when).all
             if when == 'around':
-                hook = around_hook
+                hook = self.around_hook(sequence)
             else:
-                hook = before_after_hook
+                hook = self.before_after_hook(sequence, when)
 
             # Default priority is 0
             add_callback(hook('B1'))
@@ -388,22 +411,16 @@ class CallbackDictTest(unittest.TestCase):
         """
 
         def prepare_hooks():
+            """Set up various hooks to test clearing only some of them."""
             callbacks = CallbackDict()
             sequence = []
-
-            def before_after_hook(s):
-                return appender(sequence, when + s)
-
-            def around_hook(s):
-                return before_after(before_after_hook('_before' + s),
-                                    before_after_hook('_after' + s))
 
             for when in ('before', 'after', 'around'):
                 add_callback = CallbackDecorator(callbacks, when).all
                 if when == 'around':
-                    hook = around_hook
+                    hook = self.around_hook(sequence)
                 else:
-                    hook = before_after_hook
+                    hook = self.before_after_hook(sequence, when)
 
                 # Default priority class
                 add_callback(hook('Default'))

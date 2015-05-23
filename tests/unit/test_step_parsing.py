@@ -15,6 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Test parsing steps.
+"""
+
 from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
@@ -80,14 +84,14 @@ INVALID_MULTI_LINE = '''
 
 import warnings
 
-from nose.tools import assert_equals, assert_raises
+from nose.tools import assert_equal, assert_raises
 
 from aloe.parser import Feature, Step
 from aloe.exceptions import LettuceSyntaxError
-from aloe import strings
 
 
 def parse_steps(step):
+    """Parse a step, prefixing it with a feature and a scenario header."""
     feature = """
     Feature: parse a step
     Scenario: parse a single step
@@ -110,7 +114,7 @@ def test_step_has_repr():
     Step implements __repr__ nicely
     """
     step, = parse_steps(I_HAVE_TASTY_BEVERAGES)
-    assert_equals(
+    assert_equal(
         repr(step),
         '<Step: "' + first_line_of(I_HAVE_TASTY_BEVERAGES) + '">'
     )
@@ -125,7 +129,7 @@ def test_can_get_sentence_from_string():
 
     assert isinstance(step, Step)
 
-    assert_equals(
+    assert_equal(
         step.sentence,
         first_line_of(I_HAVE_TASTY_BEVERAGES)
     )
@@ -137,7 +141,7 @@ def test_can_parse_keys_from_table():
     """
 
     step, = parse_steps(I_HAVE_TASTY_BEVERAGES)
-    assert_equals(step.keys, ('Name', 'Type', 'Price'))
+    assert_equal(step.keys, ('Name', 'Type', 'Price'))
 
 
 def test_can_parse_tables():
@@ -148,8 +152,8 @@ def test_can_parse_tables():
     step, = parse_steps(I_HAVE_TASTY_BEVERAGES)
 
     assert isinstance(step.hashes, list)
-    assert_equals(len(step.hashes), 2)
-    assert_equals(
+    assert_equal(len(step.hashes), 2)
+    assert_equal(
         step.hashes[0],
         {
             'Name': 'Skol',
@@ -157,7 +161,7 @@ def test_can_parse_tables():
             'Price': '3.80'
         }
     )
-    assert_equals(
+    assert_equal(
         step.hashes[1],
         {
             'Name': 'Nestea',
@@ -173,10 +177,10 @@ def test_can_parse_a_unary_array_from_single_step():
     """
 
     steps = parse_steps(I_HAVE_TASTY_BEVERAGES)
-    assert_equals(len(steps), 1)
+    assert_equal(len(steps), 1)
     assert isinstance(steps[0], Step)
-    assert_equals(steps[0].sentence,
-                  first_line_of(I_HAVE_TASTY_BEVERAGES))
+    assert_equal(steps[0].sentence,
+                 first_line_of(I_HAVE_TASTY_BEVERAGES))
 
 
 def test_can_parse_a_unary_array_from_complicated_step():
@@ -185,9 +189,9 @@ def test_can_parse_a_unary_array_from_complicated_step():
     """
 
     steps = parse_steps(I_LIKE_VEGETABLES)
-    assert_equals(len(steps), 1)
+    assert_equal(len(steps), 1)
     assert isinstance(steps[0], Step)
-    assert_equals(steps[0].sentence, first_line_of(I_LIKE_VEGETABLES))
+    assert_equal(steps[0].sentence, first_line_of(I_LIKE_VEGETABLES))
 
 
 def test_can_parse_regular_step_followed_by_tabular_step():
@@ -196,11 +200,11 @@ def test_can_parse_regular_step_followed_by_tabular_step():
     array.
     """
     steps = parse_steps(I_LIKE_VEGETABLES + I_HAVE_TASTY_BEVERAGES)
-    assert_equals(len(steps), 2)
+    assert_equal(len(steps), 2)
     assert isinstance(steps[0], Step)
     assert isinstance(steps[1], Step)
-    assert_equals(steps[0].sentence, first_line_of(I_LIKE_VEGETABLES))
-    assert_equals(steps[1].sentence, first_line_of(I_HAVE_TASTY_BEVERAGES))
+    assert_equal(steps[0].sentence, first_line_of(I_LIKE_VEGETABLES))
+    assert_equal(steps[1].sentence, first_line_of(I_HAVE_TASTY_BEVERAGES))
 
 
 def test_can_parse_tabular_step_followed_by_regular_step():
@@ -210,11 +214,11 @@ def test_can_parse_tabular_step_followed_by_regular_step():
     """
 
     steps = parse_steps(I_HAVE_TASTY_BEVERAGES + I_LIKE_VEGETABLES)
-    assert_equals(len(steps), 2)
+    assert_equal(len(steps), 2)
     assert isinstance(steps[0], Step)
     assert isinstance(steps[1], Step)
-    assert_equals(steps[0].sentence, first_line_of(I_HAVE_TASTY_BEVERAGES))
-    assert_equals(steps[1].sentence, first_line_of(I_LIKE_VEGETABLES))
+    assert_equal(steps[0].sentence, first_line_of(I_HAVE_TASTY_BEVERAGES))
+    assert_equal(steps[1].sentence, first_line_of(I_LIKE_VEGETABLES))
 
 
 def test_can_parse_two_ordinary_steps():
@@ -223,11 +227,11 @@ def test_can_parse_two_ordinary_steps():
     """
 
     steps = parse_steps(I_DIE_HAPPY + I_LIKE_VEGETABLES)
-    assert_equals(len(steps), 2)
+    assert_equal(len(steps), 2)
     assert isinstance(steps[0], Step)
     assert isinstance(steps[1], Step)
-    assert_equals(steps[0].sentence, first_line_of(I_DIE_HAPPY))
-    assert_equals(steps[1].sentence, first_line_of(I_LIKE_VEGETABLES))
+    assert_equal(steps[0].sentence, first_line_of(I_DIE_HAPPY))
+    assert_equal(steps[1].sentence, first_line_of(I_LIKE_VEGETABLES))
 
 
 def test_cannot_start_with_multiline():
@@ -244,9 +248,9 @@ def test_multiline_is_part_of_previous_step():
     """
 
     steps = parse_steps(MULTI_LINE)
-    assert_equals(len(steps), 1)
+    assert_equal(len(steps), 1)
     assert isinstance(steps[0], Step)
-    assert_equals(steps[0].sentence, 'Given I have a string like so:')
+    assert_equal(steps[0].sentence, 'Given I have a string like so:')
 
 
 def test_table_escaping():
@@ -254,32 +258,31 @@ def test_table_escaping():
     Table columns can be correctly escaped
     """
 
-    STEPS = """
+    steps = parse_steps(r"""
     Given I have items in my table:
         | Column 1                 |
         | This is a column         |
         | This is \| also a column |
-        | This is \\\\ a backslash |
-    """
+        | This is \\ a backslash   |
+    """)
 
-    steps = parse_steps(STEPS)
-
-    assert_equals(len(steps), 1)
+    assert_equal(len(steps), 1)
 
     step, = steps
 
-    assert_equals(step.table, [
-        ['Column 1'],
-        ['This is a column'],
-        ['This is | also a column'],
-        ['This is \\ a backslash'],
+    assert_equal(step.table, [
+        [r'Column 1'],
+        [r'This is a column'],
+        [r'This is | also a column'],
+        [r'This is \ a backslash'],
     ])
 
 
 def test_multiline_is_parsed():
+    """Test parsing a multiline string in a step."""
     step, = parse_steps(MULTI_LINE)
-    assert_equals(step.sentence, 'Given I have a string like so:')
-    assert_equals(step.multiline, u"""This is line one
+    assert_equal(step.sentence, 'Given I have a string like so:')
+    assert_equal(step.multiline, u"""This is line one
 and this is line two
 and this is line three
   and this is line four,
@@ -288,13 +291,13 @@ and this is line three
 
 
 def test_multiline_with_whitespace():
-    with warnings.catch_warnings(record=True) as w:
+    """Test parsing a multiline string with whitespace in a step."""
+    with warnings.catch_warnings(record=True) as warn:
         step, = parse_steps(MULTI_LINE_WHITESPACE)
-        print(len(w))
-        assert len(w) == 3
+        assert len(warn) == 3
 
-    assert_equals(step.sentence, 'Given I have a string like so:')
-    assert_equals(step.multiline, u"""This is line one
+    assert_equal(step.sentence, 'Given I have a string like so:')
+    assert_equal(step.multiline, u"""This is line one
 and this is line two
 and this is line three
   and this is line four,
@@ -304,7 +307,8 @@ and spaces at the end   \"""")
 
 
 def test_multiline_larger_indents():
-    with warnings.catch_warnings(record=True) as w:
+    """Test parsing a multiline string with varying indents in a step."""
+    with warnings.catch_warnings(record=True) as warn:
         step, = parse_steps('''
     Given I have a string line so:
     """
@@ -313,8 +317,8 @@ def test_multiline_larger_indents():
 And under indented
     """
     ''')
-        assert len(w) == 1
+        assert len(warn) == 1
 
-    assert_equals(step.multiline, u"""    Extra indented to start with
+    assert_equal(step.multiline, u"""    Extra indented to start with
 And back
 under indented""")
