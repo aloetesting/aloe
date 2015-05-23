@@ -23,6 +23,9 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
+from builtins import str
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 
@@ -108,7 +111,7 @@ def test_language_portuguese():
     assert_equal(lang.name, u'Portuguese')
     assert_equal(lang.native, u'Português')
     assert_equal(lang.FEATURE, u'Funcionalidade')
-    assert_equal(lang.SCENARIO,
+    assert_equal(str(lang.SCENARIO),
                  '{"Cenário" ^ "Cenario" ^ "Esquema do Cenário" ^ '
                  '"Esquema do Cenario" ^ "Delineação do Cenário" ^ '
                  '"Delineacao do Cenario"}')
