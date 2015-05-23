@@ -15,15 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Test Gherkin parser.
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import zip
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 
-from nose.tools import assert_equals, assert_raises
+from nose.tools import assert_equal, assert_raises
 
 from aloe.parser import Feature, Scenario, Background
 from aloe.exceptions import LettuceSyntaxError
@@ -526,7 +532,7 @@ def test_can_parse_feature_description():
 
     feature = Feature.from_string(FEATURE2)
 
-    assert_equals(
+    assert_equal(
         feature.description,
         "In order to avoid silly mistakes\n"
         "Cashiers must be able to calculate a fraction"
@@ -534,16 +540,16 @@ def test_can_parse_feature_description():
     expected_scenario_names = ["Regular numbers"]
     got_scenario_names = [s.name for s in feature.scenarios]
 
-    assert_equals(expected_scenario_names, got_scenario_names)
-    assert_equals(len(feature.scenarios[0].steps), 4)
+    assert_equal(expected_scenario_names, got_scenario_names)
+    assert_equal(len(feature.scenarios[0].steps), 4)
 
     step1, step2, step3, step4 = feature.scenarios[0].steps
 
-    assert_equals(step1.sentence, 'Given I have entered 3 into the calculator')
-    assert_equals(step2.sentence, 'And I have entered 2 into the calculator')
-    assert_equals(step3.sentence, 'When I press divide')
-    assert_equals(step4.sentence,
-                  'Then the result should be 1.5 on the screen')
+    assert_equal(step1.sentence, 'Given I have entered 3 into the calculator')
+    assert_equal(step2.sentence, 'And I have entered 2 into the calculator')
+    assert_equal(step3.sentence, 'When I press divide')
+    assert_equal(step4.sentence,
+                 'Then the result should be 1.5 on the screen')
 
 
 def test_scenarios_parsed_by_feature_has_feature():
@@ -552,7 +558,7 @@ def test_scenarios_parsed_by_feature_has_feature():
     feature = Feature.from_string(FEATURE2)
 
     for scenario in feature.scenarios:
-        assert_equals(scenario.feature, feature)
+        assert_equal(scenario.feature, feature)
 
 
 def test_feature_max_length_on_scenario():
@@ -562,7 +568,7 @@ def test_feature_max_length_on_scenario():
     """
 
     feature = Feature.from_string(FEATURE1)
-    assert_equals(feature.max_length, 76)
+    assert_equal(feature.max_length, 76)
 
 
 def test_feature_max_length_on_feature_description():
@@ -572,7 +578,7 @@ def test_feature_max_length_on_feature_description():
     """
 
     feature = Feature.from_string(FEATURE2)
-    assert_equals(feature.max_length, 47)
+    assert_equal(feature.max_length, 47)
 
 
 def test_feature_max_length_on_feature_name():
@@ -582,7 +588,7 @@ def test_feature_max_length_on_feature_name():
     """
 
     feature = Feature.from_string(FEATURE3)
-    assert_equals(feature.max_length, 78)
+    assert_equal(feature.max_length, 78)
 
 
 def test_feature_max_length_on_step_sentence():
@@ -592,7 +598,7 @@ def test_feature_max_length_on_step_sentence():
     """
 
     feature = Feature.from_string(FEATURE4)
-    assert_equals(feature.max_length, 55)
+    assert_equal(feature.max_length, 55)
 
 
 def test_feature_max_length_on_step_with_table():
@@ -602,7 +608,7 @@ def test_feature_max_length_on_step_with_table():
     """
 
     feature = Feature.from_string(FEATURE5)
-    assert_equals(feature.max_length, 83)
+    assert_equal(feature.max_length, 83)
 
 
 def test_feature_max_length_on_step_with_table_keys():
@@ -612,7 +618,7 @@ def test_feature_max_length_on_step_with_table_keys():
     """
 
     feature = Feature.from_string(FEATURE7)
-    assert_equals(feature.max_length, 74)
+    assert_equal(feature.max_length, 74)
 
 
 def test_feature_max_length_on_scenario_outline():
@@ -622,7 +628,7 @@ def test_feature_max_length_on_scenario_outline():
     """
 
     feature = Feature.from_string(FEATURE6)
-    assert_equals(feature.max_length, 79)
+    assert_equal(feature.max_length, 79)
 
 
 def test_feature_max_length_on_scenario_outline_keys():
@@ -633,14 +639,14 @@ def test_feature_max_length_on_scenario_outline_keys():
 
     feature1 = Feature.from_string(FEATURE8)
     feature2 = Feature.from_string(FEATURE9)
-    assert_equals(feature1.max_length, 68)
-    assert_equals(feature2.max_length, 68)
+    assert_equal(feature1.max_length, 68)
+    assert_equal(feature2.max_length, 68)
 
 
 def test_description_on_long_named_feature():
     "Can parse the description on long named features"
     feature = Feature.from_string(FEATURE3)
-    assert_equals(
+    assert_equal(
         feature.description,
         "In order to describe my features\n"
         "I want to add description on them",
@@ -650,7 +656,7 @@ def test_description_on_long_named_feature():
 def test_description_on_big_sentenced_steps():
     "Can parse the description on long sentenced steps"
     feature = Feature.from_string(FEATURE4)
-    assert_equals(
+    assert_equal(
         feature.description,
         "As a clever guy\n"
         "I want to describe this Feature\n"
@@ -665,7 +671,7 @@ def test_comments():
 
     feature = Feature.from_string(FEATURE10)
 
-    assert_equals(feature.max_length, 55)
+    assert_equal(feature.max_length, 55)
 
 
 def test_single_scenario_single_scenario():
@@ -712,13 +718,13 @@ def test_scenarios_with_extra_whitespace():
     "Make sure that extra leading whitespace is ignored"
     feature = Feature.from_string(FEATURE14)
 
-    assert_equals(type(feature.scenarios), list)
-    assert_equals(len(feature.scenarios), 1, "It should have 1 scenario")
-    assert_equals(feature.name, "Extra whitespace feature")
+    assert_equal(type(feature.scenarios), list)
+    assert_equal(len(feature.scenarios), 1, "It should have 1 scenario")
+    assert_equal(feature.name, "Extra whitespace feature")
 
     scenario = feature.scenarios[0]
-    assert_equals(type(scenario), Scenario)
-    assert_equals(scenario.name, "Extra whitespace scenario")
+    assert_equal(type(scenario), Scenario)
+    assert_equal(scenario.name, "Extra whitespace scenario")
 
 
 def test_scenarios_parsing():
@@ -757,6 +763,7 @@ def test_scenarios_with_special_characters():
 
 
 def test_background_parsing_with_mmf():
+    """Test background parsing with description."""
     feature = Feature.from_string(FEATURE16)
     assert feature.description == \
         "As a rental store owner\n" \
@@ -794,6 +801,7 @@ def test_background_parsing_with_mmf():
 
 
 def test_background_parsing_without_mmf():
+    """Test background parsing without description."""
     feature = Feature.from_string(FEATURE17)
     assert feature.description == ""
 

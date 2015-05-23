@@ -40,8 +40,7 @@ class Runner(nose.core.TestProgram):
     A test runner collecting Gherkin tests.
     """
 
-    @staticmethod
-    def gherkin_plugin():
+    def gherkin_plugin(self):
         """
         The plugin to add to the runner.
         Hook point for tests.

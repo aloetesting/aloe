@@ -27,7 +27,7 @@ standard_library.install_aliases()
 
 from contextlib import contextmanager
 
-from nose.tools import assert_equals
+from nose.tools import assert_equal
 
 from aloe import (
     after,
@@ -166,7 +166,7 @@ def emit_event_letters(self, kind, letters):
 @step(r'The ([^ ]+) event sequence should be "([^"]+)"')
 def check_events(self, kind, events):
     kind = kind.replace('"', '')
-    assert_equals(''.join(getattr(world, kind)), events)
+    assert_equal(''.join(getattr(world, kind)), events)
 
 
 @before.each_example

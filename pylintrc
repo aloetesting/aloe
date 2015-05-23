@@ -11,6 +11,7 @@ disable=
     fixme,
     locally-disabled,
     locally-enabled,
+    missing-super-argument,
     no-self-use,
     too-few-public-methods,
     RP0101,
@@ -18,3 +19,7 @@ disable=
     RP0402,
     RP0701,
     RP0801,
+
+[BASIC]
+function-rgx=[a-z_][a-z0-9_]{2,30}$|test_[a-zA-Z_][a-zA-Z0-9_]{2,100}$|setUp$|tearDown$
+attr-rgx=[a-z_][a-z0-9_]{2,30}$|maxDiff$

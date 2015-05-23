@@ -15,20 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Test parsing scenarios.
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import zip
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 
 from aloe.parser import Step, Scenario, Feature
 from aloe.exceptions import LettuceSyntaxError
 
-from nose.tools import assert_equals
+from nose.tools import assert_equal
 from nose.tools import assert_raises
-from nose.exc import SkipTest
 
 
 SCENARIO1 = """
@@ -223,8 +228,8 @@ Scenario: Tweeting
 """
 
 
-def parse_scenario(scenario,
-                   tags=None):
+def parse_scenario(scenario, tags=None):
+    """Parse a scenario, adding a feature header and tags."""
     feature_str = """
     Feature: test scenario
     """
@@ -248,7 +253,7 @@ def test_scenario_has_name():
 
     assert isinstance(scenario, Scenario)
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         "Adding some students to my university database"
     )
@@ -260,7 +265,7 @@ def test_scenario_has_repr():
     """
 
     scenario = parse_scenario(SCENARIO1)
-    assert_equals(
+    assert_equal(
         repr(scenario),
         '<Scenario: "Adding some students to my university database">'
     )
@@ -273,8 +278,8 @@ def test_scenario_has_steps():
 
     scenario = parse_scenario(SCENARIO1)
 
-    assert_equals(type(scenario.steps), list)
-    assert_equals(len(scenario.steps), 4, "It should have 4 steps")
+    assert_equal(type(scenario.steps), list)
+    assert_equal(len(scenario.steps), 4, "It should have 4 steps")
 
     expected_sentences = [
         "Given I have the following courses in my university:",
@@ -284,11 +289,11 @@ def test_scenario_has_steps():
     ]
 
     for step, expected_sentence in zip(scenario.steps, expected_sentences):
-        assert_equals(type(step), Step)
-        assert_equals(step.sentence, expected_sentence)
+        assert_equal(type(step), Step)
+        assert_equal(step.sentence, expected_sentence)
 
-    assert_equals(scenario.steps[0].keys, ('Name', 'Duration'))
-    assert_equals(
+    assert_equal(scenario.steps[0].keys, ('Name', 'Duration'))
+    assert_equal(
         scenario.steps[0].hashes,
         [
             {'Name': 'Computer Science', 'Duration': '5 years'},
@@ -304,7 +309,7 @@ def test_scenario_may_own_outlines():
 
     scenario = parse_scenario(OUTLINED_SCENARIO)
 
-    assert_equals(len(scenario.steps), 4)
+    assert_equal(len(scenario.steps), 4)
     expected_sentences = [
         'Given I have entered <input_1> into the calculator',
         'And I have entered <input_2> into the calculator',
@@ -313,11 +318,11 @@ def test_scenario_may_own_outlines():
     ]
 
     for step, expected_sentence in zip(scenario.steps, expected_sentences):
-        assert_equals(type(step), Step)
-        assert_equals(step.sentence, expected_sentence)
+        assert_equal(type(step), Step)
+        assert_equal(step.sentence, expected_sentence)
 
-    assert_equals(scenario.name, "Add two numbers")
-    assert_equals(
+    assert_equal(scenario.name, "Add two numbers")
+    assert_equal(
         scenario.outlines,
         [
             {'input_1': '20', 'input_2': '30',
@@ -337,7 +342,7 @@ def test_steps_parsed_by_scenarios_has_scenarios():
 
     scenario = parse_scenario(SCENARIO1)
     for step in scenario.steps:
-        assert_equals(step.scenario, scenario)
+        assert_equal(step.scenario, scenario)
 
 
 def test_scenario_sentences_can_be_solved():
@@ -346,7 +351,7 @@ def test_scenario_sentences_can_be_solved():
     """
     scenario = parse_scenario(OUTLINED_SCENARIO)
 
-    assert_equals(len(scenario.solved_steps), 12)
+    assert_equal(len(scenario.solved_steps), 12)
     expected_sentences = [
         'Given I have entered 20 into the calculator',
         'And I have entered 30 into the calculator',
@@ -363,8 +368,8 @@ def test_scenario_sentences_can_be_solved():
     ]
 
     for step, expected in zip(scenario.solved_steps, expected_sentences):
-        assert_equals(type(step), Step)
-        assert_equals(step.sentence, expected)
+        assert_equal(type(step), Step)
+        assert_equal(step.sentence, expected)
 
 
 def test_scenario_tables_are_solved_against_outlines():
@@ -388,8 +393,8 @@ def test_scenario_tables_are_solved_against_outlines():
 
     scenario = parse_scenario(OUTLINED_SCENARIO_WITH_SUBSTITUTIONS_IN_TABLE)
     for step, expected in zip(scenario.solved_steps, expected_hashes_per_step):
-        assert_equals(type(step), Step)
-        assert_equals(step.hashes, expected)
+        assert_equal(type(step), Step)
+        assert_equal(step.hashes, expected)
 
 
 def test_scenario_multilines_are_solved_against_outlines():
@@ -403,8 +408,8 @@ def test_scenario_multilines_are_solved_against_outlines():
         OUTLINED_SCENARIO_WITH_SUBSTITUTIONS_IN_MULTILINE)
     step = scenario.solved_steps[0]
 
-    assert_equals(type(step), Step)
-    assert_equals(step.multiline, expected_multiline)
+    assert_equal(type(step), Step)
+    assert_equal(step.multiline, expected_multiline)
 
 
 def test_solved_steps_also_have_scenario_as_attribute():
@@ -414,7 +419,7 @@ def test_solved_steps_also_have_scenario_as_attribute():
 
     scenario = parse_scenario(OUTLINED_SCENARIO)
     for step in scenario.solved_steps:
-        assert_equals(step.scenario, scenario)
+        assert_equal(step.scenario, scenario)
 
 
 def test_scenario_outlines_within_feature():
@@ -425,7 +430,7 @@ def test_scenario_outlines_within_feature():
     feature = Feature.from_string(OUTLINED_FEATURE)
     scenario = feature.scenarios[0]
 
-    assert_equals(len(scenario.solved_steps), 12)
+    assert_equal(len(scenario.solved_steps), 12)
     expected_sentences = [
         'Given I have entered 20 into the calculator',
         'And I have entered 30 into the calculator',
@@ -442,8 +447,8 @@ def test_scenario_outlines_within_feature():
     ]
 
     for step, expected in zip(scenario.solved_steps, expected_sentences):
-        assert_equals(type(step), Step)
-        assert_equals(step.sentence, expected)
+        assert_equal(type(step), Step)
+        assert_equal(step.sentence, expected)
 
 
 def test_full_featured_feature():
@@ -454,18 +459,18 @@ def test_full_featured_feature():
     feature = Feature.from_string(OUTLINED_FEATURE_WITH_MANY)
     scenario1, scenario2, scenario3, scenario4 = feature.scenarios
 
-    assert_equals(scenario1.name, 'Do something')
-    assert_equals(scenario2.name, 'Do something else')
-    assert_equals(scenario3.name, 'Worked!')
-    assert_equals(scenario4.name, 'Add two numbers wisely')
+    assert_equal(scenario1.name, 'Do something')
+    assert_equal(scenario2.name, 'Do something else')
+    assert_equal(scenario3.name, 'Worked!')
+    assert_equal(scenario4.name, 'Add two numbers wisely')
 
-    assert_equals(len(scenario1.solved_steps), 2)
+    assert_equal(len(scenario1.solved_steps), 2)
     expected_sentences = [
         'Given I have entered ok into the fail',
         'Given I have entered fail into the ok',
     ]
     for step, expected in zip(scenario1.solved_steps, expected_sentences):
-        assert_equals(step.sentence, expected)
+        assert_equal(step.sentence, expected)
 
     expected_evaluated = (
         (
@@ -511,9 +516,9 @@ def test_full_featured_feature():
     )
     for ((got_examples, got_steps), (expected_examples, expected_steps)) \
             in zip(scenario4.evaluated, expected_evaluated):
-        assert_equals(got_examples, expected_examples)
-        assert_equals([x.sentence for x in got_steps],
-                      expected_steps)
+        assert_equal(got_examples, expected_examples)
+        assert_equal([x.sentence for x in got_steps],
+                     expected_steps)
 
 
 def test_scenario_with_table_and_no_step_fails():
@@ -526,7 +531,7 @@ def test_scenario_ignore_commented_lines_from_examples():
     "Comments on scenario example should be ignored"
     scenario = parse_scenario(OUTLINED_SCENARIO_WITH_COMMENTS_ON_EXAMPLES)
 
-    assert_equals(
+    assert_equal(
         scenario.outlines,
         [
             {'input_1': '20', 'input_2': '30',
@@ -542,7 +547,7 @@ def test_scenario_aggregate_all_examples_blocks():
     scenario = parse_scenario(
         OUTLINED_SCENARIO_WITH_MORE_THAN_ONE_EXAMPLES_BLOCK)
 
-    assert_equals(
+    assert_equal(
         scenario.outlines,
         [
             {'input_1': '20', 'input_2': '30',
@@ -562,9 +567,9 @@ def test_scenario_aggregate_all_examples_blocks():
 def test_commented_scenarios():
     "A scenario string that contains lines starting with '#' will be commented"
     scenario = parse_scenario(COMMENTED_SCENARIO)
-    assert_equals(scenario.name,
-                  u'Adding some students to my university database')
-    assert_equals(len(scenario.steps), 4)
+    assert_equal(scenario.name,
+                 'Adding some students to my university database')
+    assert_equal(len(scenario.steps), 4)
 
 
 def test_scenario_matches_tags():
@@ -620,20 +625,6 @@ def test_scenario_matches_tags_excluding_fuzzywuzzy():
                               tags=['anothertag', 'another-tag'])
 
     assert not scenario.matches_tags(['-~anothertag'])
-
-
-def test_scenario_show_tags_in_its_representation():
-    ("Scenario#represented should show its tags")
-
-    raise SkipTest("FIXME")
-
-    scenario = parse_scenario(
-        SCENARIO1,
-        tags=['slow', 'firefox', 'chrome'])
-
-    assert scenario.represented() == \
-        '  @slow @firefox @chrome\n  '\
-        'Scenario: Adding some students to my university database'
 
 
 def test_scenario_with_inline_comments():

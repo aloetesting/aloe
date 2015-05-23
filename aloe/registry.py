@@ -246,7 +246,7 @@ class StepDict(dict):
 
     def load_func(self, func):
         """Load a step from a function."""
-        sentence = self._extract_sentence(func)
+        sentence = self.extract_sentence(func)
         return self.load(sentence, func)
 
     def load_steps(self, obj):
@@ -258,7 +258,7 @@ class StepDict(dict):
                 self.load_func(step_method)
         return obj
 
-    def _extract_sentence(self, func):
+    def extract_sentence(self, func):
         """Extract the step sentence from a function."""
         func = getattr(func, '__func__', func)
         sentence = getattr(func, '__doc__', None)
