@@ -323,8 +323,8 @@ class CallbackDictTest(unittest.TestCase):
     def around_hook(cls, sequence):
         """An around hook appending to a sequence."""
         return lambda name: before_after(
-            cls.before_after_hook(sequence, '_before' + name),
-            cls.before_after_hook(sequence, '_after' + name)
+            cls.before_after_hook(sequence, 'around_before')(name),
+            cls.before_after_hook(sequence, 'around_after')(name)
         )
 
     def test_priority(self):
