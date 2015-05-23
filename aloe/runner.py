@@ -22,7 +22,9 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import super
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 
@@ -38,8 +40,7 @@ class Runner(nose.core.TestProgram):
     A test runner collecting Gherkin tests.
     """
 
-    @staticmethod
-    def gherkin_plugin():
+    def gherkin_plugin(self):
         """
         The plugin to add to the runner.
         Hook point for tests.

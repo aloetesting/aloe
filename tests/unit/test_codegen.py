@@ -37,7 +37,12 @@ from aloe.codegen import (
 
 
 class TestCodegen(unittest.TestCase):
+    """
+    Test code generation.
+    """
+
     def test_not_functions(self):
+        """Test make_function error conditions."""
         with self.assertRaises(ValueError):
             make_function('1+1')
 
@@ -45,8 +50,10 @@ class TestCodegen(unittest.TestCase):
             make_function('def one(): pass\ndef two(): pass')
 
     def test_functions(self):
-        def inner(x):
-            return 2 * x
+        """Test generating functions."""
+        def inner(val):
+            """A function to pass to the generated one."""
+            return 2 * val
 
         adder = make_function(
             'def add(x, y): return inner(x) + y',
@@ -60,7 +67,12 @@ class TestCodegen(unittest.TestCase):
 
 
 class TestIndent(unittest.TestCase):
+    """
+    Test indentation utilities.
+    """
+
     def test_indent(self):
+        """Test indent()."""
         original = '\n'.join((
             'def one():',
             '    pass',
@@ -89,6 +101,7 @@ class TestIndent(unittest.TestCase):
         )))
 
     def test_remove_indent(self):
+        """Test remove_indent()."""
         original = '\n'.join((
             '    def one():',
             '        pass',
@@ -115,31 +128,35 @@ class TestMultiManager(unittest.TestCase):
 
     @staticmethod
     def good_cm(order, i):
+        """Generate a context manager logging to a given list."""
         @contextmanager
-        def cm():
+        def manager():
+            """Context manager logging to a given list."""
             order.append('before cm {0}'.format(i))
             try:
                 yield 'from cm {0}'.format(i)
             finally:
                 order.append('after cm {0}'.format(i))
 
-        return cm
+        return manager
 
     @staticmethod
-    def bad_cm(order):
-        @contextmanager
-        def cm():
-            raise Exception
+    @contextmanager
+    def bad_cm():
+        """A context manager always raising an exception."""
+        raise Exception
 
     def test_multi_manager(self):
+        """Test combining context managers."""
+
         order = []
 
         multi_cm = multi_manager(self.good_cm(order, 1),
                                  self.good_cm(order, 2))
 
-        with multi_cm() as (r1, r2):
-            self.assertEqual(r1, 'from cm 1')
-            self.assertEqual(r2, 'from cm 2')
+        with multi_cm() as (ctx1, ctx2):
+            self.assertEqual(ctx1, 'from cm 1')
+            self.assertEqual(ctx2, 'from cm 2')
 
         self.assertEqual(order, [
             'before cm 1',
@@ -149,6 +166,7 @@ class TestMultiManager(unittest.TestCase):
         ])
 
     def test_empty(self):
+        """Test the trivial case - combining zero context managers."""
         with multi_manager()() as result:
             self.assertEqual(result, ())
 
@@ -156,14 +174,15 @@ class TestMultiManager(unittest.TestCase):
             self.assertEqual(result, ())
 
     def test_exceptions(self):
+        """Test exception propagation."""
         order = []
 
         multi_cm = multi_manager(self.good_cm(order, 1),
-                                 self.bad_cm(order),
+                                 self.bad_cm,
                                  self.good_cm(order, 3))
 
         with self.assertRaises(Exception):
-            with multi_cm() as (r1, r2):
+            with multi_cm() as (_, _):
                 raise AssertionError("Should not succeed")
 
         self.assertEqual(order, [
@@ -178,6 +197,7 @@ class TestMultiManager(unittest.TestCase):
 
         @contextmanager
         def yield_args(*args):
+            """A context manager passing its arguments to the context."""
             yield args
 
         with multi_manager(yield_args, yield_args)('foo', 'bar') \

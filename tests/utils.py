@@ -28,6 +28,7 @@ def appender(target, *args):
     """
 
     def append(*append_args):
+        """Append the earlier specified and given arguments to the target."""
         target.append(args + append_args)
 
     return append
@@ -41,6 +42,7 @@ def before_after(before, after):
 
     @contextmanager
     def around(*args, **kwargs):
+        """Call given functions before and after the context."""
         before(*args, **kwargs)
         yield
         after(*args, **kwargs)

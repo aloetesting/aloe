@@ -23,7 +23,9 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
+# pylint:disable=redefined-builtin
 from builtins import super
+# pylint:enable=redefined-builtin
 standard_library.install_aliases()
 
 import os
@@ -58,15 +60,17 @@ def in_directory(directory):
 
             @wraps(old_setup)
             def setUp(self):
-                self._last_wd = os.getcwd()
+                """Wrap setUp to change to given directory first."""
+                self.last_wd = os.getcwd()
                 os.chdir(directory)
                 old_setup(self)
 
             @wraps(old_teardown)
             def tearDown(self):
+                """Wrap tearDown to restore the original directory."""
                 old_teardown(self)
-                os.chdir(self._last_wd)
-                delattr(self, '_last_wd')
+                os.chdir(self.last_wd)
+                delattr(self, 'last_wd')
 
             func_or_class.setUp = setUp
             func_or_class.tearDown = tearDown
@@ -98,15 +102,15 @@ class TestGherkinPlugin(GherkinPlugin):
     Test Gherkin plugin.
     """
 
-    def loadTestsFromFile(self, file):
+    def loadTestsFromFile(self, file_):
         """
         Record which tests were run.
         """
 
-        for scenario in super().loadTestsFromFile(file):
+        for scenario in super().loadTestsFromFile(file_):
             yield scenario
 
-        self.runner.tests_run.append(file)
+        self.runner.tests_run.append(file_)
 
 
 class TestRunner(Runner):

@@ -26,9 +26,9 @@ from future import standard_library
 standard_library.install_aliases()
 
 import operator
-from functools import reduce
+from functools import reduce  # pylint:disable=redefined-builtin
 
-from nose.tools import assert_equals
+from nose.tools import assert_equal
 
 from aloe import world
 from aloe.testclass import TestCase
@@ -122,7 +122,7 @@ class CallbackTest(FeatureTest):
         self.assert_feature_success('features/all_callbacks_1.feature',
                                     'features/all_callbacks_2.feature')
 
-        assert_equals(''.join(world.all), '{[ABCD]}')
+        assert_equal(''.join(world.all), '{[ABCD]}')
 
     def test_behave_as(self):
         """
@@ -139,5 +139,5 @@ class CallbackTest(FeatureTest):
         # The test fails
         self.run_features('features/step_failed.feature')
 
-        assert_equals(world.passing_steps, 2)
-        assert_equals(world.failed_steps, 1)
+        assert_equal(world.passing_steps, 2)
+        assert_equal(world.failed_steps, 1)

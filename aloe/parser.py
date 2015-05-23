@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import range
 from builtins import super
 from builtins import open
@@ -31,6 +32,7 @@ from builtins import dict
 from builtins import str
 from builtins import map
 from builtins import zip
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 
@@ -40,11 +42,11 @@ from copy import deepcopy
 from collections import OrderedDict
 from warnings import warn
 
+import pyparsing
 from pyparsing import (CharsNotIn,
                        col,
                        Group,
                        Keyword,
-                       line,
                        lineEnd,
                        lineno,
                        OneOrMore,
@@ -64,13 +66,18 @@ from fuzzywuzzy import fuzz
 from aloe import languages, strings
 from aloe.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
 
+# Pyparsing has strange naming guidelines
+# pylint:disable=invalid-name,unused-argument
+
+# Pylint is thoroughly confused about members
+# pylint:disable=no-member
 
 # TODO: is this needed?
 memoizedproperty = property
 
 
-unicodePrintables = u''.join(chr(c) for c in range(65536)
-                             if not chr(c).isspace())
+unicodePrintables = ''.join(chr(c) for c in range(65536)
+                            if not chr(c).isspace())
 
 
 class ParseLocation(object):
@@ -108,6 +115,7 @@ class ParseLocation(object):
 
     @file.setter
     def file(self, value):
+        """Set the file."""
         self._file = value
 
 
@@ -118,7 +126,7 @@ class Node(object):
 
     def __init__(self, s, loc, tokens):
         self.described_at = ParseLocation(self, s, loc)
-        self.text = line(loc, s)
+        self.text = pyparsing.line(loc, s)
 
     def represented(self, indent=0, annotate=True):
         """
@@ -330,6 +338,7 @@ class TaggedBlock(Block):
 
     @property
     def tags(self):
+        """Tags for the scenario, feature, etc."""
         return self._tags
 
     def represented(self, indent=0, annotate=True):
@@ -398,10 +407,13 @@ class TaggedBlock(Block):
 
 
 class Background(Block):
+    """Scenario background."""
     pass
 
 
 class Scenario(TaggedBlock):
+    """Scenario."""
+
     @classmethod
     def add_statements(cls, tokens):
         token = tokens[0]
@@ -559,15 +571,22 @@ class Description(Node):
 
     @memoizedproperty
     def max_length(self):
+        """
+        The maximum length of all description lines.
+        """
         try:
-            return max(strings.get_terminal_width(
-                self.represent_line(n, annotate=False))
-                for n, _ in enumerate(self.lines))
+            return max(
+                strings.get_terminal_width(
+                    self.represent_line(n, annotate=False))
+                for n, _ in enumerate(self.lines)
+            )
         except ValueError:
             return 0
 
 
 class Feature(TaggedBlock):
+    """Gherkin feature."""
+
     @classmethod
     def from_string(cls, string, **kwargs):
         """
@@ -644,6 +663,7 @@ class Feature(TaggedBlock):
             *[scenario.max_length for scenario in self.scenarios]
         )
 
+    # pylint:disable=arguments-differ
     def represented(self, indent=0, annotate=True, description=True):
         s = super().represented(indent=indent, annotate=annotate)
 
@@ -654,9 +674,6 @@ class Feature(TaggedBlock):
             s += self.description_node.represented(annotate=annotate)
 
         return s
-
-    def represent_description(self, **kwargs):
-        return self.description_node.represented(**kwargs)
 
 
 def guess_language(string=None, filename=None):
@@ -669,6 +686,9 @@ def guess_language(string=None, filename=None):
 
     phrase.
     """
+
+    # Default
+    code = 'en'
 
     LANG_PARSER = ZeroOrMore(
         Suppress('#') + (
@@ -687,17 +707,19 @@ def guess_language(string=None, filename=None):
         else:
             raise RuntimeError("Must pass string or filename")
 
-        code = tokens.language
-
-        if code != '':
-            return languages.Language(code=code)
+        if tokens.language != '':
+            code = tokens.language
 
     except ParseException:
-        # try English
         pass
 
-    return languages.English()
+    return languages.Language(code=code)
 
+
+# TODO: This should be a class inheriting from aloe.languages.Language and
+# defining all the additional token types. Then the 'constructors' argument can
+# be replaced by subclassing (in aloe.testclass).
+# pylint:disable=too-complex,too-many-locals
 
 def parse(string=None,
           filename=None,
@@ -748,6 +770,7 @@ def parse(string=None,
     # Table cells need to be able to handle escaped tokens such as \| and \n
     #
     def handle_esc_char(tokens):
+        """Handle escaped tokens, such as \\| and \\n, in table cells."""
         token = tokens[0]
 
         if token == r'\|':
@@ -768,7 +791,7 @@ def parse(string=None,
     # and recombine the cell afterwards
     #
     CELL = OneOrMore(CharsNotIn('|\n\\') + Optional(ESC_CHAR))
-    CELL.setParseAction(lambda tokens: u''.join(tokens))
+    CELL.setParseAction(''.join)
 
     TABLE_ROW = Suppress('|') + OneOrMore(CELL + Suppress('|')) + EOL
     TABLE_ROW.setParseAction(lambda tokens: [v.strip() for v in tokens])

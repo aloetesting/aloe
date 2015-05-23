@@ -31,8 +31,8 @@ with open('requirements.txt') as requirements, \
         url='https://github.com/koterpillar/aloe',
         long_description=open('README.md').read(),
         classifiers=[
-            'License :: OSI Approved :: ' +
-                'GNU General Public License v3 or later (GPLv3+)',
+            ('License :: OSI Approved :: ' +
+             'GNU General Public License v3 or later (GPLv3+)'),
         ],
 
         packages=find_packages(exclude=['tests']),

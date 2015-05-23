@@ -15,15 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Test Portuguese (Brasilian) language parsing.
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import str
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 
-from nose.tools import assert_equals
+from nose.tools import assert_equal
 
 from aloe.languages import Language
 from aloe.parser import Feature
@@ -83,6 +89,7 @@ Funcionalidade: Pesquisar alunos com matrícula vencida
 
 
 def parse_scenario(string, language=None):
+    """Parse a scenario, prefixing it with a feature header."""
     feature = """
 Funcionalidade: parse_scenario
     """
@@ -100,15 +107,15 @@ def test_language_portuguese():
 
     lang = Language('pt-br')
 
-    assert_equals(lang.code, u'pt-br')
-    assert_equals(lang.name, u'Portuguese')
-    assert_equals(lang.native, u'Português')
-    assert_equals(lang.FEATURE, u'Funcionalidade')
-    assert_equals(str(lang.SCENARIO),
-                  u'{"Cenário" ^ "Cenario" ^ "Esquema do Cenário" ^ '
-                  u'"Esquema do Cenario" ^ "Delineação do Cenário" ^ '
-                  u'"Delineacao do Cenario"}')
-    assert_equals(lang.EXAMPLES, u'Exemplos')
+    assert_equal(lang.code, u'pt-br')
+    assert_equal(lang.name, u'Portuguese')
+    assert_equal(lang.native, u'Português')
+    assert_equal(lang.FEATURE, u'Funcionalidade')
+    assert_equal(str(lang.SCENARIO),
+                 '{"Cenário" ^ "Cenario" ^ "Esquema do Cenário" ^ '
+                 '"Esquema do Cenario" ^ "Delineação do Cenário" ^ '
+                 '"Delineacao do Cenario"}')
+    assert_equal(lang.EXAMPLES, u'Exemplos')
 
 
 def test_scenario_ptbr_from_string():
@@ -119,12 +126,12 @@ def test_scenario_ptbr_from_string():
     ptbr = Language('pt-br')
     scenario = parse_scenario(SCENARIO, language=ptbr)
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         u'Consolidar o banco de dados de cursos universitários em '
         u'arquivo texto'
     )
-    assert_equals(
+    assert_equal(
         scenario.steps[0].hashes,
         [
             {'Nome': u'Ciência da Computação', u'Duração': '5 anos'},
@@ -141,11 +148,11 @@ def test_scenario_outline1_ptbr_from_string():
     ptbr = Language('pt-br')
     scenario = parse_scenario(SCENARIO_OUTLINE1, language=ptbr)
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         'Cadastrar um aluno no banco de dados'
     )
-    assert_equals(
+    assert_equal(
         scenario.outlines,
         [
             {'nome': u'Gabriel', u'idade': '22'},
@@ -162,11 +169,11 @@ def test_scenario_outline2_ptbr_from_string():
     ptbr = Language('pt-br')
     scenario = parse_scenario(SCENARIO_OUTLINE2, language=ptbr)
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         'Cadastrar um aluno no banco de dados'
     )
-    assert_equals(
+    assert_equal(
         scenario.outlines,
         [
             {'nome': u'Gabriel', u'idade': '99'},
@@ -183,12 +190,12 @@ def test_feature_ptbr_from_string():
     ptbr = Language('pt-br')
     feature = Feature.from_string(FEATURE, language=ptbr)
 
-    assert_equals(
+    assert_equal(
         feature.name,
         u'Pesquisar alunos com matrícula vencida'
     )
 
-    assert_equals(
+    assert_equal(
         feature.description,
         u"Como gerente financeiro\n"
         u"Eu quero pesquisar alunos com matrícula vencida\n"
@@ -197,12 +204,12 @@ def test_feature_ptbr_from_string():
 
     (scenario, ) = feature.scenarios
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         'Pesquisar por nome do curso'
     )
 
-    assert_equals(
+    assert_equal(
         scenario.steps[-1].hashes,
         [
             {'nome': u'João', u'valor devido': 'R$ 512,66'},
