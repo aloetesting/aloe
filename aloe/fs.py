@@ -35,7 +35,9 @@ from importlib import import_module
 try:
     reload
 except NameError:
+    # pylint:disable=no-name-in-module,redefined-builtin
     from importlib import reload
+    # pylint:enable=no-name-in-module,redefined-builtin
 from os import walk
 from os.path import abspath, join, dirname
 

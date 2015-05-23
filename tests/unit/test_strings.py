@@ -15,13 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Test utilities from aloe.strings.
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
-from nose.tools import assert_equals
+
+from nose.tools import assert_equal
 
 from aloe import strings
 
@@ -37,7 +42,7 @@ def test_represent_table():
         ['Miguel', 19],
     ]
 
-    assert_equals(
+    assert_equal(
         strings.represent_table(table),
         u"| name           | age |\n"
         u"| Gabriel Falcão | 22  |\n"
@@ -56,7 +61,7 @@ def test_represent_table_escapes_pipe():
         ['Miguel | Arcanjo', 19],
     ]
 
-    assert_equals(
+    assert_equal(
         strings.represent_table(table),
         '\n'.join((
             r"| name              | age |",
@@ -77,7 +82,7 @@ def test_represent_table_allows_empty():
         ['Miguel | Arcanjo', ''],
     ]
 
-    assert_equals(
+    assert_equal(
         strings.represent_table(table),
         '\n'.join((
             r"| name              | age |",
@@ -90,7 +95,7 @@ def test_represent_table_allows_empty():
 def test_column_width():
     """strings.column_width"""
 
-    assert_equals(
+    assert_equal(
         strings.get_terminal_width(u"あいうえお"),
         10
     )
@@ -99,7 +104,7 @@ def test_column_width():
 def test_column_width_w_number_and_char():
     """strings.column_width_w_number_and_char"""
 
-    assert_equals(
+    assert_equal(
         strings.get_terminal_width(u"%s%c" % (u"4209", 0x4209)),
         6
     )

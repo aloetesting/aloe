@@ -14,6 +14,11 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""
+Test French language parsing.
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
@@ -21,7 +26,7 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
-from nose.tools import assert_equals
+from nose.tools import assert_equal
 from aloe.languages import Language
 from aloe.parser import Feature
 
@@ -116,6 +121,7 @@ Fonctionnalité: Faire plusieur choses en même temps
 
 
 def parse_scenario(string, language=None):
+    """Parse a scenario, prefixing it with a feature header."""
     feature = u"""
     Fonctionnalité: parse_scenario
     """
@@ -133,12 +139,12 @@ def test_language_french():
 
     lang = Language('fr')
 
-    assert_equals(lang.code, u'fr')
-    assert_equals(lang.name, u'French')
-    assert_equals(lang.native, u'Français')
-    assert_equals(lang.FEATURE, u'Fonctionnalité')
-    assert_equals(lang.SCENARIO, u'Scénario')
-    assert_equals(lang.EXAMPLES, u'Exemples')
+    assert_equal(lang.code, u'fr')
+    assert_equal(lang.name, u'French')
+    assert_equal(lang.native, u'Français')
+    assert_equal(lang.FEATURE, u'Fonctionnalité')
+    assert_equal(lang.SCENARIO, u'Scénario')
+    assert_equal(lang.EXAMPLES, u'Exemples')
 
 
 def test_scenario_fr_from_string():
@@ -149,11 +155,11 @@ def test_scenario_fr_from_string():
     lang = Language('fr')
     scenario = parse_scenario(SCENARIO, language=lang)
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         u'Ajout de plusieurs cursus dans la base de mon université'
     )
-    assert_equals(
+    assert_equal(
         scenario.steps[0].hashes,
         [
             {'Nom': u"Science de l'Informatique", u'Durée': '5 ans'},
@@ -170,11 +176,11 @@ def test_scenario_outline1_fr_from_string():
     lang = Language('fr')
     scenario = parse_scenario(OUTLINED_SCENARIO, language=lang)
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         'Ajouter 2 nombres'
     )
-    assert_equals(
+    assert_equal(
         scenario.outlines,
         [
             {u'input_1': u'20', u'input_2': u'30',
@@ -195,11 +201,11 @@ def test_scenario_outline2_fr_from_string():
     lang = Language('fr')
     scenario = parse_scenario(OUTLINED_SCENARIO2, language=lang)
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         'Ajouter 2 nombres'
     )
-    assert_equals(
+    assert_equal(
         scenario.outlines,
         [
             {u'input_1': u'20', u'input_2': u'30',
@@ -220,11 +226,11 @@ def test_scenario_outline3_fr_from_string():
     lang = Language('fr')
     scenario = parse_scenario(OUTLINED_SCENARIO2, language=lang)
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         'Ajouter 2 nombres'
     )
-    assert_equals(
+    assert_equal(
         scenario.outlines,
         [
             {u'input_1': u'20', u'input_2': u'30',
@@ -246,12 +252,12 @@ def test_feature_fr_from_string():
 
     feature = Feature.from_string(OUTLINED_FEATURE, language=lang)
 
-    assert_equals(
+    assert_equal(
         feature.name,
         u'Faire plusieur choses en même temps'
     )
 
-    assert_equals(
+    assert_equal(
         feature.description,
         u"De façon à automatiser les tests\n"
         u"En tant que fainéant\n"
@@ -260,12 +266,12 @@ def test_feature_fr_from_string():
 
     (scenario, ) = feature.scenarios
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         'Ajouter 2 nombres'
     )
 
-    assert_equals(
+    assert_equal(
         scenario.outlines,
         [
             {u'input_1': u'20', u'input_2': u'30',
@@ -287,12 +293,12 @@ def test_feature_fr_from_string2():
 
     feature = Feature.from_string(OUTLINED_FEATURE2, language=lang)
 
-    assert_equals(
+    assert_equal(
         feature.name,
         u'Faire plusieur choses en même temps'
     )
 
-    assert_equals(
+    assert_equal(
         feature.description,
         u"De façon à automatiser les tests\n"
         u"En tant que fainéant\n"
@@ -301,12 +307,12 @@ def test_feature_fr_from_string2():
 
     (scenario, ) = feature.scenarios
 
-    assert_equals(
+    assert_equal(
         scenario.name,
         'Ajouter 2 nombres'
     )
 
-    assert_equals(
+    assert_equal(
         scenario.outlines,
         [
             {u'input_1': u'20', u'input_2': u'30',

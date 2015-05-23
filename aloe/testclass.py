@@ -18,17 +18,18 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import zip
 from builtins import str
 from builtins import range
 from builtins import super
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 
 import ast
 import unittest
 from contextlib import contextmanager
-from functools import partial
 
 from aloe.codegen import make_function
 from aloe.parser import Feature, Step
@@ -40,6 +41,9 @@ from aloe.registry import (
 )
 from aloe.utils import always_str
 
+# Pylint is thoroughly confused about members
+# pylint:disable=no-member
+
 
 class TestStep(Step):
     """
@@ -48,26 +52,34 @@ class TestStep(Step):
 
     @property
     def testclass(self):
+        """
+        The test class containing this step (in a scenario or a background).
+        """
         try:
             return self.scenario.feature.testclass
         except AttributeError:
             return self.background.feature.testclass
 
     def __init__(self, *args, **kwargs):
+        """Initialize the step status."""
         self.failed = None
         self.passed = None
         super().__init__(*args, **kwargs)
 
     def behave_as(self, string):
+        """Run the specified step in the current context."""
         self.testclass.behave_as(self, string)
 
     def given(self, string):
+        """Run the specified 'Given' step in the current context."""
         self.behave_as('Given ' + string)
 
     def when(self, string):
+        """Run the specified 'When' step in the current context."""
         self.behave_as('When ' + string)
 
     def then(self, string):
+        """Run the specified 'Then' step in the current context."""
         self.behave_as('Then ' + string)
 
 
@@ -101,16 +113,18 @@ class TestCase(unittest.TestCase):
             constructors=cls.block_constructors(),
         )
 
+        # Copy necessary attributes onto new steps
         for step in steps:
-            # TODO: what attributes do the steps need?
             try:
                 step.scenario = context_step.scenario
             except AttributeError:
                 step.background = context_step.background
 
-            step, func, args, kwargs = cls.prepare_step(step)
+            definition = cls.prepare_step(step)
 
-            func(step, *args, **kwargs)
+            definition['func'](definition['step'],
+                               *definition['args'],
+                               **definition['kwargs'])
 
     # Methods for generating test classes
 
@@ -125,13 +139,13 @@ class TestCase(unittest.TestCase):
         }
 
     @classmethod
-    def from_file(cls, file):
+    def from_file(cls, file_):
         """
         Construct a test class from a feature file.
         """
 
         feature = Feature.from_file(
-            file,
+            file_,
             constructors=cls.block_constructors(),
         )
 
@@ -169,7 +183,9 @@ class TestCase(unittest.TestCase):
         if background is None:
             result = make_function('def background(self): pass')
         else:
-            result = cls.make_steps(background, background.steps)
+            result = cls.make_steps(background,
+                                    background.steps,
+                                    is_background=True)
 
         return result
 
@@ -190,12 +206,13 @@ class TestCase(unittest.TestCase):
             context = {
                 'outline' + str(i): cls.make_steps(scenario,
                                                    steps,
-                                                   call_background=True,
+                                                   is_background=False,
                                                    outline=outline)
                 for i, (outline, steps) in enumerate(scenario.evaluated)
             }
 
-            # TODO: Line numbers?
+            # TODO: Line numbers of the outline lines aren't preserved, because
+            # the Outline tokens don't store the information
             result = make_function(
                 source=source,
                 context=context,
@@ -205,7 +222,7 @@ class TestCase(unittest.TestCase):
         else:
             result = cls.make_steps(scenario,
                                     scenario.steps,
-                                    call_background=True)
+                                    is_background=False)
 
         result.is_scenario = True
         result.scenario_index = index
@@ -217,7 +234,7 @@ class TestCase(unittest.TestCase):
         """
         Find a definition for the step.
 
-        Returns a tuple of: (step, func, args, kwargs), where:
+        Returns a dictionary of: step, func, args, kwargs, where:
         - step is the original step
         - func is the function to run (wrapped in callbacks)
         - args and kwargs are the arguments to pass to the function
@@ -226,13 +243,19 @@ class TestCase(unittest.TestCase):
         func, args, kwargs = STEP_REGISTRY.match_step(step)
         func = CALLBACK_REGISTRY.wrap('step', func, step)
 
-        return (step, func, args, kwargs)
+        return {
+            'step': step,
+            'func': func,
+            'args': args,
+            'kwargs': kwargs,
+        }
 
     @classmethod
     def make_steps(cls, step_container, steps,
-                   call_background=False, outline=None):
+                   is_background, outline=None):
         """
-        Construct a method calling the specified steps.
+        Construct either a scenario or a background calling the specified
+        steps.
 
         The method will have debugging information corresponding to the lines
         in the feature file.
@@ -246,7 +269,7 @@ class TestCase(unittest.TestCase):
         ]
 
         source = 'def run_steps(self):\n'
-        if call_background:
+        if not is_background:
             source += '    self.background()\n'
         source += '\n'.join(
             '    func{i}(step{i}, *args{i}, **kwargs{i})'.format(i=i)
@@ -261,29 +284,20 @@ class TestCase(unittest.TestCase):
 
         # Supply all the step functions and arguments
         context = {}
-        for i, (step, func, args, kwargs) in enumerate(step_definitions):
+        for i, definition in enumerate(step_definitions):
             context.update({
-                k + str(i): v for k, v in {
-                    'step': step,
-                    'func': func,
-                    'args': args,
-                    'kwargs': kwargs,
-                }.items()
+                k + str(i): v for k, v in definition.items()
             })
 
-        # Function name
-        try:
-            func_name = step_container.name
-            is_background = False
-        except AttributeError:
-            # This is a background step
+        if is_background:
             func_name = 'background'
-            is_background = True
+        else:
+            func_name = step_container.name
 
         run_steps = make_function(
             source=source,
             context=context,
-            source_file=step.described_at.file,
+            source_file=step_container.described_at.file,
             name=func_name,
         )
 
@@ -321,8 +335,10 @@ class TestCase(unittest.TestCase):
 
 # A decorator to add callbacks which wrap the steps tighter than all the user
 # callbacks.
+# pylint:disable=invalid-name
 inner_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
                                  priority_class=PriorityClass.SYSTEM_INNER)
+# pylint:enable=invalid-name
 
 
 @inner_around.each_step

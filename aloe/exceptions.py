@@ -18,12 +18,15 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import super
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 
 
 class LettuceSyntaxError(SyntaxError):
+    """A syntax error in a feature file."""
     def __init__(self, filename, string):
         self.filename = filename
         self.string = string
@@ -35,6 +38,7 @@ class LettuceSyntaxError(SyntaxError):
 
 
 class LettuceSyntaxWarning(SyntaxWarning):
+    """A warning about syntax in a feature file."""
     pass
 
 

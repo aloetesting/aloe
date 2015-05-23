@@ -15,12 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Utilities for working with strings.
+"""
+
 from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
 from builtins import str
 from builtins import zip
+# pylint:enable=redefined-builtin
 from future import standard_library
 standard_library.install_aliases()
 import unicodedata
@@ -49,10 +55,10 @@ def represent_table(table, indent=0, cell_wrap=lambda s: s):
         for column in zip(*table)  # transpose
     ]
 
-    return u'\n'.join(
-        u' ' * indent +
-        u'| %s |' % u' | '.join(cell_wrap(ljust(cell, length))
-                                for cell, length in zip(row, lengths))
+    return '\n'.join(
+        ' ' * indent +
+        '| %s |' % ' | '.join(cell_wrap(ljust(cell, length))
+                              for cell, length in zip(row, lengths))
         for row in table
     )
 
@@ -73,12 +79,12 @@ def get_terminal_width(string):
     return sum(widths.get(unicodedata.east_asian_width(c), 1) for c in string)
 
 
-def ljust(string, n):
+def ljust(string, width):
     """
     A version of ljust that considers the terminal width (see
     get_terminal_width)
     """
 
-    n -= get_terminal_width(string)
+    width -= get_terminal_width(string)
 
-    return string + u' ' * n
+    return string + ' ' * width
