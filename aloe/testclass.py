@@ -139,13 +139,13 @@ class TestCase(unittest.TestCase):
         }
 
     @classmethod
-    def from_file(cls, file):
+    def from_file(cls, file_):
         """
         Construct a test class from a feature file.
         """
 
         feature = Feature.from_file(
-            file,
+            file_,
             constructors=cls.block_constructors(),
         )
 

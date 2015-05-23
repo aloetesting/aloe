@@ -26,7 +26,7 @@ from future import standard_library
 standard_library.install_aliases()
 
 import operator
-from functools import reduce
+from functools import reduce  # pylint:disable=redefined-builtin
 
 from nose.tools import assert_equal
 

@@ -120,12 +120,12 @@ class GherkinPlugin(Plugin):
                 return True
             directory = os.path.dirname(directory)
 
-    def wantFile(self, file):
+    def wantFile(self, file_):
         """
         Load features from feature files.
         """
 
-        if os.path.basename(file).endswith('.feature'):
+        if os.path.basename(file_).endswith('.feature'):
             return True
 
     def wantPython(self, _):
@@ -138,18 +138,18 @@ class GherkinPlugin(Plugin):
 
     wantClass = wantFunction = wantMethod = wantModule = wantPython
 
-    def loadTestsFromFile(self, file):
+    def loadTestsFromFile(self, file_):
         """
         Load a feature from the feature file.
         """
 
         # Ensure the steps corresponding to the feature file are loaded
-        steps_dir = FeatureLoader.find_steps_dir(file)
+        steps_dir = FeatureLoader.find_steps_dir(file_)
         if steps_dir not in self.steps_loaded:
             FeatureLoader.find_and_load_step_definitions(steps_dir)
             self.steps_loaded.append(steps_dir)
 
-        test = self.test_class.from_file(file)
+        test = self.test_class.from_file(file_)
 
         # Filter the scenarios, if asked
         for scenario_index, scenario_name in test.scenarios():
