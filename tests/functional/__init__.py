@@ -102,15 +102,15 @@ class TestGherkinPlugin(GherkinPlugin):
     Test Gherkin plugin.
     """
 
-    def loadTestsFromFile(self, file):
+    def loadTestsFromFile(self, file_):
         """
         Record which tests were run.
         """
 
-        for scenario in super().loadTestsFromFile(file):
+        for scenario in super().loadTestsFromFile(file_):
             yield scenario
 
-        self.runner.tests_run.append(file)
+        self.runner.tests_run.append(file_)
 
 
 class TestRunner(Runner):
