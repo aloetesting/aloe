@@ -29,6 +29,7 @@ from builtins import super
 standard_library.install_aliases()
 
 import os
+import tempfile
 import unittest
 from functools import wraps
 
@@ -144,6 +145,17 @@ class FeatureTest(unittest.TestCase):
         """
 
         os.environ['NOSE_NOCAPTURE'] = '1'
+
+    def run_feature_string(self, feature_string):
+        """
+        Run the specified string as a feature.
+        """
+
+        with tempfile.NamedTemporaryFile(suffix='.feature', dir=os.getcwd()) \
+                as feature_file:
+            feature_file.write(feature_string.encode())
+            feature_file.flush()
+            return self.run_features(os.path.relpath(feature_file.name))
 
     def run_features(self, *features):
         """
