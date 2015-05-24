@@ -27,7 +27,7 @@ standard_library.install_aliases()
 
 import os
 
-from . import (
+from aloe.testing import (
     FeatureTest,
     in_directory,
 )

@@ -34,7 +34,7 @@ COPYRIGHT = """
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-""".lstrip('\n').split('\n')
+""".strip('\n').split('\n')
 
 
 def add_notice(lines):
@@ -50,13 +50,18 @@ def add_notice(lines):
         Get the next line from an iterable, stripping trailing newline.
         """
 
-        line = next(iterable)
-        return line.rstrip('\n')
+        try:
+            line = next(iterable)
+            return line.rstrip('\n')
+        except StopIteration:
+            return None
 
     # Skip things that need to be at the start of the file
     line = next_nl(lines)
-    while line.startswith('#!') or \
-            (line.startswith('#') and 'coding: ' in line):
+    while line is not None and (
+            line.startswith('#!') or
+            (line.startswith('#') and 'coding: ' in line)
+    ):
         yield line
         line = next_nl(lines)
 
@@ -67,7 +72,7 @@ def add_notice(lines):
 
     # Write out the authors
     has_author = False
-    while line.startswith('# Copyright'):
+    while line is not None and line.startswith('# Copyright'):
         yield line
         line = next_nl(lines)
         has_author = True
@@ -83,14 +88,20 @@ def add_notice(lines):
     yield '#'
 
     # Write the actual notice
-    while line in COPYRIGHT:
+    while line in COPYRIGHT or line == '':
         line = next_nl(lines)
 
     for copyright_line in COPYRIGHT:
         yield copyright_line
 
+    # Nothing else in the file, give up
+    if line is None:
+        return
+
     # Rest of the file
-    while True:
+    yield ''
+
+    while line is not None:
         assert not line.startswith('# Copyright'), \
             "Why is line '{0}' so low?".format(line)
         assert line.strip('# ') == '' or line not in COPYRIGHT, \

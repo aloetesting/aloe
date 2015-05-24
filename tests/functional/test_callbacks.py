@@ -32,7 +32,7 @@ from nose.tools import assert_equal
 
 from aloe import world
 from aloe.testclass import TestCase
-from . import (
+from aloe.testing import (
     FeatureTest,
     in_directory,
 )
