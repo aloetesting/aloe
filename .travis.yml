@@ -15,7 +15,7 @@ cache:
 
 script:
     - pep8 .
-    - pylint aloe tests
+    - pylint aloe lettuce tests
     - coverage erase
     - coverage run -m nose
     - coverage report
