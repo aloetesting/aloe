@@ -25,6 +25,9 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
+import os
+import unittest
+
 from aloe import step
 from aloe.testing import (
     FeatureTest,
@@ -96,3 +99,33 @@ class FeatureTestTest(FeatureTest):
         )
 
         self.assertFalse(result.success)
+
+
+def relative(directory):
+    """
+    A directory relative to the one containing this file.
+    """
+
+    return os.path.join(os.path.dirname(__file__), directory)
+
+
+@in_directory(relative('../../tests/functional'))
+class InDirectoryTest(unittest.TestCase):
+    """
+    Test in_directory.
+    """
+
+    def test_in_directory_on_class(self):
+        """
+        Test in_directory on the containing class.
+        """
+
+        self.assertTrue(os.getcwd().endswith('tests/functional'))
+
+    @in_directory(relative('../../tests'))
+    def test_in_directory_on_method(self):
+        """
+        Test in_directory on the method.
+        """
+
+        self.assertTrue(os.getcwd().endswith('tests'))

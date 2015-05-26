@@ -55,7 +55,12 @@ def in_directory(directory):
         directory.
         """
 
-        if issubclass(func_or_class, unittest.TestCase):
+        try:
+            is_test_case = issubclass(func_or_class, unittest.TestCase)
+        except TypeError:
+            is_test_case = False
+
+        if is_test_case:
             # Wrap setUp/tearDown
             old_setup = func_or_class.setUp
             old_teardown = func_or_class.tearDown
