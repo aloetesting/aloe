@@ -181,5 +181,6 @@ class GherkinPlugin(Plugin):
         # TODO: Is there a better method to do something _after_ all the tests
         # have been run?
 
-        self.after_hook()
-        delattr(self, 'after_hook')
+        if hasattr(self, 'after_hook'):
+            self.after_hook()
+            delattr(self, 'after_hook')
