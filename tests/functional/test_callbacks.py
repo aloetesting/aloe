@@ -124,7 +124,9 @@ class CallbackTest(FeatureTest):
 
         assert_equal(''.join(world.all), '{[ABCD]}')
 
-        self.run_features()  # Run all features
+        # Run all the features; some will fail because they expect only a
+        # subset to be run
+        self.run_features()
         assert_equal(''.join(world.all), '{[ABCD]}')
 
     def test_behave_as(self):

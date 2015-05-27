@@ -58,7 +58,7 @@ class GherkinPlugin(Plugin):
         """
 
         self.steps_loaded = []
-        self.context_level = 0
+        self.first_test = True
 
     def options(self, parser, env=None):
         """
@@ -161,28 +161,25 @@ class GherkinPlugin(Plugin):
                     scenario_index in self.scenario_indices:
                 yield test(scenario_name)
 
-    def startContext(self, context):
+    def startTest(self, test):
         """
-        On the first context, run the "before all" callbacks.
+        Before the first test, run the "before all" callbacks.
         """
 
-        # TODO: Is there a better method to do something before _and after_ all
-        # the tests have been run?
-
-        if self.context_level == 0:
+        if self.first_test:
             before_all, after_all = CALLBACK_REGISTRY.before_after('all')
             before_all()
             self.after_hook = after_all
 
-        self.context_level += 1
+            self.first_test = False
 
-    def stopContext(self, context):
+    def finalize(self, result):
         """
-        On the last context, run the "after all" callbacks.
+        After the last test, run the "after all" callbacks.
         """
 
-        self.context_level -= 1
+        # TODO: Is there a better method to do something _after_ all the tests
+        # have been run?
 
-        if self.context_level == 0:
-            self.after_hook()
-            delattr(self, 'after_hook')
+        self.after_hook()
+        delattr(self, 'after_hook')
