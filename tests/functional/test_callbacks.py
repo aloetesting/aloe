@@ -124,6 +124,9 @@ class CallbackTest(FeatureTest):
 
         assert_equal(''.join(world.all), '{[ABCD]}')
 
+        self.run_features()  # Run all features
+        assert_equal(''.join(world.all), '{[ABCD]}')
+
     def test_behave_as(self):
         """
         Test 'behave_as' called on a step.
