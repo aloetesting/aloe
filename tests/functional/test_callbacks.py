@@ -129,6 +129,72 @@ class CallbackTest(FeatureTest):
         self.run_features()
         assert_equal(''.join(world.all), '{[ABCD]}')
 
+    def test_relative_order(self):
+        """
+        Test the relative order of callbacks - from global to specific.
+        """
+
+        self.assert_feature_success('features/all_callbacks_1.feature',
+                                    'features/all_callbacks_2.feature')
+
+        def wrap(type_, *inner_event_lists):
+            """
+            A list of events having before/after (plus around) events wrapped
+            around the inner list.
+            """
+
+            return (
+                'before ' + type_,
+                'around_before ' + type_,
+            ) + tuple(
+                event
+                for event_list in inner_event_lists
+                for event in event_list
+            ) + (
+                'around_after ' + type_,
+                'after ' + type_,
+            )
+
+        self.assertEqual(
+            wrap('test', ('inner',)),
+            (
+                'before test',
+                'around_before test',
+                'inner',
+                'around_after test',
+                'after test',
+            )
+        )
+
+        expected = wrap(
+            'all',
+            wrap(
+                'feature',  # all_callbacks_1
+                wrap(
+                    'example',
+                    wrap('step'),
+                ),
+                wrap(
+                    'example',
+                    wrap('step'),
+                ),
+            ),
+            wrap(
+                'feature',  # all_callbacks_2
+                wrap(
+                    'example',
+                    wrap('step'),
+                ),
+                wrap(
+                    'example',
+                    wrap('step'),
+                    wrap('step'),
+                ),
+            ),
+        )
+
+        assert_equal(tuple(world.types), expected)
+
     def test_behave_as(self):
         """
         Test 'behave_as' called on a step.

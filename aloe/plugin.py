@@ -151,13 +151,15 @@ class GherkinPlugin(Plugin):
 
         test = self.test_class.from_file(file_)
 
+        self.ensure_before_callbacks()
+
         # Filter the scenarios, if asked
         for scenario_index, scenario_name in test.scenarios():
             if not self.scenario_indices or \
                     scenario_index in self.scenario_indices:
                 yield test(scenario_name)
 
-    def startTest(self, test):
+    def ensure_before_callbacks(self):
         """
         Before the first test, run the "before all" callbacks.
         """
