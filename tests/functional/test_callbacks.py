@@ -177,7 +177,6 @@ class CallbackTest(FeatureTest):
                 wrap(
                     'example',
                     wrap('step'),
-                    wrap('step'),
                 ),
             ),
             wrap(
@@ -189,12 +188,10 @@ class CallbackTest(FeatureTest):
                 wrap(
                     'example',
                     wrap('step'),
+                    wrap('step'),
                 ),
             ),
         )
-
-        print(world.types)
-        print(expected)
 
         assert_equal(tuple(world.types), expected)
 
