@@ -58,6 +58,7 @@ def before_step(step):
     record_event('step', '{')
     record_event('step_names', ('before', step.sentence))
     record_event('step_testclasses', step.testclass)
+    record_event('types', 'before step')
 
 
 @around.each_step
@@ -65,12 +66,15 @@ def before_step(step):
 def around_step(step):
     record_event('step', '[')
     record_event('step_names', ('around', step.sentence))
+    record_event('types', 'around_before step')
     yield
+    record_event('types', 'around_after step')
     record_event('step', ']')
 
 
 @after.each_step
 def after_step(step):
+    record_event('types', 'after step')
     record_event('step', '}')
     record_event('step_names', ('after', step.sentence))
 
@@ -92,6 +96,7 @@ def record_example_event(when, scenario, outline, steps):
 def before_example(scenario, outline, steps):
     record_event('example', '{')
     record_example_event('before', scenario, outline, steps)
+    record_event('types', 'before example')
 
 
 @around.each_example
@@ -99,12 +104,15 @@ def before_example(scenario, outline, steps):
 def around_example(scenario, outline, steps):
     record_event('example', '[')
     record_example_event('around', scenario, outline, steps)
+    record_event('types', 'around_before example')
     yield
+    record_event('types', 'around_after example')
     record_event('example', ']')
 
 
 @after.each_example
 def after_example(scenario, outline, steps):
+    record_event('types', 'after example')
     record_event('example', '}')
     record_example_event('after', scenario, outline, steps)
 
@@ -114,6 +122,7 @@ def before_feature(feature):
     record_event('feature', '{')
     record_event('feature_names', ('before', feature.name))
     record_event('feature_testclasses', feature.testclass)
+    record_event('types', 'before feature')
 
 
 @around.each_feature
@@ -121,12 +130,15 @@ def before_feature(feature):
 def around_feature(feature):
     record_event('feature', '[')
     record_event('feature_names', ('around', feature.name))
+    record_event('types', 'around_before feature')
     yield
+    record_event('types', 'around_after feature')
     record_event('feature', ']')
 
 
 @after.each_feature
 def after_feature(feature):
+    record_event('types', 'after feature')
     record_event('feature', '}')
     record_event('feature_names', ('after', feature.name))
 
@@ -134,18 +146,22 @@ def after_feature(feature):
 @before.all
 def before_all():
     record_event('"all"', '{')
+    record_event('types', 'before all')
 
 
 @around.all
 @contextmanager
 def around_all():
     record_event('"all"', '[')
+    record_event('types', 'around_before all')
     yield
+    record_event('types', 'around_after all')
     record_event('"all"', ']')
 
 
 @after.all
 def after_all():
+    record_event('types', 'after all')
     record_event('"all"', '}')
 
 
