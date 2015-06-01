@@ -240,6 +240,25 @@ In no particular order:
 * Feature and scenario tags should be converted to Nose tags.
 * Verbose output (all steps printed as they run) is missing.
 
+License
+=======
+
+Aloe - Cucumber runner for Python based on Lettuce and Nose
+Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 [gherkin]: https://cucumber.io/
 [nose]: https://nose.readthedocs.org/
 [lettuce]: http://lettuce.it/
