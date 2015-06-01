@@ -96,9 +96,19 @@ defining a step is using the `step` decorator:
 from aloe import step
 
 @step(r'The (\w+) is (\w+)')
-def has_color(self, object, color):
+def has_color(self, thing, color):
     # ...
 ```
+
+### World
+
+As a convenience, Aloe provides a `world` object that can be used to store
+information related to the test process. Typical usage includes storing the
+expected results between steps, or objects or functions that are useful for
+every step, such as an instance of a Selenium browser.
+
+Aloe does not explicitly reset `world` between scenarios or features, so any
+clean-up must be done by the callbacks.
 
 ### Step loading
 
@@ -231,6 +241,9 @@ sense. However, there are following incompatible changes:
 * `-s` option for running particular scenarios is renamed to `-n`.
 * Django-related functionality, including the `harvest` command, is moved to a
   separate project, [Aloe-Django][aloe-django].
+* `terrain.py` has no particular significance. It will be imported but only if
+  it exists at the same directory with the other step definition files, and not
+  above it.
 
 TODO
 ====
