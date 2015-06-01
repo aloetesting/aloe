@@ -826,12 +826,22 @@ def test_background_parsing_without_mmf():
             u'New': u'yes',
         },
     ]
+    assert step1.table == [
+        ['Name', 'Rating', 'New', 'Available'],
+        ['Matrix Revolutions', '4 stars', 'no', '6'],
+        ['Iron Man 2', '5 stars', 'yes', '11'],
+    ]
 
     assert step2.sentence == \
         'And the following clients:'
     assert step2.hashes == [
         {u'Name': u'John Doe'},
         {u'Name': u'Foo Bar'},
+    ]
+    assert step2.table == [
+        ['Name'],
+        ['John Doe'],
+        ['Foo Bar'],
     ]
 
 

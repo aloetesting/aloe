@@ -110,9 +110,87 @@ any given module is only imported once.
 ### Step objects
 
 Each step definition function receives the step object as the first argument.
+Step objects have the following properties:
+
+* `sentence` - the sentence that invoked the step.
+* `hashes` - a list of hashes corresponding to the data table, where the first
+  table row is assumed to be the keys.
+* `table` - the data table as a list of (ordered) lists.
+* `scenario` - the scenario containing this step. Not defined for steps that
+  are part of a background.
+* `background` - the background containing this step. Not defined for steps
+  that are part of a scenario.
 
 Callbacks
 =========
+
+Aloe provides a way to execute Python code on certain events when running
+Gherkin code. A callback can run before, after or wrap the particular event (as
+a context decorator).
+
+### Callback events
+
+* `each_step` - running a single step. The callback receives the step object as
+  a sole argument.
+* `each_example` - running an example, that is, either a standalone scenario,
+  or an example in a  scenario outline.Note that this includes running the
+  corresponding background. The callback receives the following arguments:
+  - `scenario` - the scenario being run. In case of an example in a scenario
+    outline, this is the scenario outline with all the example definitions
+    filled in.
+  - `outline` - a hash of parameters substituted in the scenario outline, or
+    `None` if the scenario does not have examples.
+  - `steps` - a list of steps in the scenario.
+* `each_feature` - running a single feature. Receives the feature object as a
+  sole argument.
+* `all` - running the whole test suite (or only the features/scenarios
+   specified for running). The callback receives no arguments.
+
+Each callback can be executed before, after or around the event. The decorators
+above are available on `before`, `after` and `around` objects:
+
+```python
+@before.all
+def before_all_callback():
+    print("This will be executed once before running any features.")
+
+
+from contextlib import contextmanager
+@around.each_feature
+@contextmanager
+def around_feature_callback(feature):
+    print("This will execute once before every feature.")
+    yield
+    print("This will execute once after every feature.")
+
+
+@after.each_step
+def after_step_callback(step):
+    print("This will be executed once after each step runs.")
+```
+
+The most specific callbacks run closer to the event than the least specific.
+That is, a "before feature" callback will run before a "before example"
+callback, but an "after example" callback will run after an "after step"
+callback. "Around" callbacks are wrapped similarly - the least specific ones
+will be entered into first and exited from last.
+
+Between the same level of callbacks (e.g. feature callbacks), the order is as
+follows:
+
+* Before
+* Around (entering part)
+* The actual event
+* Around (exit part)
+* After
+
+An optional `priority` argument can be given to the decorators to establish
+priority between the same type and level of callbacks. Default priority is 0.
+Lower priority means farther from the event - a "before" callback with a
+priority of 1 will run later than a "before" callback with a zero priority,
+but an "after" callback with run earlier.
+
+Order of running callbacks of the same type, level and priority is unspecified.
 
 Invocation
 ==========
