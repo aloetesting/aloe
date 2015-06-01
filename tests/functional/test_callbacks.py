@@ -212,3 +212,39 @@ class CallbackTest(FeatureTest):
 
         assert_equal(world.passing_steps, 2)
         assert_equal(world.failed_steps, 1)
+
+
+@in_directory('tests/multiple_steps_app')
+class MultipleAppsCallbackTest(FeatureTest):
+    """
+    Test before.all callbacks when running multiple apps.
+    """
+
+    def test_single_app(self):
+        """
+        Test what is loaded and called when only running a single app.
+        """
+
+        self.assert_feature_success('one/features/check_started.feature')
+
+        self.assertEquals(world.started_callbacks_one, {
+            'one': True,
+            'two': None,
+        })
+
+    def test_multiple_apps(self):
+        """
+        Test what is loaded and called when running multiple apps.
+        """
+
+        self.assert_feature_success()
+
+        self.assertEquals(world.started_callbacks_one, {
+            'one': True,
+            'two': True,
+        })
+
+        self.assertEquals(world.started_callbacks_two, {
+            'one': True,
+            'two': True,
+        })
