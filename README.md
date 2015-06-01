@@ -28,8 +28,19 @@ Feature: Add up numbers
 Now run `aloe features/calculator.feature` and see it fail because there are no
 step definitions:
 
+```
+$ aloe features/calculator.feature
+(...)
+aloe.exceptions.NoDefinitionFound: The step r"Given I have entered 50 into the
+calculator" is not defined
 
-In `features/steps.py`:
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (errors=1)
+```
+
+Now add the definitions in `features/steps.py`:
 
 ```python
 from aloe import before, step, world
@@ -37,6 +48,7 @@ from aloe import before, step, world
 
 @before.each_example
 def clear(*args):
+    """Reset the calculator state before each scenario."""
     world.numbers = []
     world.result = 0
 
@@ -195,15 +207,41 @@ Order of running callbacks of the same type, level and priority is unspecified.
 Invocation
 ==========
 
+`aloe` command line tool is a wrapper for the `nose` runner, configured to only
+run Gherkin tests. As such, the invocation is the same as `nose`, but the
+following parameters are added:
+
+* `-n N[,N...]` - only run the specified scenarios (by number, 1-based) in each
+  feature. Makes sense when only specifying one feature to run, for example
+
+  `aloe features/calculator.feature -n 1`
+
+* `--test-class` - override the class used as a base for each feature.
+
+* `--no-ignore-python` - run Python tests as well as Gherkin.
+
 Migrating from Lettuce
 ======================
+
+Aloe, started as a fork of Lettuce, tries to be compatible where it makes
+sense. However, there are following incompatible changes:
+
+* `each_scenario` and `each_background` callbacks are removed. Use
+  `each_example`.
+* `-s` option for running particular scenarios is renamed to `-n`.
+* Django-related functionality, including the `harvest` command, is moved to a
+  separate project, [Aloe-Django][aloe-django].
 
 TODO
 ====
 
-* Feature and scenario tags should be converted to Nose tags
+In no particular order:
+
+* Feature and scenario tags should be converted to Nose tags.
+* Verbose output (all steps printed as they run) is missing.
 
 [gherkin]: https://cucumber.io/
 [nose]: https://nose.readthedocs.org/
 [lettuce]: http://lettuce.it/
 [gherkin-syntax]: https://cucumber.io/docs/reference
+[aloe-django]: https://github.com/koterpillar/aloe-django
