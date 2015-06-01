@@ -29,7 +29,7 @@ class NormalTestCase(unittest.TestCase):
         Prevent the test from running in the main (Aloe) test suite.
         """
 
-        if 'tested_app' not in os.getcwd():
+        if 'simple_app' not in os.getcwd():
             raise unittest.SkipTest()
 
     def test_failing_test(self):
