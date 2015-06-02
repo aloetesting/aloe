@@ -276,4 +276,4 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 [nose]: https://nose.readthedocs.org/
 [lettuce]: http://lettuce.it/
 [gherkin-syntax]: https://cucumber.io/docs/reference
-[aloe-django]: https://github.com/koterpillar/aloe-django
+[aloe-django]: https://github.com/koterpillar/aloe_django
