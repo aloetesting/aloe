@@ -30,7 +30,6 @@ import os
 import sys
 import fnmatch
 
-from glob import glob
 from importlib import import_module
 try:
     reload
@@ -38,8 +37,7 @@ except NameError:
     # pylint:disable=no-name-in-module,redefined-builtin
     from importlib import reload
     # pylint:enable=no-name-in-module,redefined-builtin
-from os import walk
-from os.path import abspath, join, dirname
+from os.path import join, dirname
 
 
 class FeatureLoader(object):
@@ -47,34 +45,12 @@ class FeatureLoader(object):
     definitions along a given path on filesystem"""
 
     @classmethod
-    def find_steps_dir(cls, feature_file):
-        """
-        Find the steps directory corresponding to the feature file.
-
-        This is the first directory upwards of the feature file
-        containing any Python files.
-
-        If no steps directory can be found, return the filesystem root.
-        """
-
-        base_dir = dirname(abspath(feature_file))
-
-        while base_dir != '/':
-            files = cls.locate(base_dir, '*.py')
-            if files:
-                break
-            base_dir = abspath(join(base_dir, '..'))
-
-        return base_dir
-
-    @classmethod
     def find_and_load_step_definitions(cls, steps_dir):
         """
         Load the steps from the specified directory.
         """
-        files = cls.locate(steps_dir, '*.py')
 
-        for filename in files:
+        for filename in cls.locate(steps_dir, '*.py'):
             root = dirname(filename)
             sys.path.insert(0, root)
             to_load = cls.filename(filename)
@@ -83,16 +59,11 @@ class FeatureLoader(object):
             sys.path.remove(root)
 
     @staticmethod
-    def locate(root_path, match, recursive=True):
-        """Locate files recursively in a given path"""
-        if recursive:
-            return_files = []
-            for path, _, files in walk(root_path):
-                for filename in fnmatch.filter(files, match):
-                    return_files.append(join(path, filename))
-            return return_files
-        else:
-            return glob(join(root_path, match))
+    def locate(root_path, match):
+        """Locate files/directories recursively in a given path"""
+        for path, dirs, files in os.walk(root_path):
+            for filename in fnmatch.filter(dirs + files, match):
+                yield join(path, filename)
 
     @classmethod
     def filename(cls, path):

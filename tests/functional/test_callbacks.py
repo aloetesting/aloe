@@ -215,26 +215,27 @@ class CallbackTest(FeatureTest):
 
 
 @in_directory('tests/multiple_steps_app')
-class MultipleAppsCallbackTest(FeatureTest):
+class MultipleDirectoriesCallbackTest(FeatureTest):
     """
-    Test before.all callbacks when running multiple apps.
+    Test before.all callbacks when running features from multiple directories.
     """
 
     def test_single_app(self):
         """
-        Test what is loaded and called when only running a single app.
+        Test all the callbacks are called when running a single feature.
         """
 
         self.assert_feature_success('one/features/check_started.feature')
 
         self.assertEquals(world.started_callbacks_one, {
             'one': True,
-            'two': None,
+            'two': True,
         })
 
     def test_multiple_apps(self):
         """
-        Test what is loaded and called when running multiple apps.
+        Test what is loaded and called when running features from multiple
+        directories.
         """
 
         self.assert_feature_success()

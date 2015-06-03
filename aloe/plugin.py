@@ -50,11 +50,15 @@ class GherkinPlugin(Plugin):
 
     def begin(self):
         """
-        Start the test suite, resetting internal state.
+        Start the test suite, loading all the step definitions.
         """
 
-        self.steps_loaded = []
-        self.first_test = True
+        self.feature_dirs = [
+            os.path.abspath(dir_)
+            for dir_ in FeatureLoader.locate('.', 'features')
+        ]
+        for feature_dir in self.feature_dirs:
+            FeatureLoader.find_and_load_step_definitions(feature_dir)
 
     def options(self, parser, env=None):
         """
@@ -115,10 +119,10 @@ class GherkinPlugin(Plugin):
         """
 
         directory = os.path.abspath(directory)
-        while directory != '/':
-            if os.path.basename(directory) == 'features':
-                return True
-            directory = os.path.dirname(directory)
+        if any(feature_dir.startswith(directory) or
+               directory.startswith(feature_dir)
+               for feature_dir in self.feature_dirs):
+            return True
 
     def wantFile(self, file_):
         """
@@ -143,14 +147,9 @@ class GherkinPlugin(Plugin):
         Load a feature from the feature file.
         """
 
-        # Ensure the steps corresponding to the feature file are loaded
-        steps_dir = FeatureLoader.find_steps_dir(file_)
-        if steps_dir not in self.steps_loaded:
-            FeatureLoader.find_and_load_step_definitions(steps_dir)
-            self.steps_loaded.append(steps_dir)
-
         test = self.test_class.from_file(file_)
 
+        # About to run a feature - ensure "before all" callbacks have run
         self.ensure_before_callbacks()
 
         # Filter the scenarios, if asked
@@ -164,12 +163,10 @@ class GherkinPlugin(Plugin):
         Before the first test, run the "before all" callbacks.
         """
 
-        if self.first_test:
+        if not hasattr(self, 'after_hook'):
             before_all, after_all = CALLBACK_REGISTRY.before_after('all')
             before_all()
             self.after_hook = after_all
-
-            self.first_test = False
 
     def finalize(self, result):
         """
