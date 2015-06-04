@@ -33,7 +33,7 @@ from aloe.testing import (
 )
 
 
-@in_directory('tests/tested_app')
+@in_directory('tests/simple_app')
 class CalculatorTest(FeatureTest):
     """
     Test that calculator feature works as expected.
