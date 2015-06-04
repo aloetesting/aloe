@@ -59,7 +59,7 @@ class GherkinPlugin(Plugin):
 
         self.feature_dirs = [
             os.path.abspath(dir_)
-            for dir_ in FeatureLoader.locate('.', 'features')
+            for dir_ in FeatureLoader.find_feature_directories('.')
         ]
         for feature_dir in self.feature_dirs:
             FeatureLoader.find_and_load_step_definitions(feature_dir)
