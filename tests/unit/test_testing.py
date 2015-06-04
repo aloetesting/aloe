@@ -28,23 +28,10 @@ standard_library.install_aliases()
 import os
 import unittest
 
-from aloe import step
 from aloe.testing import (
     FeatureTest,
     in_directory,
 )
-
-
-@step(r'I do nothing')
-def trivial_step(self):  # pylint:disable=unused-argument
-    """Trivial passing step."""
-    pass
-
-
-@step(r'I fail')
-def failing_step(self):  # pylint:disable=unused-argument
-    """Trivial failing step."""
-    raise AssertionError("This step is meant to fail.")
 
 
 @in_directory('tests/unit')

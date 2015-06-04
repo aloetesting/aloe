@@ -86,6 +86,10 @@ outlines, doc strings, data tables and internationalization.
 
 Feature and scenario tags can be used, but aren't currently doing anything.
 
+If `aloe` is run without specifying the features, every file with the extension
+of `.feature` in a directory called `features` (and its subdirectories) will be
+run.
+
 Steps
 =====
 
@@ -113,21 +117,8 @@ clean-up must be done by the callbacks.
 ### Step loading
 
 Steps can and should be defined in separate modules to the main application
-code. Aloe searches for modules upwards from the directory of the feature, for
-example, given a feature of `features/calculator/basic/addition.feature`, the
-following directories will be searched for modules to import:
-
-* `features/calculator/basic`
-* `features/calculator`
-* `features`
-
-and so on (the search does not stop at the current directory).
-
-The first directory containing any Python modules stops the search, all the
-modules from it are imported and then the feature is run.
-
-If multiple features are given, steps are searched relative to all of them, but
-any given module is only imported once.
+code. Aloe searches for modules to load steps from inside the `features`
+directories found.
 
 ### Step objects
 
