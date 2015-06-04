@@ -44,7 +44,7 @@ class StepLoadingTest(FeatureTest):
         Test running a single feature.
         """
 
-        self.assert_feature_success('features/single_feature.feature')
+        self.assert_feature_success('features/single.feature')
 
     def test_subdirectory_feature(self):
         """
@@ -52,7 +52,7 @@ class StepLoadingTest(FeatureTest):
         """
 
         self.assert_feature_success(
-            'features/subdirectory/another_feature.feature')
+            'features/subdirectory/another.feature')
 
     def test_all_features(self):
         """
@@ -63,7 +63,8 @@ class StepLoadingTest(FeatureTest):
         assert result.success
         assert result.tests_run == [
             os.path.abspath(feature) for feature in (
-                'features/single_feature.feature',
-                'features/subdirectory/another_feature.feature',
+                'features/single.feature',
+                'features/subdirectory/another.feature',
+                'submodule/features/third.feature',
             )
         ]
