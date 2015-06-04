@@ -1,4 +1,4 @@
-Feature: Test loading feature from a subdirectory
+Feature: Test loading feature from the root features directory
 
   Scenario: Use steps
     Given I use step one
