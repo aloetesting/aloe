@@ -86,9 +86,30 @@ outlines, doc strings, data tables and internationalization.
 
 Feature and scenario tags can be used, but aren't currently doing anything.
 
-If `aloe` is run without specifying the features, every file with the extension
-of `.feature` in a directory called `features` (and its subdirectories) will be
-run.
+If features are not specified on the command line, Aloe will look for features
+in directories that:
+
+* Are named `features`;
+* Are located in a directory containing packages, that is, all their parent
+  directories have an `__init__.py` file.
+
+For example, given the following directory structure, only `one`, `three` and
+`four` features will be run.
+
+```
+one/
+  __init__.py
+  features/
+    one.feature
+    two/
+      three.feature
+      four.feature
+  examples/
+    five.feature
+two/
+  features/
+    six.feature
+```
 
 Steps
 =====
