@@ -59,12 +59,11 @@ class StepLoadingTest(FeatureTest):
         Test running all the features without explicitly specifying them.
         """
 
-        result = self.run_features()
-        assert result.success
-        assert result.tests_run == [
+        result = self.assert_feature_success()
+        self.assertEqual(result.tests_run, [
             os.path.abspath(feature) for feature in (
                 'features/single.feature',
                 'features/subdirectory/another.feature',
                 'submodule/features/third.feature',
             )
-        ]
+        ])

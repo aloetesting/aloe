@@ -181,6 +181,7 @@ class FeatureTest(unittest.TestCase):
 
         result = self.run_features(*features)
         assert result.success
+        return result
 
     def assert_feature_fail(self, *features):
         """
@@ -189,3 +190,4 @@ class FeatureTest(unittest.TestCase):
 
         result = self.run_features(*features)
         assert not result.success
+        return result
