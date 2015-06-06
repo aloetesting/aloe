@@ -68,14 +68,16 @@ class FeatureLoader(object):
         the way up) and be named 'features'.
         """
 
-        # A set of directories whose parents are packages
-        maybe_packages = set(dir_)
+        # A set of package directories discovered
+        packages = set(dir_)
 
         for path, dirs, files in os.walk(dir_):
-            if '__init__.py' in files and path in maybe_packages:
-                # This is a package, check subdirectories
-                maybe_packages |= set(join(path, dir_) for dir_ in dirs)
+            # Is this a package?
+            if '__init__.py' in files:
+                packages.add(path)
 
+            if path in packages:
+                # Does this package have a feature directory?
                 if 'features' in dirs:
                     yield join(path, 'features')
 
