@@ -45,25 +45,45 @@ class FeatureLoader(object):
     definitions along a given path on filesystem"""
 
     @classmethod
-    def find_and_load_step_definitions(cls, steps_dir):
+    def find_and_load_step_definitions(cls, dir_):
         """
         Load the steps from the specified directory.
         """
 
-        for filename in cls.locate(steps_dir, '*.py'):
-            root = dirname(filename)
-            sys.path.insert(0, root)
-            to_load = cls.filename(filename)
-            module = import_module(to_load)
-            reload(module)  # Make sure steps and hooks are registered
-            sys.path.remove(root)
+        for path, _, files in os.walk(dir_):
+            for filename in fnmatch.filter(files, '*.py'):
+                root = dirname(join(path, filename))
+                sys.path.insert(0, root)
+                to_load = cls.filename(filename)
+                module = import_module(to_load)
+                reload(module)  # Make sure steps and hooks are registered
+                sys.path.remove(root)
 
-    @staticmethod
-    def locate(root_path, match):
-        """Locate files/directories recursively in a given path"""
-        for path, dirs, files in os.walk(root_path):
-            for filename in fnmatch.filter(dirs + files, match):
-                yield join(path, filename)
+    @classmethod
+    def find_feature_directories(cls, dir_):
+        """
+        Locate directories to load features from.
+
+        The directories must be in a package directory (have '__init__.py' all
+        the way up) and be named 'features'.
+        """
+
+        # A set of package directories discovered
+        packages = set(dir_)
+
+        for path, dirs, files in os.walk(dir_):
+            # Is this a package?
+            if '__init__.py' in files:
+                packages.add(path)
+
+            if path in packages:
+                # Does this package have a feature directory?
+                if 'features' in dirs:
+                    yield join(path, 'features')
+
+            else:
+                # This is not a package, prune search
+                dirs[:] = []
 
     @classmethod
     def filename(cls, path):
