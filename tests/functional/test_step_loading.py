@@ -57,6 +57,9 @@ class StepLoadingTest(FeatureTest):
     def test_all_features(self):
         """
         Test running all the features without explicitly specifying them.
+
+        Features not in packages (not_a_submodule, python_inside/package)
+        should not be run.
         """
 
         result = self.assert_feature_success()
