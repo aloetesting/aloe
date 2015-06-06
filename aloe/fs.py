@@ -50,7 +50,7 @@ class FeatureLoader(object):
         Load the steps from the specified directory.
         """
 
-        for path, dirs, files in os.walk(dir_):
+        for path, _, files in os.walk(dir_):
             for filename in fnmatch.filter(files, '*.py'):
                 root = dirname(join(path, filename))
                 sys.path.insert(0, root)
