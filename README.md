@@ -84,7 +84,8 @@ Features
 The standard [Gherkin syntax][gherkin-syntax] is supported, including scenario
 outlines, doc strings, data tables and internationalization.
 
-Feature and scenario tags can be used, but aren't currently doing anything.
+Feature and scenario tags can be used and are converted to Nose tags ,see
+[Attribute selector plugin][nose-plugin-attrib].
 
 If features are not specified on the command line, Aloe will look for features
 in directories that:
@@ -262,7 +263,6 @@ TODO
 
 In no particular order:
 
-* Feature and scenario tags should be converted to Nose tags.
 * Verbose output (all steps printed as they run) is missing.
 
 License
@@ -286,6 +286,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [gherkin]: https://cucumber.io/
 [nose]: https://nose.readthedocs.org/
+[nose-plugin-attrib]: https://nose.readthedocs.org/en/latest/plugins/attrib.html
 [lettuce]: http://lettuce.it/
 [gherkin-syntax]: https://cucumber.io/docs/reference
 [aloe-django]: https://github.com/koterpillar/aloe_django
