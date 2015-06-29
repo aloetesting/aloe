@@ -29,6 +29,7 @@ import os
 from importlib import import_module
 
 from nose.plugins import Plugin
+from nose.plugins.attrib import AttributeSelector
 
 from aloe.fs import FeatureLoader
 from aloe.registry import CALLBACK_REGISTRY
@@ -47,6 +48,16 @@ class GherkinPlugin(Plugin):
     enableOpt = 'gherkin'
 
     TEST_CLASS = TestCase
+
+    def __init__(self):
+        """Initialise the helper plugin."""
+
+        # Nose has attrib plugin which works as expected but isn't passed the
+        # tests generated from features. Create a local copy which will be used
+        # to veto the tests.
+
+        super().__init__()
+        self.attrib_plugin = AttributeSelector()
 
     def begin(self):
         """
@@ -92,6 +103,8 @@ class GherkinPlugin(Plugin):
             help='Only run scenarios with these indices (comma-separated)',
         )
 
+        # Options for attribute plugin will be registered by its main instance
+
     def configure(self, options, conf):
         """
         Configure the plugin.
@@ -112,6 +125,8 @@ class GherkinPlugin(Plugin):
             )
         else:
             self.scenario_indices = None
+
+        self.attrib_plugin.configure(options, conf)
 
     def wantDirectory(self, directory):
         """
@@ -152,11 +167,20 @@ class GherkinPlugin(Plugin):
         # About to run a feature - ensure "before all" callbacks have run
         self.ensure_before_callbacks()
 
+        has_tests = False
+
         # Filter the scenarios, if asked
-        for scenario_index, scenario_name in test.scenarios():
-            if not self.scenario_indices or \
-                    scenario_index in self.scenario_indices:
-                yield test(scenario_name)
+        for idx, scenario_name in test.scenarios():
+            if not self.scenario_indices or idx in self.scenario_indices:
+                scenario = getattr(test, scenario_name)
+                valid_attr = self.attrib_plugin.validateAttrib(scenario, test)
+                if valid_attr is not False:
+                    has_tests = True
+                    yield test(scenario_name)
+
+        # Feature OK but no tests filtered
+        if not has_tests:
+            yield False
 
     def ensure_before_callbacks(self):
         """

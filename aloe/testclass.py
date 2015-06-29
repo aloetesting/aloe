@@ -31,6 +31,8 @@ import ast
 import unittest
 from contextlib import contextmanager
 
+from nose.plugins.attrib import attr
+
 from aloe.codegen import make_function
 from aloe.parser import Feature, Step
 from aloe.registry import (
@@ -283,11 +285,11 @@ class TestCase(unittest.TestCase):
                 node.lineno = step.described_at.line
 
         # Supply all the step functions and arguments
-        context = {}
-        for i, definition in enumerate(step_definitions):
-            context.update({
-                k + str(i): v for k, v in definition.items()
-            })
+        context = {
+            k + str(i): v
+            for i, definition in enumerate(step_definitions)
+            for k, v in definition.items()
+        }
 
         if is_background:
             func_name = 'background'
@@ -300,6 +302,14 @@ class TestCase(unittest.TestCase):
             source_file=step_container.described_at.file,
             name=func_name,
         )
+
+        try:
+            tags = step_container.tags
+        except AttributeError:
+            tags = ()
+
+        for tag in tags:
+            run_steps = attr(tag)(run_steps)
 
         if not is_background:
             run_steps = CALLBACK_REGISTRY.wrap('example', run_steps,
