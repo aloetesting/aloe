@@ -84,7 +84,7 @@ Features
 The standard [Gherkin syntax][gherkin-syntax] is supported, including scenario
 outlines, doc strings, data tables and internationalization.
 
-Feature and scenario tags can be used and are converted to Nose tags ,see
+Feature and scenario tags can be used and are converted to Nose tags, see
 [Attribute selector plugin][nose-plugin-attrib].
 
 If features are not specified on the command line, Aloe will look for features
