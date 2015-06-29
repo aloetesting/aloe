@@ -1,4 +1,3 @@
 future
-fuzzywuzzy
 nose
 pyparsing
