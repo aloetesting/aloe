@@ -8,15 +8,19 @@ Feature: Scenario tags
 
   @hana
   Scenario: First scenario
-    Given I have entered 10 into the calculator
+    Given I have entered 1 into the calculator
     And I press add
 
   @dul
   Scenario: Second scenario
-    Given I have entered 20 into the calculator
+    Given I have entered 2 into the calculator
     And I press add
 
   @hana
   Scenario: Another first scenario - surprise
     Given I have entered 11 into the calculator
+    And I press add
+
+  Scenario: Fourth scenario
+    Given I have entered 4 into the calculator
     And I press add

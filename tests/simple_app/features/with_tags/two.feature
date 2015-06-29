@@ -9,7 +9,7 @@ Feature: Scenario and feature tags
 
   @hana @set
   Scenario: First scenario
-    Given I have entered 10 into the calculator
+    Given I have entered 13 into the calculator
     And I press add
 
   Scenario: Second scenario
@@ -17,5 +17,5 @@ Feature: Scenario and feature tags
     And I press add
 
   Scenario: Another first scenario - surprise
-    Given I have entered 11 into the calculator
+    Given I have entered 200 into the calculator
     And I press add
