@@ -97,7 +97,6 @@ class CalculatorTest(FeatureTest):
 
         feature_dir = 'features/with_tags'
         feature_one = 'features/with_tags/one.feature'
-        feature_two = 'features/with_tags/two.feature'
 
         # Run scenarios by tag
         self.assert_feature_success(feature_one, '-a', 'hana')
