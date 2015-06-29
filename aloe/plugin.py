@@ -161,6 +161,27 @@ class GherkinPlugin(Plugin):
 
     wantClass = wantFunction = wantMethod = wantModule = wantPython
 
+    def scenario_matches(self, feature, scenario_index, scenario_name):
+        """
+        Whether a given scenario is selected by the command-line options.
+
+        @feature The feature class
+        @scenario_index The scenario index
+        @scenario_name The scenario name
+        """
+
+        if self.scenario_indices:
+            if scenario_index not in self.scenario_indices:
+                return False
+
+        if self.attrib_plugin.enabled:
+            scenario = getattr(feature, scenario_name)
+            # False means "no", None means "don't care" for Nose plugins
+            if self.attrib_plugin.validateAttrib(scenario, feature) is False:
+                return False
+
+        return True
+
     def loadTestsFromFile(self, file_):
         """
         Load a feature from the feature file.
@@ -175,12 +196,9 @@ class GherkinPlugin(Plugin):
 
         # Filter the scenarios, if asked
         for idx, scenario_name in test.scenarios():
-            if not self.scenario_indices or idx in self.scenario_indices:
-                scenario = getattr(test, scenario_name)
-                valid_attr = self.attrib_plugin.validateAttrib(scenario, test)
-                if valid_attr is not False:
-                    has_tests = True
-                    yield test(scenario_name)
+            if self.scenario_matches(test, idx, scenario_name):
+                has_tests = True
+                yield test(scenario_name)
 
         # Feature OK but no tests filtered
         if not has_tests:
