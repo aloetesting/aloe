@@ -93,3 +93,31 @@ class CalculatorTest(FeatureTest):
         # Run a scenario outline
         self.assert_feature_success(feature, '-n', '3')
         self.assertEqual(world.all_results, [30, 40])
+
+    def test_tags(self):
+        """
+        Test specifying the tags to run.
+        """
+
+        feature_dir = 'features/with_tags'
+        feature_one = 'features/with_tags/one.feature'
+
+        # Run scenarios by tag
+        self.assert_feature_success(feature_one, '-a', 'hana')
+        self.assertEqual(world.all_results, [1, 11])
+
+        # Run scenarios with a tag that's not there
+        self.assert_feature_success(feature_one, '-a', 'set')
+        self.assertEqual(world.all_results, [])
+
+        # Run features and scenarios with the tag
+        self.assert_feature_success(feature_dir, '-a', 'dul')
+        self.assertEqual(world.all_results, [2, 13, 20, 200])
+
+        # Specify a tag to exclude
+        self.assert_feature_success(feature_one, '-a', '!hana')
+        self.assertEqual(world.all_results, [2, 4])
+
+        # Specify more than one tag to run
+        self.assert_feature_success(feature_one, '-a', 'hana', '-a', 'dul')
+        self.assertEqual(world.all_results, [1, 2, 11])

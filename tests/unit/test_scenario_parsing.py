@@ -572,61 +572,6 @@ def test_commented_scenarios():
     assert_equal(len(scenario.steps), 4)
 
 
-def test_scenario_matches_tags():
-    ("A scenario with tags should respond with True when "
-     ".matches_tags() is called with a valid list of tags")
-
-    scenario = parse_scenario(
-        SCENARIO1,
-        tags=['onetag', 'another-one'])
-
-    assert scenario.tags == ['onetag', 'another-one']
-    assert scenario.matches_tags(['onetag'])
-    assert scenario.matches_tags(['another-one'])
-
-
-def test_scenario_matches_tags_fuzzywuzzy():
-    ("When Scenario#matches_tags is called with a member starting with ~ "
-     "it will consider a fuzzywuzzy match")
-
-    scenario = parse_scenario(
-        SCENARIO1,
-        tags=['anothertag', 'another-tag'])
-
-    assert scenario.matches_tags(['~another'])
-
-
-def test_scenario_matches_tags_excluding():
-    ("When Scenario#matches_tags is called with a member starting with - "
-     "it will exclude that tag from the matching")
-
-    scenario = parse_scenario(
-        SCENARIO1,
-        tags=['anothertag', 'another-tag'])
-
-    assert not scenario.matches_tags(['-anothertag'])
-    assert scenario.matches_tags(['-foobar'])
-
-
-def test_scenario_matches_tags_excluding_when_scenario_has_no_tags():
-    ("When Scenario#matches_tags is called for a scenario "
-     "that has no tags and the given match is a exclusionary tag")
-
-    scenario = parse_scenario(SCENARIO1)
-
-    assert scenario.matches_tags(['-nope', '-neither'])
-
-
-def test_scenario_matches_tags_excluding_fuzzywuzzy():
-    ("When Scenario#matches_tags is called with a member starting with -~ "
-     "it will exclude that tag from that fuzzywuzzy match")
-
-    scenario = parse_scenario(SCENARIO1,
-                              tags=['anothertag', 'another-tag'])
-
-    assert not scenario.matches_tags(['-~anothertag'])
-
-
 def test_scenario_with_inline_comments():
     ("Scenarios can have steps with inline comments")
 
