@@ -25,6 +25,7 @@ import zipfile
 from functools import wraps
 from glob import glob
 from os.path import abspath, join, dirname, curdir, exists
+from importlib import import_module
 
 
 class FeatureLoader(object):
@@ -42,12 +43,14 @@ class FeatureLoader(object):
                 break
             base_dir = FileSystem.join(base_dir, '..')
 
+        sys.path.insert(0, base_dir)
+
         for filename in files:
-            root = FileSystem.dirname(filename)
-            sys.path.insert(0, root)
+            package = os.path.relpath(FileSystem.dirname(filename),
+                                      base_dir).replace('/', '.')
             to_load = FileSystem.filename(filename, with_extension=False)
             try:
-                module = __import__(to_load)
+                module = import_module('.' + to_load, package)
             except ValueError, e:
                 import traceback
                 err_msg = traceback.format_exc(e)
@@ -59,7 +62,8 @@ class FeatureLoader(object):
                     raise e
 
             reload(module)  # always take fresh meat :)
-            sys.path.remove(root)
+
+        sys.path.remove(base_dir)
 
     def find_feature_files(self):
         paths = FileSystem.locate(self.base_dir, "*.feature")
@@ -256,6 +260,6 @@ class FileSystem(object):
 
                 finally:
                     cls.popd()
-                
+
             return inner
         return decorator

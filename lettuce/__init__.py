@@ -172,6 +172,10 @@ class Runner(object):
         except StepLoadingError as e:
             print "Error loading step definitions:\n", e
             raise SystemExit(3)
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            raise
 
         failed = False
 
