@@ -17,6 +17,7 @@ Feature: Count number of emails sent
 
     Then I have sent an email with the following in the body:
       """
+      Order ID: 10
       Name: Mr Panda
       Quantity: Many
       """
@@ -60,6 +61,7 @@ Feature: Count number of emails sent
       """
       Name: Mr Panda
       Quantity: Many
+      Notes: This guy really likes bamboo
       """
 
   # NEGATIVE TEST
@@ -78,6 +80,7 @@ Feature: Count number of emails sent
 
     Then I have sent an email with the following in the body:
       """
+      Order ID: 10
       Name: Badger
       Quantity: None
       """
