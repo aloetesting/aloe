@@ -43,6 +43,8 @@ class FeatureLoader(object):
                 break
             base_dir = FileSystem.join(base_dir, '..')
 
+        # hacky, so we can load stuff in the directory we found things in
+        base_dir = FileSystem.join(base_dir, '..')
         sys.path.insert(0, base_dir)
 
         for filename in files:
@@ -51,6 +53,7 @@ class FeatureLoader(object):
             to_load = FileSystem.filename(filename, with_extension=False)
             try:
                 module = import_module('.' + to_load, package)
+                print "from", package, "import", to_load
             except ValueError, e:
                 import traceback
                 err_msg = traceback.format_exc(e)
