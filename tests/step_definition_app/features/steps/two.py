@@ -20,7 +20,9 @@ Part of steps for the tested application.
 
 from aloe import step
 
+from .one import *
 
-@step(r'I use step one')
-def step_one(self):
+
+@step(r'I use step two')
+def step_two(self):
     pass
