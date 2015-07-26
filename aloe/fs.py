@@ -37,7 +37,23 @@ except NameError:
     # pylint:disable=no-name-in-module,redefined-builtin
     from importlib import reload
     # pylint:enable=no-name-in-module,redefined-builtin
-from os.path import join, dirname
+
+
+def path_to_module_name(filename):
+    """Convert a path to a file to a Python module name."""
+
+    dotted_path = []
+    while True:
+        filename, component = os.path.split(filename)
+        dotted_path.insert(0, component)
+        if filename == '':
+            break
+
+    dotted_path[-1] = os.path.splitext(dotted_path[-1])[0]
+    if dotted_path[-1] == '__init__':
+        dotted_path.pop()
+
+    return '.'.join(dotted_path)
 
 
 class FeatureLoader(object):
@@ -52,12 +68,16 @@ class FeatureLoader(object):
 
         for path, _, files in os.walk(dir_):
             for filename in fnmatch.filter(files, '*.py'):
-                root = dirname(join(path, filename))
-                sys.path.insert(0, root)
-                to_load = cls.filename(filename)
-                module = import_module(to_load)
+                # Import the module using its fully qualified name
+                filename = os.path.relpath(os.path.join(path, filename))
+                module_name = path_to_module_name(filename)
+
+                try:
+                    module = import_module(module_name)
+                except (ImportError, TypeError) as exc:
+                    import pdb; pdb.set_trace()
+                    raise
                 reload(module)  # Make sure steps and hooks are registered
-                sys.path.remove(root)
 
     @classmethod
     def find_feature_directories(cls, dir_):
@@ -79,18 +99,8 @@ class FeatureLoader(object):
             if path in packages:
                 # Does this package have a feature directory?
                 if 'features' in dirs:
-                    yield join(path, 'features')
+                    yield os.path.join(path, 'features')
 
             else:
                 # This is not a package, prune search
                 dirs[:] = []
-
-    @classmethod
-    def filename(cls, path):
-        """
-        Return only the filename from a full path, without extension.
-        """
-        fname = os.path.split(path)[1]
-        fname = os.path.splitext(fname)[0]
-
-        return fname
