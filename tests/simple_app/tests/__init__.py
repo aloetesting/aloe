@@ -14,6 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""
+Python tests for a test application.
+"""
+
 import os
 import unittest
 
@@ -33,4 +37,8 @@ class NormalTestCase(unittest.TestCase):
             raise unittest.SkipTest()
 
     def test_failing_test(self):
+        """
+        A test to check whether the Python tests are running.
+        """
+
         raise AssertionError("This test should not be run.")

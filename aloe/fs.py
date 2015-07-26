@@ -27,7 +27,6 @@ from future import standard_library
 standard_library.install_aliases()
 
 import os
-import sys
 import fnmatch
 
 from importlib import import_module
