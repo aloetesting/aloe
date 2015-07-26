@@ -72,11 +72,7 @@ class FeatureLoader(object):
                 filename = os.path.relpath(os.path.join(path, filename))
                 module_name = path_to_module_name(filename)
 
-                try:
-                    module = import_module(module_name)
-                except (ImportError, TypeError) as exc:
-                    import pdb; pdb.set_trace()
-                    raise
+                module = import_module(module_name)
                 reload(module)  # Make sure steps and hooks are registered
 
     @classmethod

@@ -83,15 +83,27 @@ def in_directory(directory):
         unload_modules = []
         unload_path_prefix = os.path.join(directory, '')
         for module_name, module in sys.modules.items():
+            # Find out where is the module loaded from
             try:
                 path = module.__file__
             except AttributeError:
-                continue
+                # Maybe a namespace package module?
+                try:
+                    if module.__spec__.origin == 'namespace':
+                        path = module.__path__._path[0]
+                    else:
+                        continue
+                except AttributeError:
+                    continue
 
+            # Is it loaded from a file in the directory?
             path = os.path.abspath(path)
             if not path.startswith(unload_path_prefix):
                 continue
 
+            # Does its name match what would it be if it was? Consider two
+            # directories, foo/ and foo/bar on sys.path, foo/bar/baz.py might
+            # have been loaded from either.
             path = path[len(unload_path_prefix):]
             if module_name == path_to_module_name(path):
                 unload_modules.append(module_name)
