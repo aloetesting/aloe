@@ -65,7 +65,7 @@ class GherkinPlugin(Plugin):
         """
 
         self.feature_dirs = [
-            os.path.abspath(dir_)
+            dir_
             for dir_ in FeatureLoader.find_feature_directories('.')
         ]
         for feature_dir in self.feature_dirs:
@@ -134,10 +134,11 @@ class GherkinPlugin(Plugin):
         """
 
         directory = os.path.abspath(directory)
-        if any(feature_dir.startswith(directory) or
-               directory.startswith(feature_dir)
-               for feature_dir in self.feature_dirs):
-            return True
+        for feature_dir in self.feature_dirs:
+            feature_dir = os.path.abspath(feature_dir)
+            if feature_dir.startswith(directory) or \
+                    directory.startswith(feature_dir):
+                return True
 
     def wantFile(self, file_):
         """

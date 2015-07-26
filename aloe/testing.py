@@ -29,11 +29,13 @@ from builtins import super
 standard_library.install_aliases()
 
 import os
+import sys
 import tempfile
 import unittest
 from functools import wraps
 
 from aloe import world
+from aloe.fs import path_to_module_name
 from aloe.plugin import GherkinPlugin
 from aloe.registry import (
     CALLBACK_REGISTRY,
@@ -45,9 +47,57 @@ from aloe.runner import Runner
 
 def in_directory(directory):
     """
-    A decorator to change the current directory. Applies to either a function
-    or an instance of TestCase, in which case setUp/tearDown are used.
+    A decorator to change the current directory and add the new one to the
+    Python module search path.
+
+    Upon exiting, the directory is changed back, the module search path change
+    is reversed and all modules loaded from the directory are removed from
+    sys.modules.
+
+    Applies to either a function or an instance of
+    TestCase, in which case setUp/tearDown are used.
     """
+
+    directory = os.path.abspath(directory)
+    last_wd = [None]
+
+    def apply_directory():
+        """
+        Change the directory and put it onto the module search path.
+        """
+
+        last_wd[0] = os.getcwd()
+        sys.path.insert(0, directory)
+        os.chdir(directory)
+
+    def unapply_directory():
+        """
+        Undo the directory and module search path change.
+        """
+
+        os.chdir(last_wd[0])
+        sys.path.remove(directory)
+        last_wd[0] = None
+
+        # Unload modules which are loaded from the directory
+        unload_modules = []
+        unload_path_prefix = os.path.join(directory, '')
+        for module_name, module in sys.modules.items():
+            try:
+                path = module.__file__
+            except AttributeError:
+                continue
+
+            path = os.path.abspath(path)
+            if not path.startswith(unload_path_prefix):
+                continue
+
+            path = path[len(unload_path_prefix):]
+            if module_name == path_to_module_name(path):
+                unload_modules.append(module_name)
+
+        for module in unload_modules:
+            del sys.modules[module]
 
     def wrapper(func_or_class):
         """
@@ -68,16 +118,14 @@ def in_directory(directory):
             @wraps(old_setup)
             def setUp(self):
                 """Wrap setUp to change to given directory first."""
-                self.last_wd = os.getcwd()
-                os.chdir(directory)
+                apply_directory()
                 old_setup(self)
 
             @wraps(old_teardown)
             def tearDown(self):
                 """Wrap tearDown to restore the original directory."""
                 old_teardown(self)
-                os.chdir(self.last_wd)
-                delattr(self, 'last_wd')
+                unapply_directory()
 
             func_or_class.setUp = setUp
             func_or_class.tearDown = tearDown
@@ -92,12 +140,11 @@ def in_directory(directory):
                 Execute the function in a different directory.
                 """
 
-                cwd = os.getcwd()
-                os.chdir(directory)
+                apply_directory()
                 try:
                     return func_or_class(*args, **kwargs)
                 finally:
-                    os.chdir(cwd)
+                    unapply_directory()
 
             return wrapped
 
