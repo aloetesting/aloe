@@ -331,3 +331,16 @@ def test_step_with_hash():
     ''')
 
     assert_equal(step.sentence, 'Given I have product #1234 in my cart')
+
+
+def test_multiline_with_hash():
+    """Test parsing a multiline with a hash"""
+    step, = parse_steps('''
+    Given I have the following products in my cart:
+    """
+    #1234
+    #2345
+    """
+    ''')
+
+    assert_equal(step.multiline, u"#1234\n#2345")
