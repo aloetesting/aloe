@@ -801,9 +801,8 @@ def parse(string=None,
 
     # A Step
     #
-    # Steps begin with a keyword such as Given, When, Then or And They can
-    # contain an optional inline comment, although it's possible to encapsulate
-    # it in a string. Finally they can contain a table or a multiline 'Python'
+    # Steps begin with a keyword such as Given, When, Then or And.
+    # After the step sentence they can contain a table or a multiline 'Python'
     # string.
     #
     # <variables> are not parsed as part of the grammar as it's not easy to
