@@ -324,3 +324,12 @@ And under indented
     assert_equal(step.multiline, u"""    Extra indented to start with
 And back
 under indented""")
+
+
+def test_step_with_hash():
+    """Test parsing a step with a hash"""
+    step, = parse_steps('''
+    Given I have product #1234 in my cart
+    ''')
+
+    assert_equal(step.sentence, 'Given I have product #1234 in my cart')
