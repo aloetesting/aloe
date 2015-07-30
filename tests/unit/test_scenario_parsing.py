@@ -209,12 +209,6 @@ Scenario: Adding some students to my university database
 
 """
 
-INLINE_COMMENTS = '''
-Scenario: Making a sword
-  Given I am using an anvil
-  And I am using a hammer # informational "comment"
-'''
-
 INLINE_COMMENTS_IGNORED_WITHIN_DOUBLE_QUOTES = '''
 Scenario: Tweeting
   Given I am logged in on twitter
@@ -570,17 +564,6 @@ def test_commented_scenarios():
     assert_equal(scenario.name,
                  'Adding some students to my university database')
     assert_equal(len(scenario.steps), 4)
-
-
-def test_scenario_with_inline_comments():
-    ("Scenarios can have steps with inline comments")
-
-    scenario = parse_scenario(INLINE_COMMENTS)
-
-    step1, step2 = scenario.steps
-
-    assert step1.sentence == u'Given I am using an anvil'
-    assert step2.sentence == u'And I am using a hammer'
 
 
 def test_scenario_with_hash_within_double_quotes():
