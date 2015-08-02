@@ -68,6 +68,10 @@ class GherkinPlugin(Plugin):
         Start the test suite, loading all the step definitions.
         """
 
+        if self.conf.options.version or self.conf.options.showPlugins:
+            # Don't try to load anything if only called for information
+            return
+
         self.feature_dirs = [
             dir_
             for dir_ in FeatureLoader.find_feature_directories('.')
