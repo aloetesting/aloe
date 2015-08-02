@@ -335,6 +335,24 @@ def test_step_with_hash():
     assert_equal(step.sentence, 'Given I have product #1234 in my cart')
 
 
+def test_comments():
+    """Test parsing Gherkin comments."""
+    steps = parse_steps('''
+    # A comment
+    Given I have a comment
+                        # Another comment
+    And I have another comment
+    ''')
+
+    assert_equal(
+        [step.sentence for step in steps],
+        [
+            'Given I have a comment',
+            'And I have another comment',
+        ]
+    )
+
+
 def test_multiline_with_hash():
     """Test parsing a multiline with a hash"""
     step, = parse_steps('''
