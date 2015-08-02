@@ -38,7 +38,7 @@ from aloe.utils import (
 
 def my_function():
     """A function to test unwrapping on."""
-    pass
+    pass  # pragma: no cover
 
 
 class UnwrapTest(unittest.TestCase):
