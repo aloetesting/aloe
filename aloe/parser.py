@@ -37,6 +37,7 @@ from future import standard_library
 standard_library.install_aliases()
 
 import os
+
 from codecs import open
 from copy import deepcopy
 from collections import OrderedDict
@@ -52,12 +53,13 @@ from pyparsing import (CharsNotIn,
                        OneOrMore,
                        Optional,
                        ParseException,
-                       pythonStyleComment,
+                       ParseResults,
                        QuotedString,  # function
                        quotedString,  # token
                        restOfLine,
                        stringEnd,
                        Suppress,
+                       Token,
                        Word,
                        ZeroOrMore)
 
@@ -670,6 +672,41 @@ def guess_language(string=None, filename=None):
     return languages.Language(code=code)
 
 
+class GherkinComment(Token):
+    """Matches a comment on an otherwise blank line."""
+
+    errmsg = "Expected a Gherkin comment."
+
+    def parseImpl(self, instring, loc, doActions=True):
+        """Check if the comment is on a line by itself."""
+
+        # TODO: Pyparsing calls this (via .ignore()) with loc pointing to the
+        # first non-whitespace character on a line, so a naive Regex with ^
+        # doesn't work (and Python doesn't support variable-length
+        # lookbehind).
+
+        line_start = instring.rfind('\n', 0, loc)
+        if line_start == -1:
+            line_start = 0
+        else:
+            line_start += 1
+
+        if instring[line_start:loc].strip() == '' and instring[loc] == '#':
+            # Return the found comment and its end position
+            line_end = instring.find('\n', loc)
+            if line_end == -1:
+                line_end = len(instring)
+
+            comment = instring[loc:line_end]
+
+            return (line_end, ParseResults([comment]))
+        else:
+            raise ParseException(instring, loc, self.errmsg, self)
+
+    def __str__(self):
+        return 'GherkinComment()'
+
+
 # TODO: This should be a class inheriting from aloe.languages.Language and
 # defining all the additional token types. Then the 'constructors' argument can
 # be replaced by subclassing (in aloe.testclass).
@@ -890,7 +927,7 @@ def parse(string=None,
         Optional(BACKGROUND('background')) +
         Group(OneOrMore(SCENARIO))('scenarios') +
         stringEnd)
-    FEATURE.ignore(pythonStyleComment)
+    FEATURE.ignore(GherkinComment())
     FEATURE.setParseAction(CONSTRUCTORS['feature'].add_blocks)
 
     #
