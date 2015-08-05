@@ -13,10 +13,9 @@ on Nose_.
 Defining Steps
 ==============
 
-.. autofunction:: aloe.step
+.. autofunction:: aloe.step(sentence=None)
 
-Hooks
-=====
+.. include:: hooks.rst
 
 Features, Scenarios and Steps
 =============================

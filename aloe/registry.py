@@ -322,6 +322,9 @@ class StepDict(dict):
         Parameters are passed in the order they are captured. Be aware that
         captured values are strings.
 
+        The first parameter passed into the decorated function is the
+        :class:`Step` object built for this step.
+
         Examples:
 
         .. code-block:: python
