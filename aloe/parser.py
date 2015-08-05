@@ -156,9 +156,40 @@ class Step(Node):
         token = tokens[0]
 
         self.sentence = u' '.join(token.sentence)
+        """The sentence parsed for this step"""
         self.table = list(map(list, token.table)) \
             if token.table else None
+        """
+        A Gherkin table as a list of lists.
+
+        e.g.:
+
+        .. code-block:: gherkin
+
+            Then I have fruit:
+                | apples | oranges |
+                | 0      | 2       |
+
+        Becomes:
+
+        .. code-block:: python
+
+            [['apples', 'oranges', '0', '2']]
+        """
         self.multiline = token.multiline
+        """
+        A Gherkin multiline string with the appropriate indenting removed.
+
+        .. code-block:: gherkin
+
+            Then I have poem:
+                \"\"\"
+                Glittering-Minded deathless Aphrodite,
+                I beg you, Zeus’s daughter, weaver of snares,
+                Don’t shatter my heart with fierce
+                Pain, goddess,
+                \"\"\"
+        """
 
     def __str__(self):
         return '<Step: "%s">' % self.sentence
@@ -171,7 +202,7 @@ class Step(Node):
         """
         Parse a number of steps, returns a list of steps
 
-        This is used by step.behave_as
+        This is used by :func:`step.behave_as`.
         """
 
         tokens = parse(string=string, token='STATEMENTS', **kwargs)
@@ -181,7 +212,7 @@ class Step(Node):
     @property
     def feature(self):
         """
-        The feature this step is a part of
+        The :class:`Feature` this step is a part of
         """
 
         try:
@@ -204,6 +235,23 @@ class Step(Node):
         """
         Return the table attached to the step as a list of hashes, where the
         first row is the column headings
+
+        e.g.:
+
+        .. code-block:: gherkin
+
+            Then I have fruit:
+                | apples | oranges |
+                | 0      | 2       |
+
+        Becomes:
+
+        .. code-block:: python
+
+            [{
+                'apples': '0',
+                'oranges': '2',
+            }]
         """
 
         if not self.table:
@@ -338,7 +386,16 @@ class TaggedBlock(Block):
 
     @property
     def tags(self):
-        """Tags for the scenario, feature, etc."""
+        """
+        Tags for a feature
+
+        Tags are applied to a feature using the appropriate Gherkin syntax:
+
+        .. code-block:: gherkin
+
+            @tag1 @tag2
+            Feature: Eat leaves
+        """
         return self._tags
 
     def represented(self, indent=0, annotate=True):
@@ -356,7 +413,7 @@ class TaggedBlock(Block):
 
     def represent_tags(self, indent=0):
         """
-        Represent the tags of a tagged block
+        Render the tags of a tagged block
         """
 
         return u' ' * indent + u'  '.join(u'@%s' % tag for tag in self.tags)
@@ -368,7 +425,7 @@ class Background(Block):
 
 
 class Scenario(TaggedBlock):
-    """Scenario."""
+    """A scenario within a :class:`Feature`"""
 
     @classmethod
     def add_statements(cls, tokens):
@@ -407,7 +464,7 @@ class Scenario(TaggedBlock):
     @memoizedproperty
     def max_length(self):
         """
-        The max length of the feature, description and child blocks
+        The max horizontal length of the feature, description and child blocks
         """
 
         return max(
@@ -441,6 +498,7 @@ class Scenario(TaggedBlock):
 
     @property
     def tags(self):
+        """Tags for the :attr:`feature` and the scenario."""
         return self._tags + self.feature.tags
 
     @property
@@ -500,7 +558,7 @@ class Description(Node):
 
     def represent_line(self, n, indent=2, annotate=True):
         """
-        Represent the nth line in the description
+        Render the nth line in the description
         """
 
         line = self.lines[n]
@@ -541,12 +599,17 @@ class Description(Node):
 
 
 class Feature(TaggedBlock):
-    """Gherkin feature."""
+    """
+    A complete Gherkin feature
+
+    Features can either be constructed :func:`from_file` or
+    :func:`from_string`.
+    """
 
     @classmethod
     def from_string(cls, string, **kwargs):
         """
-        Returns a Feature from a string
+        Parse a string into a :class:`Feature`
         """
 
         return parse(string=string, token='FEATURE', **kwargs)[0]
@@ -554,7 +617,7 @@ class Feature(TaggedBlock):
     @classmethod
     def from_file(cls, filename, **kwargs):
         """
-        Parse a file or filename
+        Parse a file or filename into a :class:`Feature`
         """
 
         self = parse(filename=filename, token='FEATURE', **kwargs)[0]
@@ -592,8 +655,8 @@ class Feature(TaggedBlock):
     @property
     def description(self):
         """
-        In order to remain compatible with the existing API we disassemble
-        the Description node
+        The description of the feature (the text that comes directly under
+        the feature).
         """
         return str(self.description_node)
 
@@ -608,7 +671,9 @@ class Feature(TaggedBlock):
     @memoizedproperty
     def max_length(self):
         """
-        The max length of the feature, description and child blocks
+        The max horizontal length of the feature, description and child blocks
+
+        This is used for aligning rendered output.
         """
 
         return max(
