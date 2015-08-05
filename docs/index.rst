@@ -14,6 +14,7 @@ on Nose_.
 .. include:: hooks.rst
 .. include:: world.rst
 .. include:: classes.rst
+.. include:: extending.rst
 
 Extensions
 ==========
