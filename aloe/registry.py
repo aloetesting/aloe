@@ -336,7 +336,7 @@ class StepDict(dict):
 
                 ...
 
-            @step(r"I buy (\d+) oranges")
+            @step(r"I buy (\\d+) oranges")
             def _purchase_oranges_step(self, num_oranges):
                 '''Buy a certain number of oranges'''
 
