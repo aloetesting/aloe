@@ -9,42 +9,11 @@ on Nose_.
 
 .. include:: getting-started.rst
 .. include:: aloe.rst
-
-Defining Steps
-==============
-
-.. autofunction:: aloe.step(sentence=None)
-
+.. include:: features.rst
+.. include:: steps.rst
 .. include:: hooks.rst
-
-Features, Scenarios and Steps
-=============================
-
-.. autoclass:: aloe.parser.Feature()
-    :members:
-    :inherited-members:
-    :exclude-members: add_blocks, add_statements, feature
-
-.. autoclass:: aloe.parser.Scenario()
-    :members:
-    :inherited-members:
-    :exclude-members: solved_steps
-    
-    .. attribute:: name
-
-        The name of this scenario
-
-    .. attribute:: feature
-
-        The :class:`Feature` this scenario belongs to
-
-.. autoclass:: aloe.parser.Step()
-    :members:
-    :inherited-members:
-
-    .. attribute:: scenario
-
-        The :class:`Scenario` this step belongs to
+.. include:: world.rst
+.. include:: classes.rst
 
 Extensions
 ==========
@@ -68,7 +37,7 @@ Indices and tables
 .. _aloe: https://github.com/koterpillar/aloe
 .. _gherkin: https://cucumber.io/
 .. _nose: https://nose.readthedocs.org/
-.. _nose-plugin-attrib: https://nose.readthedocs.org/en/latest/plugins/attrib.html
+.. _`Attribute selector plugin`: https://nose.readthedocs.org/en/latest/plugins/attrib.html
 .. _lettuce: http://lettuce.it/
 .. _`Gherkin syntax`: https://cucumber.io/docs/reference
 .. _`aloe_django`: https://github.com/koterpillar/aloe_django
