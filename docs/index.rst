@@ -15,11 +15,7 @@ on Nose_.
 .. include:: world.rst
 .. include:: classes.rst
 .. include:: extending.rst
-
-Extensions
-==========
-
-* `aloe_django`_ -- Django integration for `Aloe`.
+.. include:: porting.rst
 
 History
 =======
