@@ -11,7 +11,7 @@ failures.
 
     .. decorator:: all
 
-        Run this function before `everything`
+        Run this function before `everything`.
 
         Example:
         
@@ -25,7 +25,7 @@ failures.
 
     .. decorator:: each_feature
 
-        Run this function before each `feature`
+        Run this function before each `feature`.
 
         :param Feature feature: the feature about to be run
 
@@ -41,7 +41,7 @@ failures.
 
     .. decorator:: each_example
 
-        Run this function before each `scenario example`
+        Run this function before each `scenario example`.
 
         :param Scenario scenario: the scenario about to be run
         :param dict outline: the outline of the example about to be run
@@ -59,7 +59,7 @@ failures.
 
     .. decorator:: each_step
 
-        Run this function before each `step`
+        Run this function before each `step`.
 
         :param Step step: the step about to be run
 

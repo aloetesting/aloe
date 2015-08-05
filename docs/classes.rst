@@ -10,23 +10,23 @@ Features, Scenarios and Steps
     :members:
     :inherited-members:
     :exclude-members: add_statements, represented
-    
+
     .. attribute:: feature
 
-        The :class:`Feature` this scenario belongs to
+        The :class:`Feature` this scenario belongs to.
 
 .. autoclass:: aloe.parser.Scenario()
     :members:
     :inherited-members:
     :exclude-members: solved_steps
-    
+
     .. attribute:: name
 
-        The name of this scenario
+        The name of this scenario.
 
     .. attribute:: feature
 
-        The :class:`Feature` this scenario belongs to
+        The :class:`Feature` this scenario belongs to.
 
 .. autoclass:: aloe.parser.Step()
     :members:
@@ -35,11 +35,11 @@ Features, Scenarios and Steps
 
     .. attribute:: scenario
 
-        The :class:`Scenario` this step belongs to (if inside a scenario)
+        The :class:`Scenario` this step belongs to (if inside a scenario).
 
     .. attribute:: background
 
-        The :class:`Background` this step belongs to (if inside a background)
+        The :class:`Background` this step belongs to (if inside a background).
 
     .. attribute:: testclass
 
@@ -57,6 +57,8 @@ Features, Scenarios and Steps
 
         Execute another step.
 
+        Example:
+
         .. code-block:: python
 
             self.behave_as("Given I am at the market")
@@ -64,6 +66,8 @@ Features, Scenarios and Steps
     .. method:: given(sentence) 
 
         Execute another step.
+
+        Example:
 
         .. code-block:: python
 
@@ -73,6 +77,8 @@ Features, Scenarios and Steps
 
         Execute another step.
 
+        Example:
+
         .. code-block:: python
 
             self.when("I buy two oranges")
@@ -80,6 +86,8 @@ Features, Scenarios and Steps
     .. method:: then(sentence) 
 
         Execute another step.
+
+        Example:
 
         .. code-block:: python
 

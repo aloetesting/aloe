@@ -21,7 +21,7 @@ Write your first feature ``features/calculator.feature``:
         When I press add
         Then the result should be 80 on the screen
 
-Features are written using the `Gherkin syntax`_
+Features are written using the `Gherkin syntax`_.
 
 Now run ``aloe features/calculator.feature`` and see it fail because there are no
 step definitions::
