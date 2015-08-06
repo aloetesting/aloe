@@ -306,10 +306,43 @@ class StepDict(dict):
         """
         Decorates a function, so that it will become a new step
         definition.
+
         You give step sentence either (by priority):
-        * with step function argument
-        * with function doc
-        * with the function name exploded by underscores
+
+         * with step function argument;
+         * with function doc; or
+         * with the function name exploded by underscores.
+
+        Parameters can be passed to steps using regular expressions.
+        Parameters are passed in the order they are captured. Be aware that
+        captured values are strings.
+
+        The first parameter passed into the decorated function is the
+        :class:`Step` object built for this step.
+
+        Examples:
+
+        .. code-block:: python
+
+            @step("I go to the shops")
+            def _i_go_to_the_shops_step(self):
+                '''Implements I go to the shops'''
+
+                ...
+
+            @step
+            def _i_go_to_the_shops_step(self):
+                '''I go to the shops'''
+
+                ...
+
+            @step(r"I buy (\\d+) oranges")
+            def _purchase_oranges_step(self, num_oranges):
+                '''Buy a certain number of oranges'''
+
+                num_oranges = int(num_oranges)
+
+                ...
         """
 
         if isinstance(step_func_or_sentence, bytes):
