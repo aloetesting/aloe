@@ -14,6 +14,7 @@ disable=
     missing-super-argument,
     no-self-use,
     too-few-public-methods,
+    too-many-lines,
     RP0101,
     RP0401,
     RP0402,
