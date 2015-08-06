@@ -101,7 +101,7 @@ class ParseLocation(object):
     @property
     def file(self):
         """
-        Return the relative path to the filen
+        Return the relative path to the file.
         """
 
         if self._file:
