@@ -24,7 +24,7 @@ History
 =======
 
 `Aloe` originally started life as a branch of the Python BDD tool Lettuce_.
-Like so many succulants, it grew into so much more than that.
+Like so many succulents, it grew into so much more than that.
 
 
 Indices and tables
