@@ -20,11 +20,13 @@ Setup script.
 
 from setuptools import setup, find_packages
 
+from aloe import __version__
+
 with open('requirements.txt') as requirements, \
         open('test_requirements.txt') as test_requirements:
     setup(
         name='aloe',
-        version='0.0.17',
+        version=__version__,
         description='Gherkin runner compatible with Lettuce',
         author='Alexey Kotlyarov',
         author_email='a@koterpillar.com',
