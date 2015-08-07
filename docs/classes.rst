@@ -1,10 +1,19 @@
 Features, Scenarios and Steps
 =============================
 
+.. toctree::
+    :maxdepth: 2
+
+Feature
+-------
+
 .. autoclass:: aloe.parser.Feature()
     :members:
     :inherited-members:
     :exclude-members: add_blocks, add_statements, feature
+
+Background
+----------
 
 .. autoclass:: aloe.parser.Background()
     :members:
@@ -14,6 +23,9 @@ Features, Scenarios and Steps
     .. attribute:: feature
 
         The :class:`Feature` this scenario belongs to.
+
+Scenario
+--------
 
 .. autoclass:: aloe.parser.Scenario()
     :members:
@@ -27,6 +39,9 @@ Features, Scenarios and Steps
     .. attribute:: feature
 
         The :class:`Feature` this scenario belongs to.
+
+Step
+----
 
 .. autoclass:: aloe.parser.Step()
     :members:
@@ -92,3 +107,5 @@ Features, Scenarios and Steps
         .. code-block:: python
 
             self.then("I will be charged 60c")
+
+.. include:: links.rst

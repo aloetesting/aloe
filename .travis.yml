@@ -8,6 +8,7 @@ install:
     - pip install -r requirements.txt
     - pip install -r test_requirements.txt
     - pip install coveralls
+    - pip install sphinx
 
 cache:
     directories:
@@ -15,11 +16,12 @@ cache:
 
 script:
     - pep8 .
-    - pylint aloe lettuce tests
+    - pylint aloe aloe_sphinx lettuce tests
     - coverage erase
     - coverage run -m nose
     - coverage report
     - ./tools/check_installs
+    - make -C docs coverage
 
 after_success:
     - coveralls

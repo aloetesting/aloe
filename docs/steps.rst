@@ -1,6 +1,9 @@
 Defining Steps
 ==============
 
+.. toctree::
+    :maxdepth: 2
+
 .. autofunction:: aloe.step(sentence=None)
 
 Step Loading
@@ -12,3 +15,5 @@ directories.
 
 Additional 3rd-party steps (such as `aloe_django`_) can be imported in from
 your ``__init__.py``.
+
+.. include:: links.rst

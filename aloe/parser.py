@@ -146,7 +146,7 @@ class Step(Node):
     A single statement within a test.
 
     A :class:`Scenario` or :class:`Background` is composed of multiple
-    :class:`Step`s.
+    :class:`Step`.
     """
 
     def __init__(self, s, loc, tokens):
@@ -202,7 +202,7 @@ class Step(Node):
     @classmethod
     def parse_steps_from_string(cls, string, **kwargs):
         """
-        Parse a number of steps, returns a list of :class:`Step`s.
+        Parse a number of steps, returns a list of :class:`Step`.
 
         This is used by :func:`step.behave_as`.
         """
@@ -422,7 +422,7 @@ class TaggedBlock(Block):
 
 
 class Background(Block):
-    """The background of all :class:`Scenario`s in a :class:`Feature`."""
+    """The background of all :class:`Scenario` in a :class:`Feature`."""
     pass
 
 
