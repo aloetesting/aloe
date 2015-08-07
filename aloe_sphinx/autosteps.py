@@ -10,9 +10,9 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-# pylint:disable=redefined-builtin
+# pylint:disable=redefined-builtin, unused-wildcard-import, wildcard-import
 from builtins import *
-# pylint:enable=redefined-builtin
+# pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
 from future import standard_library
 standard_library.install_aliases()
 
@@ -23,14 +23,21 @@ from sphinx.util.inspect import safe_getmembers
 
 
 def is_step(member):
+    """Return true if the member is an Aloe step declaration"""
     return isinstance(member, FunctionType) and hasattr(member, 'sentence')
 
 
 class StepsDocumenter(ModuleDocumenter):
+    """Autodocumenter for Aloe step declarations"""
+
     def get_object_members(self, want_all):
+        """
+        Override the module introspection to add any steps not
+        contained in __all__ into the member list.
+        """
+
         ret, memberlist = super().get_object_members(want_all)
 
-        # override __all__ find the steps also
         for name, member in safe_getmembers(self.object):
             if is_step(member):
                 if (name, member) in memberlist:
@@ -41,11 +48,11 @@ class StepsDocumenter(ModuleDocumenter):
         return ret, memberlist
 
     def filter_members(self, members, want_all):
-        members_copy = list(members)
+        """Override the filtering to prevent removing private steps."""
 
+        members_copy = list(members)
         members = super().filter_members(members, want_all)
 
-        # add back in the steps, even if private
         for (name, member) in members_copy:
             if is_step(member):
                 if (name, member, False) in members:
@@ -57,6 +64,9 @@ class StepsDocumenter(ModuleDocumenter):
 
 
 class StepDocumenter(FunctionDocumenter):
+    """Autodocumenter for steps"""
+
+    directive = 'gherkin:restep'
 
     @classmethod
     def can_document_member(cls, member, membername, isattr, parent):
@@ -65,12 +75,10 @@ class StepDocumenter(FunctionDocumenter):
 
     def add_directive_header(self, sig):
         if is_step(self.object):
-            # FIXME: this is a first cut
-            directive = 'gherkin:restep'
             name = self.object.sentence
             sourcename = self.get_sourcename()
 
-            self.add_line(u'.. %s:: %s' % (directive, name),
+            self.add_line(u'.. %s:: %s' % (self.directive, name),
                           sourcename)
             if self.options.noindex:
                 self.add_line(u'   :noindex:', sourcename)
@@ -79,6 +87,7 @@ class StepDocumenter(FunctionDocumenter):
 
 
 def setup(app):
+    """Initialize extension"""
     app.add_autodocumenter(StepsDocumenter)
     app.add_autodocumenter(StepDocumenter)
 
