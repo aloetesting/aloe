@@ -13,19 +13,3 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-"""
-Part of steps for the tested application.
-"""
-
-# pylint:disable=unused-argument,unused-import
-
-from aloe import step
-
-from .one import step_one
-
-
-@step(r'I use step two')
-def step_two(self):
-    """Dummy step."""
-    pass

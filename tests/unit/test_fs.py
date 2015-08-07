@@ -15,17 +15,35 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Part of steps for the tested application.
+Test filesystem-related functions.
 """
 
-# pylint:disable=unused-argument,unused-import
+from __future__ import unicode_literals
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
 
-from aloe import step
+import unittest
 
-from .one import step_one
+from aloe.fs import path_to_module_name
 
 
-@step(r'I use step two')
-def step_two(self):
-    """Dummy step."""
-    pass
+class PathToModuleNameTest(unittest.TestCase):
+    """
+    Test path_to_module_name.
+    """
+
+    def test_path_to_module_name(self):
+        """Test path_to_module_name."""
+
+        self.assertEqual(
+            'one.two.three',
+            path_to_module_name('one/two/three.py')
+        )
+
+        self.assertEqual(
+            'one.two',
+            path_to_module_name('one/two/__init__.py')
+        )

@@ -25,6 +25,14 @@ from __future__ import absolute_import
 
 import sys
 
+from contextlib import contextmanager
+
+
+@contextmanager
+def dummy_cm():
+    """A dummy context manager to compare other decorated functions to."""
+    pass
+
 
 def always_str(value):
     """
@@ -35,3 +43,24 @@ def always_str(value):
         return value
     else:
         return value.encode()
+
+
+def unwrap_function(func):
+    """
+    Given a function to which a decorator was applied, return the original
+    function.
+    """
+
+    if hasattr(func, '__wrapped__'):
+        return func.__wrapped__
+
+    # In Python 2, functools.wraps doesn't set __wrapped__, however, it is
+    # possible to check whether the function has been wrapped by a known
+    # method, in this case contextlib.contextmanager
+    elif func.__code__.co_filename == dummy_cm.__code__.co_filename and \
+            func.__code__.co_firstlineno == dummy_cm.__code__.co_firstlineno:
+        # Get the original function from the closure
+        return func.__closure__[0].cell_contents
+
+    else:
+        return func
