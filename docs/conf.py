@@ -34,6 +34,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.intersphinx',
     'sphinx.ext.coverage',
+    'aloe_sphinx.gherkindomain',
     'aloe_sphinx.autosteps',
 ]
 
