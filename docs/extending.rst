@@ -1,5 +1,7 @@
-Extending Aloe's TestCase
-=========================
+.. _extending_aloe:
+
+Extending Aloe
+==============
 
 .. toctree::
     :maxdepth: 2
