@@ -45,9 +45,8 @@ class GherkinREStep(ObjectDescription):
     type_ = 'Step'
 
     def handle_signature(self, sig, signode):
-        signode += addnodes.desc_name(self.type_, self.type_)
-        signode += nodes.inline(' ', ' ')
-        signode += nodes.emphasis(sig, sig)
+        signode += addnodes.desc_annotation(self.type_ + ' ', self.type_ + ' ')
+        signode += nodes.strong(sig, sig)
 
         return sig
 
