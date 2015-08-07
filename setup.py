@@ -20,7 +20,6 @@ Setup script.
 
 __version__ = '0.0.17'
 
-import os
 from setuptools import setup, find_packages
 
 if __name__ == '__main__':
