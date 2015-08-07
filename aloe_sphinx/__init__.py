@@ -7,8 +7,19 @@ Add these extensions to your Sphinx_ ``conf.py``:
 
     extensions = [
         'sphinx.ext.autodoc',
+        'aloe_sphinx.gerkindomain',
         'aloe_sphinx.autosteps',
     ]
+
+Gherkin Domain
+~~~~~~~~~~~~~~
+
+.. object:: aloe_sphinx.gherkindomain
+
+.. automodule:: aloe_sphinx.gherkindomain
+
+Steps Autodocumenter
+~~~~~~~~~~~~~~~~~~~~
 
 .. object:: aloe_sphinx.autosteps
 
