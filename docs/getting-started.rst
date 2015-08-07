@@ -71,3 +71,5 @@ Now it works::
     Ran 1 test in 0.001s
 
     OK
+
+.. include:: links.rst

@@ -1,5 +1,10 @@
-Extending Aloe's TestCase
-=========================
+.. _extending_aloe:
+
+Extending Aloe
+==============
+
+.. toctree::
+    :maxdepth: 2
 
 .. autoclass:: aloe.testclass.TestCase()
 
@@ -10,5 +15,9 @@ Extending Aloe's TestCase
 Extensions
 ==========
 
+.. toctree::
+    :maxdepth: 2
+
 * `aloe_django`_ -- Django integration for `Aloe`.
 
+.. include:: links.rst

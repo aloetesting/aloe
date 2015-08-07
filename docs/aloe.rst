@@ -1,6 +1,9 @@
 Running Aloe
 ============
 
+.. toctree::
+    :maxdepth: 2
+
 The ``aloe`` helper runs Nose_ with the Aloe_ plugin enabled.
 
 ``aloe`` accepts the same flags as ``nosetests`` and so these are not
@@ -26,3 +29,5 @@ extensively documented here.
 .. option:: --no-ignore-python
 
     Run Python tests as well as Gherkin.
+
+.. include:: links.rst
