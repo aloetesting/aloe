@@ -1,6 +1,9 @@
 Hooks
 =====
 
+.. toctree::
+    :maxdepth: 2
+
 Hooks can be installed to run :attr:`before`, :attr:`around` and :attr:`after`
 part of the test.
 
@@ -106,3 +109,6 @@ failures.
             print("Before step")
             yield
             print("After step")
+
+.. include:: world.rst
+.. include:: links.rst
