@@ -1,6 +1,9 @@
 Writing Features
 ================
 
+.. toctree::
+    :maxdepth: 2
+
 The standard `Gherkin syntax`_ is supported, including scenario
 outlines, doc strings, data tables and internationalization.
 
@@ -34,3 +37,5 @@ For example, given the following directory structure, only
     two/
     features/
         six.feature
+
+.. include:: links.rst

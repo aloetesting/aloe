@@ -1,21 +1,23 @@
-Aloe: BDD testing via nose
-==========================
-
-.. toctree::
-   :maxdepth: 2
+============================
+ Aloe: BDD testing via nose
+============================
 
 Aloe is a Gherkin_-based Behaviour Driven Development tool for Python based
 on Nose_.
 
+.. toctree::
+    :maxdepth: 2
+
+    aloe
+    features
+    steps
+    hooks
+    classes
+    extending
+    porting
+
 .. include:: getting-started.rst
-.. include:: aloe.rst
-.. include:: features.rst
-.. include:: steps.rst
-.. include:: hooks.rst
-.. include:: world.rst
-.. include:: classes.rst
-.. include:: extending.rst
-.. include:: porting.rst
+
 
 History
 =======
@@ -31,10 +33,4 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. _aloe: https://github.com/koterpillar/aloe
-.. _gherkin: https://cucumber.io/
-.. _nose: https://nose.readthedocs.org/
-.. _`Attribute selector plugin`: https://nose.readthedocs.org/en/latest/plugins/attrib.html
-.. _lettuce: http://lettuce.it/
-.. _`Gherkin syntax`: https://cucumber.io/docs/reference
-.. _`aloe_django`: https://github.com/koterpillar/aloe_django
+.. include:: links.rst
