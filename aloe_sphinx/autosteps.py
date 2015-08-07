@@ -66,19 +66,19 @@ class StepsDocumenter(ModuleDocumenter):
 class StepDocumenter(FunctionDocumenter):
     """Autodocumenter for steps"""
 
-    directive = 'gherkin:restep'
-
     @classmethod
     def can_document_member(cls, member, membername, isattr, parent):
         return is_step(member) or \
             super().can_document_member(member, membername, isattr, parent)
 
     def add_directive_header(self, sig):
+        directive = 'gherkin:restep'
+
         if is_step(self.object):
             name = self.object.sentence
             sourcename = self.get_sourcename()
 
-            self.add_line(u'.. %s:: %s' % (self.directive, name),
+            self.add_line(u'.. %s:: %s' % (directive, name),
                           sourcename)
             if self.options.noindex:
                 self.add_line(u'   :noindex:', sourcename)
