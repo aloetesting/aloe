@@ -87,7 +87,7 @@ class StepDocumenter(FunctionDocumenter):
 
 
 def setup(app):
-    """Initialize extension"""
+    """Initialize the extension."""
     app.add_autodocumenter(StepsDocumenter)
     app.add_autodocumenter(StepDocumenter)
 
