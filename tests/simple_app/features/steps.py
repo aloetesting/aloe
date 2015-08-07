@@ -23,30 +23,37 @@ standard_library.install_aliases()
 
 from aloe import after, before, step, world
 
+# pylint:disable=unused-argument
+
 
 @before.all
 def init_all_results():
+    """Initialise the result storage."""
     world.all_results = []
 
 
 @before.each_example
 def clear(*args):
+    """Clean the results for each example."""
     world.numbers = []
     world.result = 0
 
 
 @step(r'I have entered (\d+) into the calculator')
 def enter_number(self, number):
+    """Store the entered number."""
     world.numbers.append(float(number))
 
 
 @step(r'I press add')
 def press_add(self):
+    """Sum up the numbers."""
     world.result = sum(world.numbers)
 
 
 @step(r'The result should be (\d+) on the screen')
 def assert_result(self, result):
+    """Assert the result is correct."""
     assert world.result == float(result)
 
 

@@ -29,11 +29,14 @@ from builtins import super
 standard_library.install_aliases()
 
 import os
+import sys
 import tempfile
 import unittest
+from contextlib import contextmanager
 from functools import wraps
 
 from aloe import world
+from aloe.fs import path_to_module_name
 from aloe.plugin import GherkinPlugin
 from aloe.registry import (
     CALLBACK_REGISTRY,
@@ -43,10 +46,72 @@ from aloe.registry import (
 from aloe.runner import Runner
 
 
+@contextmanager
+def _in_directory(directory):
+    """
+    A context manager to run the payload in a specified directory, with it
+    added to the module search path and all modules from it removed from
+    sys.modules upon exit.
+    """
+
+    directory = os.path.abspath(directory)
+    last_wd = os.getcwd()
+
+    sys.path.insert(0, directory)
+    os.chdir(directory)
+
+    try:
+        yield
+    finally:
+        os.chdir(last_wd)
+        sys.path.remove(directory)
+
+        # Unload modules which are loaded from the directory
+        unload_modules = []
+        unload_path_prefix = os.path.join(directory, '')
+        for module_name, module in sys.modules.items():
+            # Find out where is the module loaded from
+            try:
+                path = module.__file__
+            except AttributeError:
+                # Maybe a namespace package module?
+                try:
+                    if module.__spec__.origin == 'namespace':
+                        # pylint:disable=protected-access
+                        path = module.__path__._path[0]
+                        # pylint:enable=protected-access
+                    else:
+                        continue
+                except AttributeError:
+                    continue
+
+            # Is it loaded from a file in the directory?
+            path = os.path.abspath(path)
+            if not path.startswith(unload_path_prefix):
+                continue
+
+            # Does its name match what would it be if it was? Consider two
+            # directories, foo/ and foo/bar on sys.path, foo/bar/baz.py
+            # might have been loaded from either.
+            path = path[len(unload_path_prefix):]
+            if module_name == path_to_module_name(path):
+                unload_modules.append(module_name)
+
+        for module in unload_modules:
+            del sys.modules[module]
+
+
 def in_directory(directory):
     """
-    A decorator to change the current directory. Applies to either a function
-    or an instance of TestCase, in which case setUp/tearDown are used.
+    A decorator to change the current directory and add the new one to the
+    Python module search path.
+
+    Upon exiting, the directory is changed back, the module search path change
+    is reversed and all modules loaded from the directory are removed from
+    sys.modules.
+
+    Applies to either a function or an instance of
+    TestCase, in which case setUp/tearDown are used.
     """
 
     def wrapper(func_or_class):
@@ -65,19 +130,21 @@ def in_directory(directory):
             old_setup = func_or_class.setUp
             old_teardown = func_or_class.tearDown
 
+            in_directory_cm = [None]
+
             @wraps(old_setup)
             def setUp(self):
                 """Wrap setUp to change to given directory first."""
-                self.last_wd = os.getcwd()
-                os.chdir(directory)
+                in_directory_cm[0] = _in_directory(directory)
+                in_directory_cm[0].__enter__()
                 old_setup(self)
 
             @wraps(old_teardown)
             def tearDown(self):
                 """Wrap tearDown to restore the original directory."""
                 old_teardown(self)
-                os.chdir(self.last_wd)
-                delattr(self, 'last_wd')
+                in_directory_cm[0].__exit__(None, None, None)
+                in_directory_cm[0] = None
 
             func_or_class.setUp = setUp
             func_or_class.tearDown = tearDown
@@ -92,12 +159,8 @@ def in_directory(directory):
                 Execute the function in a different directory.
                 """
 
-                cwd = os.getcwd()
-                os.chdir(directory)
-                try:
+                with _in_directory(directory):
                     return func_or_class(*args, **kwargs)
-                finally:
-                    os.chdir(cwd)
 
             return wrapped
 

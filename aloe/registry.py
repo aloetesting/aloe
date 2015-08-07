@@ -35,6 +35,7 @@ from aloe.exceptions import (
     NoDefinitionFound,
     StepLoadingError,
 )
+from aloe.utils import unwrap_function
 
 
 # What part of the test to hook
@@ -94,8 +95,7 @@ class CallbackDict(dict):
         the function closure into account.
         """
 
-        if hasattr(func, '__wrapped__'):
-            return cls._function_id(func.__wrapped__)
+        func = unwrap_function(func)
 
         return (
             func.__code__.co_filename,
