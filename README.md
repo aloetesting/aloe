@@ -52,8 +52,11 @@ License
 =======
 
 Aloe - Cucumber runner for Python based on Lettuce and Nose
+
 Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
+
 Copyright (C) <2014-2015 Danielle Madeley <danielle@madeley.id.au>
+
 Copyright (C) <2010-2012> Gabriel Falcão <gabriel@nacaolivre.org>
 
 
