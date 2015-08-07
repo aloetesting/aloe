@@ -13,6 +13,7 @@ on Nose_.
     steps
     hooks
     classes
+    extras
     extending
     porting
 
