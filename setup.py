@@ -18,7 +18,7 @@
 Setup script.
 """
 
-__version__ = '0.0.17'
+__version__ = '0.0.18'
 
 from setuptools import setup, find_packages
 
