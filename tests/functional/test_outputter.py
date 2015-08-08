@@ -44,4 +44,4 @@ class OutputterTest(FeatureTest):
         """
 
         self.assert_feature_success('--verbosity=3',  # HACKY
-                                    'features/calculator.feature')
+                                    'features/scenario_index.feature')

@@ -28,7 +28,84 @@ from builtins import *
 from future import standard_library
 standard_library.install_aliases()
 
+from contextlib import contextmanager
+
+from aloe.registry import (
+    CallbackDecorator,
+    CALLBACK_REGISTRY,
+    PriorityClass,
+)
+
 from nose.result import TextTestResult
+
+# A decorator to add callbacks which wrap the steps looser than all the other
+# callbacks.
+# pylint:disable=invalid-name
+outer_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
+                                 priority_class=PriorityClass.DISPLAY)
+# pylint:enable=invalid-name
+#
+
+class StreamWrapper(object):
+    """Used to decorate file-like objects with a handy 'writeln' method"""
+    def __init__(self,stream):
+        self.stream = stream
+
+    def __getattr__(self, attr):
+        if attr in ('stream', '__getstate__'):
+            raise AttributeError(attr)
+        return getattr(self.stream,attr)
+
+    def writeln(self, arg=None):
+        if not self.stream:
+            return
+
+        elif arg:
+            self.write(arg)
+
+        self.write('\n') # text-mode streams translate to \r\n if needed
+
+StreamWrapper = StreamWrapper(None)
+
+
+@outer_around.each_feature
+@contextmanager
+def feature_wrapper(feature):
+
+    try:
+        StreamWrapper.writeln(feature.represented())
+
+        yield
+    finally:
+        pass
+
+
+@outer_around.each_example
+@contextmanager
+def example_wrapper(scenario, outline, steps):
+    """Display scenario execution."""
+
+    try:
+        StreamWrapper.writeln(scenario.represented())
+
+        yield
+    finally:
+        pass
+
+
+@outer_around.each_step
+@contextmanager
+def step_wrapper(step):
+    """Display step execution."""
+
+    try:
+        StreamWrapper.writeln(step.represented())
+        if step.table:
+            StreamWrapper.writeln(step.represent_table())
+
+        yield
+    finally:
+        pass
 
 
 class AloeTestResult(TextTestResult):
@@ -36,21 +113,8 @@ class AloeTestResult(TextTestResult):
                  config=None, errorClasses=None):
         super().__init__(stream, descriptions, verbosity,
                          config=config, errorClasses=errorClasses)
-        print("Verbosity", verbosity)
         self.showAll = verbosity == 2
         self.showSteps = verbosity > 2
 
-    def startTest(self, test):
-        super().startTest(test)
         if self.showSteps:
-            self.stream.writeln("Starting test %s" % test)
-
-    def stopTest(self, test):
-        super().stopTest(test)
-        if self.showSteps:
-            self.stream.writeln("Stopping test %s" % test)
-
-    def addSuccess(self, test):
-        super().addSuccess(test)
-        if self.showSteps:
-            self.stream.writeln("BOO YAH")
+            StreamWrapper.stream = stream
