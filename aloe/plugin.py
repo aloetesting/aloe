@@ -25,6 +25,7 @@ from future import standard_library
 standard_library.install_aliases()
 
 import os
+import types
 
 from importlib import import_module
 
@@ -34,6 +35,7 @@ from nose.plugins.attrib import AttributeSelector
 from aloe.fs import FeatureLoader
 from aloe.registry import CALLBACK_REGISTRY
 from aloe.testclass import TestCase
+from aloe.result import AloeTestResult
 
 
 class GherkinPlugin(Plugin):
@@ -226,3 +228,14 @@ class GherkinPlugin(Plugin):
         if hasattr(self, 'after_hook'):
             self.after_hook()
             delattr(self, 'after_hook')
+
+    def prepareTestRunner(self, runner):
+        def _makeResult(self):
+            return AloeTestResult(self.stream,
+                                  self.descriptions,
+                                  self.verbosity,
+                                  self.config)
+
+        runner._makeResult = types.MethodType(_makeResult, runner)
+
+        return runner
