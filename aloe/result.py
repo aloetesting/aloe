@@ -32,4 +32,25 @@ from nose.result import TextTestResult
 
 
 class AloeTestResult(TextTestResult):
-    pass
+    def __init__(self, stream, descriptions, verbosity,
+                 config=None, errorClasses=None):
+        super().__init__(stream, descriptions, verbosity,
+                         config=config, errorClasses=errorClasses)
+        print("Verbosity", verbosity)
+        self.showAll = verbosity == 2
+        self.showSteps = verbosity > 2
+
+    def startTest(self, test):
+        super().startTest(test)
+        if self.showSteps:
+            self.stream.writeln("Starting test %s" % test)
+
+    def stopTest(self, test):
+        super().stopTest(test)
+        if self.showSteps:
+            self.stream.writeln("Stopping test %s" % test)
+
+    def addSuccess(self, test):
+        super().addSuccess(test)
+        if self.showSteps:
+            self.stream.writeln("BOO YAH")
