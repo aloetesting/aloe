@@ -554,7 +554,7 @@ class Description(Node):
 
     def represented(self, indent=2, annotate=True):
         return u'\n'.join(
-            self.represent_line(n)
+            self.represent_line(n, annotate=annotate)
             for n, _ in enumerate(self.lines)
         )
 
