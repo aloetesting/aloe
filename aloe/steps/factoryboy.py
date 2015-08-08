@@ -30,7 +30,9 @@ To activate these steps import :mod:`aloe.steps.factoryboy` into your
 
 from __future__ import (absolute_import, division,
                         print_function, unicode_literals)
-from future.builtins import *
+# pylint:disable=redefined-builtin, unused-wildcard-import, wildcard-import
+from builtins import *
+# pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
 
 import re
 

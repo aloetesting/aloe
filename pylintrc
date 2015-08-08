@@ -15,6 +15,7 @@ disable=
     no-self-use,
     too-few-public-methods,
     too-many-lines,
+    unused-argument,
     RP0101,
     RP0401,
     RP0402,
