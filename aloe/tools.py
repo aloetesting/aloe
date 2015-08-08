@@ -49,7 +49,7 @@ def guess_types(data):
      * :class:`bool` (``true``/``false``)
      * :class:`None` (``null``)
      * :class:`int`
-     * :class:`datetime` in ISO format (``yyyy-mm-dd``)
+     * :class:`date` in ISO format (``yyyy-mm-dd``)
      * :class:`str`
 
     The function operates recursively, so you should be able to pass nearly
@@ -71,7 +71,7 @@ def guess_types(data):
         elif data.isdigit() and not re.match("^0[0-9]+", data):
             return int(data)
         elif re.match(r'^\d{4}-\d{2}-\d{2}$', data):
-            return datetime.strptime(data, "%Y-%m-%d")
+            return datetime.strptime(data, "%Y-%m-%d").date()
 
         # it's a string
         return data
