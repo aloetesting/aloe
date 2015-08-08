@@ -35,7 +35,7 @@ from aloe.registry import (
     CALLBACK_REGISTRY,
     PriorityClass,
 )
-
+from blessings import Terminal
 from nose.result import TextTestResult
 
 # A decorator to add callbacks which wrap the steps looser than all the other
@@ -48,7 +48,7 @@ outer_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
 
 class StreamWrapper(object):
     """Used to decorate file-like objects with a handy 'writeln' method"""
-    def __init__(self,stream):
+    def __init__(self, stream):
         self.stream = stream
 
     def __getattr__(self, attr):
@@ -56,16 +56,24 @@ class StreamWrapper(object):
             raise AttributeError(attr)
         return getattr(self.stream,attr)
 
-    def writeln(self, arg=None):
+    def writeln(self, arg=None, return_=False):
         if not self.stream:
             return
 
         elif arg:
             self.write(arg)
 
+            if return_:
+                self.write(term.move_up * arg.count('\n'))
+
         self.write('\n') # text-mode streams translate to \r\n if needed
 
+        if return_:
+            self.write(term.move_up)
+
+
 StreamWrapper = StreamWrapper(None)
+term = Terminal()
 
 
 @outer_around.each_feature
@@ -73,7 +81,14 @@ StreamWrapper = StreamWrapper(None)
 def feature_wrapper(feature):
 
     try:
-        StreamWrapper.writeln(feature.represented())
+        if feature.tags:
+            StreamWrapper.writeln(term.cyan(feature.represent_tags()))
+
+        lines = feature.represented(annotate=False).splitlines()
+        StreamWrapper.writeln(term.bold_white(lines[0]))
+        StreamWrapper.writeln()
+        StreamWrapper.writeln(term.white('\n'.join(lines[1:])))
+        StreamWrapper.writeln()
 
         yield
     finally:
@@ -86,11 +101,30 @@ def example_wrapper(scenario, outline, steps):
     """Display scenario execution."""
 
     try:
-        StreamWrapper.writeln(scenario.represented())
+        if scenario.tags:
+            StreamWrapper.writeln(term.cyan(feature.represent_tags()))
+
+        # blessings doesn't degrade term.color nicely if there's no styling
+        # available
+        gray = term.color(8) if term.does_styling else str
+
+        start, end = scenario.represented().rsplit('#')
+        StreamWrapper.write(term.bold_white(start))
+        StreamWrapper.writeln(gray(end))
+
+        # write a preview of the steps
+        if term.does_styling:
+            StreamWrapper.writeln(
+                gray('\n'.join(
+                    step.represented(annotate=False)
+                    for step in steps
+                ) + '\n'),
+                return_=True
+            )
 
         yield
     finally:
-        pass
+        StreamWrapper.writeln()
 
 
 @outer_around.each_step
@@ -99,13 +133,25 @@ def step_wrapper(step):
     """Display step execution."""
 
     try:
-        StreamWrapper.writeln(step.represented())
-        if step.table:
-            StreamWrapper.writeln(step.represent_table())
+        if term.does_styling:
+            lines = step.represented(annotate=False)
+            if step.table:
+                lines += step.represent_table()
+
+            StreamWrapper.writeln(term.color(11)(lines), return_=True)
 
         yield
     finally:
-        pass
+        if step.passed:
+            color = term.bold_green
+        elif step.failed:
+            color = term.bold_red
+        else:
+            color = term.yellow
+
+        StreamWrapper.writeln(color(step.represented(annotate=False)))
+        if step.table:
+            StreamWrapper.writeln(color(step.represent_table()))
 
 
 class AloeTestResult(TextTestResult):
