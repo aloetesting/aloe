@@ -35,7 +35,7 @@ import re
 from datetime import datetime
 
 
-def guess_types(data):
+def guess_types(data):  # pylint:disable=too-complex
     """
     Converts a record or list of records from strings contained in
     outlines, table or hashes into a version with the types guessed.
@@ -63,17 +63,19 @@ def guess_types(data):
 
     if isinstance(data, str):
         if data == "true":
-            return True
+            data = True
         elif data == "false":
-            return False
+            data = False
         elif data == "null":
-            return None
+            data = None
         elif data.isdigit() and not re.match("^0[0-9]+", data):
-            return int(data)
+            data = int(data)
         elif re.match(r'^\d{4}-\d{2}-\d{2}$', data):
-            return datetime.strptime(data, "%Y-%m-%d").date()
+            data = datetime.strptime(data, "%Y-%m-%d").date()
+        else:
+            # it's a string
+            pass
 
-        # it's a string
         return data
 
     # if it's a dict, recurse as a dict

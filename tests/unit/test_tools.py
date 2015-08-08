@@ -35,11 +35,10 @@ from aloe.tools import guess_types
 
 
 class GuessTypesTest(unittest.TestCase):
-    """
-    Test guess_types().
-    """
+    """Test guess_types()"""
 
     def test_simple_types(self):
+        """Test simple types"""
         values = [
             ('a', 'a'),
             ('1', 1),
@@ -56,6 +55,7 @@ class GuessTypesTest(unittest.TestCase):
                          list(outputs))
 
     def test_hashes(self):
+        """Test step.hashes structure"""
         input_ = [{
             'name': 'Danni',
             'height': '178',
@@ -76,6 +76,7 @@ class GuessTypesTest(unittest.TestCase):
                          output_)
 
     def test_table(self):
+        """Test step.table structure"""
         input_ = [
             ['name', 'russian', 'german'],
             ['Danni', 'false', 'true'],
