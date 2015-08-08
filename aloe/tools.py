@@ -15,7 +15,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Tools for writing Aloe steps.
+Useful tools for writing Aloe steps.
+
+See also :class:`aloe.world`.
 """
 
 from __future__ import print_function
@@ -35,22 +37,24 @@ from datetime import datetime
 
 def guess_types(data):
     """
-    Converts a record or list of records from outlines, table or hashes
-    into a version with the types guessed.
+    Converts a record or list of records from strings contained in
+    outlines, table or hashes into a version with the types guessed.
 
-    :param data: a :class:`Scenario.outlines`, :class:`Step.table` or
-        :class:`Step.hashes` or entry
+    :param data: a :attr:`Scenario.outlines`, :attr:`Step.table`,
+        :attr:`Step.hashes` or any other :class:`list`,
+        list of lists or list of dicts.
 
-    Will guess the following in priority order:
+    Will guess the following (in priority order):
 
-     # bool (``true``/``false``)
-     # None (``null``)
-     # int
-     # datetime in ISO format (2015-08-25)
-     # str
+     * :class:`bool` (``true``/``false``)
+     * :class:`None` (``null``)
+     * :class:`int`
+     * :class:`datetime` in ISO format (``yyyy-mm-dd``)
+     * :class:`str`
 
     The function operates recursively, so you should be able to pass nearly
-    anything to it. At the very least basic types plus dict and iterables.
+    anything to it. At the very least basic types plus
+    :class:`dict` and iterables.
     """
 
     # convert bytes to strings
