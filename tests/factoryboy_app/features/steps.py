@@ -53,7 +53,8 @@ class User(object):
 class UserFactory(factory.Factory):
     """Factory to build a user"""
 
-    class Meta:
+    class Meta(object):
+        """Meta"""
         model = User
 
     username = factory.Sequence(lambda n: 'john%s' % n)
@@ -85,4 +86,5 @@ def check_users(self):
 
 @after.each_example
 def clear_passwd(scenario, outline, steps):
+    """Clear the passwd table between tests"""
     User.users = []
