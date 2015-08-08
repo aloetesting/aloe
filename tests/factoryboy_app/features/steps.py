@@ -69,7 +69,7 @@ def count_users(self, nusers):
     assert_equal(nusers, len(User.users))
 
 
-@step('passwd contains')
+@step('the user list contains')
 def check_users(self):
     """Look for users in my user list"""
 
@@ -85,6 +85,6 @@ def check_users(self):
 
 
 @after.each_example
-def clear_passwd(scenario, outline, steps):
-    """Clear the passwd table between tests"""
+def clear_user_list(scenario, outline, steps):
+    """Clear the user list between tests"""
     User.users = []

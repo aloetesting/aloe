@@ -1,7 +1,7 @@
-Feature: Test Factoryboy steps fail when expected
+Feature: Test Factory Boy steps fail when expected
 
     As an Aloe user
-    I want to create objects using Factoryboy
+    I want to create objects using Factory Boy
     So that I can type less stuff
 
 

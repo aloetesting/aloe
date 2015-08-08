@@ -1,7 +1,7 @@
-Feature: Test Factoryboy steps
+Feature: Test Factory Boy steps
 
     As an Aloe user
-    I want to create objects using Factoryboy
+    I want to create objects using Factory Boy
     So that I can type less stuff
 
 
@@ -24,7 +24,7 @@ Feature: Test Factoryboy steps
             | koterpillar |
 
         Then I made 2 users
-        And passwd contains:
+        And the user list contains:
             | username    | email                   |
             | danni       | danni@example.org       |
             | koterpillar | koterpillar@example.org |
@@ -36,7 +36,7 @@ Feature: Test Factoryboy steps
             | jessie   |
 
         Then I made 3 users
-        And passwd contains:
+        And the user list contains:
             | username | email              |
             | jessie   | jessie@example.org |
             | jessie   | jessie@example.org |

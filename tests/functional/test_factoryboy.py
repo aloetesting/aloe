@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Basic scenario tests.
+Test Factory Boy steps.
 """
 
 from __future__ import (absolute_import, division,
@@ -35,12 +35,12 @@ from aloe.testing import (
 @in_directory('tests/factoryboy_app')
 class FactoryBoyTest(FeatureTest):
     """
-    Test that calculator feature works as expected.
+    Test Factory Boy steps.
     """
 
     def test_factoryboy(self):
         """
-        Test running the calculator feature.
+        Test Factory Boy steps.
         """
 
         self.assert_feature_success('features/good.feature')
