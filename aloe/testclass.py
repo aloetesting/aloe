@@ -38,7 +38,7 @@ from contextlib import contextmanager
 from nose.plugins.attrib import attr
 
 from aloe.codegen import make_function
-from aloe.parser import Feature, Step
+from aloe.parser import Feature, Step, Gherkin
 from aloe.registry import (
     CallbackDecorator,
     CALLBACK_REGISTRY,
@@ -89,6 +89,11 @@ class TestStep(Step):
         self.behave_as('Then ' + string)
 
 
+class TestGherkin(Gherkin):
+    """A Gherkin parser creating the objects suitable for testing."""
+    step_class = TestStep
+
+
 class TestCase(unittest.TestCase):
     """
     The base test class for tests compiled from Gherkin features.
@@ -116,7 +121,7 @@ class TestCase(unittest.TestCase):
 
         steps = context_step.parse_steps_from_string(
             string,
-            constructors=cls.block_constructors(),
+            parser_class=TestGherkin,
         )
 
         # Copy necessary attributes onto new steps
@@ -135,16 +140,6 @@ class TestCase(unittest.TestCase):
     # Methods for generating test classes
 
     @classmethod
-    def block_constructors(cls):
-        """
-        Constructors for the parsed blocks.
-        """
-
-        return {
-            'step': TestStep,
-        }
-
-    @classmethod
     def from_file(cls, file_):
         """
         Construct a test class from a feature file.
@@ -152,7 +147,7 @@ class TestCase(unittest.TestCase):
 
         feature = Feature.from_file(
             file_,
-            constructors=cls.block_constructors(),
+            parser_class=TestGherkin,
         )
 
         background = cls.make_background(feature.background)
