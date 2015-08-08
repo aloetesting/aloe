@@ -56,15 +56,19 @@ class StreamWrapper(object):
             raise AttributeError(attr)
         return getattr(self.stream,attr)
 
-    def writeln(self, arg=None, return_=False):
+    def write(self, arg=None, return_=False):
         if not self.stream:
             return
 
         elif arg:
-            self.write(arg)
+            self.stream.write(arg)
 
             if return_:
-                self.write(term.move_up * arg.count('\n'))
+                self.stream.write(term.move_up * arg.count('\n'))
+
+    def writeln(self, arg=None, return_=False):
+        if arg:
+            self.write(arg, return_=return_)
 
         self.write('\n') # text-mode streams translate to \r\n if needed
 
@@ -102,7 +106,7 @@ def example_wrapper(scenario, outline, steps):
 
     try:
         if scenario.tags:
-            StreamWrapper.writeln(term.cyan(feature.represent_tags()))
+            StreamWrapper.writeln(term.cyan(scenario.represent_tags()))
 
         # blessings doesn't degrade term.color nicely if there's no styling
         # available
@@ -136,7 +140,7 @@ def step_wrapper(step):
         if term.does_styling:
             lines = step.represented(annotate=False)
             if step.table:
-                lines += step.represent_table()
+                lines += step.represent_hashes()
 
             StreamWrapper.writeln(term.color(11)(lines), return_=True)
 
@@ -151,7 +155,7 @@ def step_wrapper(step):
 
         StreamWrapper.writeln(color(step.represented(annotate=False)))
         if step.table:
-            StreamWrapper.writeln(color(step.represent_table()))
+            StreamWrapper.writeln(color(step.represent_hashes()))
 
 
 class AloeTestResult(TextTestResult):
@@ -160,7 +164,6 @@ class AloeTestResult(TextTestResult):
         super().__init__(stream, descriptions, verbosity,
                          config=config, errorClasses=errorClasses)
         self.showAll = verbosity == 2
-        self.showSteps = verbosity > 2
+        self.showSteps = verbosity >= 3
 
-        if self.showSteps:
-            StreamWrapper.stream = stream
+        StreamWrapper.stream = stream if self.showSteps else None
