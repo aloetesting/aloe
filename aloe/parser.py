@@ -40,6 +40,10 @@ import os
 from codecs import open
 from copy import deepcopy
 from collections import OrderedDict
+try:
+    from functools import lru_cache  # pylint:disable=no-name-in-module
+except ImportError:
+    from repoze.lru import lru_cache
 from warnings import warn
 
 import pyparsing
@@ -205,7 +209,7 @@ class Step(Node):
         This is used by :func:`step.behave_as`.
         """
 
-        tokens = parse(string=string, token='STATEMENTS', **kwargs)
+        tokens = parse(string=string, token='statements', **kwargs)
 
         return list(tokens[0])
 
@@ -435,7 +439,7 @@ class Scenario(TaggedBlock):
 
         # Build a list of outline hashes
         # A single scenario can have multiple example blocks, the returned
-        # token is a list of TABLE tokens
+        # token is a list of table tokens
         self.outlines = []
 
         for outline in token.outlines:
@@ -612,7 +616,7 @@ class Feature(TaggedBlock):
         Parse a string into a :class:`Feature`.
         """
 
-        return parse(string=string, token='FEATURE', **kwargs)[0]
+        return parse(string=string, token='feature', **kwargs)[0]
 
     @classmethod
     def from_file(cls, filename, **kwargs):
@@ -620,7 +624,7 @@ class Feature(TaggedBlock):
         Parse a file or filename into a :class:`Feature`.
         """
 
-        self = parse(filename=filename, token='FEATURE', **kwargs)[0]
+        self = parse(filename=filename, token='feature', **kwargs)[0]
         self.described_at.file = filename
         return self
 
@@ -772,49 +776,96 @@ class GherkinComment(Token):
         return 'GherkinComment()'
 
 
-# TODO: This should be a class inheriting from aloe.languages.Language and
-# defining all the additional token types. Then the 'constructors' argument can
-# be replaced by subclassing (in aloe.testclass).
-# pylint:disable=too-complex,too-many-locals
-
-def parse(string=None,
-          filename=None,
-          token='FEATURE',
-          language=None,
-          constructors=None):
+def clean_multiline_string(s, loc, tokens):
     """
-    Parse a token stream from or raise a SyntaxError.
+    Clean a multiline string.
 
-    This function includes the parser grammar.
+    The indent level of a multiline string is the indent level of the
+    triple-". We have to derive this by walking backwards from the
+    location of the quoted string token to the newline before it.
+
+    We also want to remove the leading and trailing newline if they exist.
+
+    FIXME: assumes UNIX newlines
     """
 
-    if not language:
-        language = guess_language(string, filename)
+    def remove_indent(multiline, indent):
+        """
+        Generate the lines removing the indent
+        """
 
-    CONSTRUCTORS = {
-        'step': Step,
-        # TODO: Background and Scenario have __init__ and add_statements -
-        # which one to override?
-        'background': Background,
-        'scenario': Scenario,
-        # Same for Feature
-        'feature': Feature,
-        'description': Description,
-    }
+        for ln in multiline.splitlines():
+            if ln and not ln[:indent].isspace():
+                warn("%s: %s: under-indented multiline string "
+                     "truncated: '%s'" %
+                     (lineno(loc, s), col(loc, s), ln),
+                     LettuceSyntaxWarning)
 
-    if constructors is not None:
-        CONSTRUCTORS.update(constructors)
+            # for those who are surprised by this, slicing a string
+            # shorter than indent will yield empty string, not IndexError
+            yield ln[indent:]
 
-    #
-    # End of Line
-    #
-    EOL = Suppress(lineEnd)
-    UTFWORD = Word(unicodePrintables)
+    # determine the indentation offset
+    indent = loc - s.rfind('\n', 0, loc) - 1
 
-    #
+    multiline = '\n'.join(remove_indent(tokens[0], indent))
+
+    # remove leading and trailing newlines
+    if multiline[0] == '\n':
+        multiline = multiline[1:]
+
+    if multiline[-1] == '\n':
+        multiline = multiline[:-1]
+
+    return multiline
+
+
+def handle_esc_char(tokens):
+    """Handle escaped tokens, such as \\| and \\n, in table cells."""
+    token = tokens[0]
+
+    if token == r'\|':
+        return u'|'
+    elif token == r'\n':
+        return u'\n'
+    elif token == r'\\':
+        return u'\\'
+
+    raise NotImplementedError(u"Unknown token: %s" % token)
+
+
+class Gherkin(object):
+    """
+    Gherkin parser
+    """
+
+    @classmethod
+    @lru_cache(20)
+    def get_parser(cls, language):
+        """
+        Get a parser for a specific language.
+        """
+
+        return cls(language=language)
+
+    def __init__(self, language):
+        self.language = language
+
+    # Objects that will be created as a result of parsing. These are meant to
+    # be overridden in subclasses.
+    step_class = Step
+    background_class = Background
+    scenario_class = Scenario
+    feature_class = Feature
+    description_class = Description
+
+    # The rest of the class describes Gherkin grammar
+
+    eol = Suppress(lineEnd)
+    utfword = Word(unicodePrintables).setWhitespaceChars(' \t')
+
     # @tag
-    #
-    TAG = Suppress('@') + UTFWORD
+    tag = Suppress('@') + utfword
 
     #
     # A table
@@ -825,82 +876,27 @@ def parse(string=None,
     #
     # Table cells need to be able to handle escaped tokens such as \| and \n
     #
-    def handle_esc_char(tokens):
-        """Handle escaped tokens, such as \\| and \\n, in table cells."""
-        token = tokens[0]
-
-        if token == r'\|':
-            return u'|'
-        elif token == r'\n':
-            return u'\n'
-        elif token == r'\\':
-            return u'\\'
-
-        raise NotImplementedError(u"Unknown token: %s" % token)
-
-    ESC_CHAR = Word(initChars=r'\\', bodyChars=unicodePrintables, exact=2)
-    ESC_CHAR.setParseAction(handle_esc_char)
+    esc_char = Word(initChars=r'\\', bodyChars=unicodePrintables, exact=2)
+    esc_char.setParseAction(handle_esc_char)
 
     #
     # A cell can contain anything except a cell marker, new line or the
     # beginning of a cell marker, we then handle escape characters separately
     # and recombine the cell afterwards
     #
-    CELL = OneOrMore(CharsNotIn('|\n\\') + Optional(ESC_CHAR))
-    CELL.setParseAction(''.join)
+    cell = OneOrMore(CharsNotIn('|\n\\') + Optional(esc_char))
+    cell.setParseAction(''.join)
 
-    TABLE_ROW = Suppress('|') + OneOrMore(CELL + Suppress('|')) + EOL
-    TABLE_ROW.setParseAction(lambda tokens: [v.strip() for v in tokens])
-    TABLE = Group(OneOrMore(Group(TABLE_ROW)))
+    table_row = Suppress('|') + OneOrMore(cell + Suppress('|')) + eol
+    table_row.setParseAction(lambda tokens: [v.strip() for v in tokens])
+    table = Group(OneOrMore(Group(table_row)))
 
-    #
-    # Multiline string
-    #
-    def clean_multiline_string(s, loc, tokens):
-        """
-        Clean a multiline string.
+    multiline = QuotedString('"""', multiline=True)\
+        .setParseAction(clean_multiline_string)
 
-        The indent level of a multiline string is the indent level of the
-        triple-". We have to derive this by walking backwards from the
-        location of the quoted string token to the newline before it.
-
-        We also want to remove the leading and trailing newline if they exist.
-
-        FIXME: assumes UNIX newlines
-        """
-
-        def remove_indent(multiline, indent):
-            """
-            Generate the lines removing the indent
-            """
-
-            for ln in multiline.splitlines():
-                if ln and not ln[:indent].isspace():
-                    warn("%s: %s: under-indented multiline string "
-                         "truncated: '%s'" %
-                         (lineno(loc, s), col(loc, s), ln),
-                         LettuceSyntaxWarning)
-
-                # for those who are surprised by this, slicing a string
-                # shorter than indent will yield empty string, not IndexError
-                yield ln[indent:]
-
-        # determine the indentation offset
-        indent = loc - s.rfind('\n', 0, loc) - 1
-
-        multiline = '\n'.join(remove_indent(tokens[0], indent))
-
-        # remove leading and trailing newlines
-        if multiline[0] == '\n':
-            multiline = multiline[1:]
-
-        if multiline[-1] == '\n':
-            multiline = multiline[:-1]
-
-        return multiline
-
-    MULTILINE = QuotedString('"""', multiline=True)
-    MULTILINE.setParseAction(clean_multiline_string)
+    # The following are properties that return functions, which confuses
+    # Pylint.
+    # pylint:disable=too-many-function-args
 
     # A Step
     #
@@ -912,94 +908,121 @@ def parse(string=None,
     # distinguish between a variable and XML. Instead scenarios will replace
     # instances in the steps based on the outline keys.
     #
-    STATEMENT_SENTENCE = Group(
-        language.STATEMENT +  # Given, When, Then, And
-        OneOrMore(UTFWORD.setWhitespaceChars(' \t') |
-                  quotedString.setWhitespaceChars(' \t')) +
-        EOL
-    )
+    @memoizedproperty
+    def statements(self):
+        """A sequence of steps."""
+        statement_sentence = Group(
+            self.language.STATEMENT +  # Given, When, Then, And
+            OneOrMore(self.utfword |
+                      quotedString.setWhitespaceChars(' \t')) +
+            self.eol
+        )
 
-    STATEMENT = Group(
-        STATEMENT_SENTENCE('sentence') +
-        Optional(TABLE('table') | MULTILINE('multiline'))
-    )
-    STATEMENT.setParseAction(CONSTRUCTORS['step'])
+        statement = Group(
+            statement_sentence('sentence') +
+            Optional(self.table('table') | self.multiline('multiline'))
+        )
+        statement.setParseAction(self.step_class)
 
-    STATEMENTS = Group(ZeroOrMore(STATEMENT))
+        return Group(ZeroOrMore(statement))
 
-    #
-    # Background:
-    #
-    BACKGROUND_DEFN = \
-        language.BACKGROUND('keyword') + Suppress(':') + EOL
-    BACKGROUND_DEFN.setParseAction(CONSTRUCTORS['background'])
+    # Background
+    @memoizedproperty
+    def background_defn(self):
+        """'Background: '"""
+        defn = self.language.BACKGROUND('keyword') + Suppress(':') + self.eol
+        defn.setParseAction(self.background_class)
+        return defn
 
-    BACKGROUND = Group(
-        BACKGROUND_DEFN('node') +
-        STATEMENTS('statements')
-    )
-    BACKGROUND.setParseAction(CONSTRUCTORS['background'].add_statements)
+    @memoizedproperty
+    def background(self):
+        """Background definition."""
+        return Group(
+            self.background_defn('node') + self.statements('statements')
+        ).setParseAction(self.background_class.add_statements)
 
-    #
-    # Scenario: description
-    #
-    SCENARIO_DEFN = Group(
-        Group(ZeroOrMore(TAG))('tags') +
-        language.SCENARIO('keyword') + Suppress(':') +
-        restOfLine('name') +
-        EOL
-    )
-    SCENARIO_DEFN.setParseAction(CONSTRUCTORS['scenario'])
+    @memoizedproperty
+    def scenario_defn(self):
+        """'Scenario: description'"""
+        defn = Group(
+            Group(ZeroOrMore(self.tag))('tags') +
+            self.language.SCENARIO('keyword') + Suppress(':') +
+            restOfLine('name') +
+            self.eol
+        )
+        defn.setParseAction(self.scenario_class)
+        return defn
 
-    SCENARIO = Group(
-        SCENARIO_DEFN('node') +
-        STATEMENTS('statements') +
-        Group(ZeroOrMore(
-            Suppress(language.EXAMPLES + ':') + EOL + TABLE
-        ))('outlines')
-    )
-    SCENARIO.setParseAction(CONSTRUCTORS['scenario'].add_statements)
+    @memoizedproperty
+    def scenario(self):
+        """Scenario definition."""
+        return Group(
+            self.scenario_defn('node') +
+            self.statements('statements') +
+            Group(ZeroOrMore(
+                Suppress(self.language.EXAMPLES + ':') + self.eol + self.table
+            ))('outlines')
+        ).setParseAction(self.scenario_class.add_statements)
 
-    #
-    # Feature: description
-    #
-    FEATURE_DEFN = Group(
-        Group(ZeroOrMore(TAG))('tags') +
-        language.FEATURE('keyword') + Suppress(':') +
-        restOfLine('name') +
-        EOL
-    )
-    FEATURE_DEFN.setParseAction(CONSTRUCTORS['feature'])
+    @memoizedproperty
+    def feature_defn(self):
+        """'Feature: description'"""
+        return Group(
+            Group(ZeroOrMore(self.tag))('tags') +
+            self.language.FEATURE('keyword') + Suppress(':') +
+            restOfLine('name') +
+            self.eol
+        ).setParseAction(self.feature_class)
 
-    #
-    # A description composed of zero or more lines, before the
-    # Background/Scenario block
-    #
-    DESCRIPTION_LINE = Group(
-        ~BACKGROUND_DEFN + ~SCENARIO_DEFN +
-        OneOrMore(UTFWORD).setWhitespaceChars(' \t') +
-        EOL
-    )
-    DESCRIPTION = Group(ZeroOrMore(DESCRIPTION_LINE | EOL))
-    DESCRIPTION.setParseAction(CONSTRUCTORS['description'])
+    @memoizedproperty
+    def description(self):
+        """
+        A description composed of zero or more lines, before the
+        Background/Scenario block.
+        """
+        description_line = Group(
+            ~self.background_defn + ~self.scenario_defn +
+            OneOrMore(self.utfword) +
+            self.eol
+        )
+        description = Group(ZeroOrMore(description_line | self.eol))
+        description.setParseAction(self.description_class)
+        return description
 
-    #
-    # Complete feature file definition
-    #
-    FEATURE = Group(
-        FEATURE_DEFN('node') +
-        DESCRIPTION('description') +
-        Optional(BACKGROUND('background')) +
-        Group(OneOrMore(SCENARIO))('scenarios') +
-        stringEnd)
-    FEATURE.ignore(GherkinComment())
-    FEATURE.setParseAction(CONSTRUCTORS['feature'].add_blocks)
+    @memoizedproperty
+    def feature(self):
+        """Complete feature file definition."""
+        result = Group(
+            self.feature_defn('node') +
+            self.description('description') +
+            Optional(self.background('background')) +
+            Group(OneOrMore(self.scenario))('scenarios') +
+            stringEnd
+        )
+        result.ignore(GherkinComment())
+        result.setParseAction(self.feature_class.add_blocks)
+        return result
+
+
+def parse(string=None,
+          filename=None,
+          token='feature',
+          language=None,
+          parser_class=Gherkin):
+    """
+    Parse a token stream from or raise a SyntaxError.
+    """
+
+    if not language:
+        language = guess_language(string, filename)
+
+    parser = parser_class.get_parser(language)
 
     #
     # Try parsing the string
     #
 
-    token = locals()[token]
+    token = getattr(parser, token)
 
     try:
         if string:
