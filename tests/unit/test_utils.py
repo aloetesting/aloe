@@ -33,6 +33,7 @@ from functools import wraps
 
 from aloe.utils import (
     unwrap_function,
+    memoizedproperty,
 )
 
 
@@ -74,3 +75,37 @@ class UnwrapTest(unittest.TestCase):
             unwrap_function(contextmanager(my_function)),
             my_function
         )
+
+
+class MemoizedTest(unittest.TestCase):
+    """Test memoization functions."""
+
+    def test_memoizedproperty(self):
+        """Test memoizedproperty."""
+
+        class Memoized(object):
+            """A class to test memoizedproperty."""
+
+            def __init__(self, value):
+                self.value = value
+
+            @memoizedproperty
+            def prop(self):
+                """
+                A property that intentionally modifies the instance state on
+                every access.
+                """
+
+                self.value += 1
+                return self.value
+
+        first = Memoized(5)
+        second = Memoized(10)
+
+        # Test that multiple accesses don't result in multiple calls
+        self.assertEqual(first.prop, 6)
+        self.assertEqual(first.prop, 6)
+
+        # Test that different objects aren't sharing the value
+        self.assertEqual(second.prop, 11)
+        self.assertEqual(second.prop, 11)

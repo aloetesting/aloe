@@ -65,15 +65,13 @@ from pyparsing import (CharsNotIn,
 
 from aloe import languages, strings
 from aloe.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
+from aloe.utils import memoizedproperty
 
 # Pyparsing has strange naming guidelines
 # pylint:disable=invalid-name,unused-argument
 
 # Pylint is thoroughly confused about members
 # pylint:disable=no-member
-
-# TODO: is this needed?
-memoizedproperty = property
 
 
 unicodePrintables = ''.join(chr(c) for c in range(65536)

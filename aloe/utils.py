@@ -22,6 +22,8 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
+from future import standard_library
+standard_library.install_aliases()
 
 import re
 import sys
@@ -76,3 +78,23 @@ def camel_case_to_spaces(value):
     trailing whitespace.
     """
     return RE_CAMEL_CASE.sub(r' \1', value).strip().lower()
+
+
+class memoizedproperty(object):  # pylint:disable=invalid-name
+    """
+    A property that is only computed on the first access.
+    """
+
+    def __init__(self, func):
+        self.func = func
+        self.name = func.__name__
+
+    def __get__(self, instance, owner):
+        """Compute the value and cache it in the class dict."""
+
+        if instance is None:
+            return self
+
+        result = self.func(instance)
+        instance.__dict__[self.name] = result
+        return result
