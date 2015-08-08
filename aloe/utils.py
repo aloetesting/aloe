@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
 
+import re
 import sys
 
 from contextlib import contextmanager
@@ -64,3 +65,14 @@ def unwrap_function(func):
 
     else:
         return func
+
+
+re_camel_case = re.compile(r'(((?<=[a-z])[A-Z])|([A-Z](?![A-Z]|$)))')
+
+
+def camel_case_to_spaces(value):
+    """
+    Splits CamelCase and converts to lower case. Also strips leading and
+    trailing whitespace.
+    """
+    return re_camel_case.sub(r' \1', value).strip().lower()
