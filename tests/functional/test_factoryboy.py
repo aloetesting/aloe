@@ -26,8 +26,6 @@ from builtins import *
 from future import standard_library
 standard_library.install_aliases()
 
-from aloe import world
-
 from aloe.testing import (
     FeatureTest,
     in_directory,
