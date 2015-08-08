@@ -234,6 +234,12 @@ class GherkinPlugin(Plugin):
             delattr(self, 'after_hook')
 
     def prepareTestRunner(self, runner):
+        """
+        Monkeypatch in our TestResult class.
+
+        In unittest we could just set runner.resultclass, but Nose
+        doesn't use this.
+        """
         def _makeResult(self):
             return AloeTestResult(self.stream,
                                   self.descriptions,
