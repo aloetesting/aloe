@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-Miscellaneous utilities.
+Miscellaneous utilities used internally by Aloe.
 """
 
 from __future__ import print_function
