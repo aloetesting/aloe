@@ -26,7 +26,10 @@ from builtins import *
 from future import standard_library
 standard_library.install_aliases()
 
-from unittest.mock import patch
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 from io import StringIO
 from aloe.testing import (
@@ -65,7 +68,8 @@ class MockTerminal(object):
         if attr in ('stream',
                     'does_styling',
                     'is_a_tty',
-                    '__getstate__'):
+                    '__getstate__',
+                    '__bool__'):
             raise AttributeError(attr)
 
         # callable factory
