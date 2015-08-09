@@ -43,5 +43,5 @@ class OutputterTest(FeatureTest):
         Test Factory Boy steps.
         """
 
-        self.assert_feature_success('--verbosity=3',  # HACKY
-                                    'features/highlighting.feature')
+        self.run_features('features/highlighting.feature',
+                          verbosity=3)

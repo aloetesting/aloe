@@ -225,7 +225,7 @@ class FeatureTest(unittest.TestCase):
             feature_file.flush()
             return self.run_features(os.path.relpath(feature_file.name))
 
-    def run_features(self, *features):
+    def run_features(self, *features, verbosity=None):
         """
         Run the specified features.
         """
@@ -234,8 +234,14 @@ class FeatureTest(unittest.TestCase):
         STEP_REGISTRY.clear()
         world.__dict__.clear()
 
-        return TestRunner(exit=False,
-                          argv=['aloe'] + list(features))
+        argv = ['aloe']
+
+        if verbosity:
+            argv += ['--verbosity', str(verbosity)]
+
+        argv += list(features)
+
+        return TestRunner(exit=False, argv=argv)
 
     def assert_feature_success(self, *features):
         """
