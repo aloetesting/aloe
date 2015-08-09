@@ -232,13 +232,14 @@ class FeatureTest(unittest.TestCase):
             feature_file.flush()
             return self.run_features(os.path.relpath(feature_file.name))
 
-    def run_features(self, *features,
-                     verbosity=None,
-                     stream=None,
-                     force_color=False):
+    def run_features(self, *features, **kwargs):
         """
         Run the specified features.
         """
+
+        verbosity = kwargs.get('verbosity')
+        stream = kwargs.get('stream')
+        force_color=kwargs.get('force_color', False)
 
         CALLBACK_REGISTRY.clear(priority_class=PriorityClass.USER)
         STEP_REGISTRY.clear()
