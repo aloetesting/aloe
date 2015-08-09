@@ -143,11 +143,17 @@ def example_wrapper(scenario, outline, steps):
 @contextmanager
 def step_wrapper(step):
     """Display step execution."""
+
     term = StreamWrapper.term
 
-    if not term:
+    # if we don't have a term, that means the v3 level outputter isn't
+    # enabled; also
+    # don't reenter, which will happen if someone called step.behave_as
+    if not term or step_wrapper.entered:
         yield
         return
+
+    step_wrapper.entered = True
 
     try:
         if term.is_a_tty:
@@ -167,6 +173,10 @@ def step_wrapper(step):
         StreamWrapper.writeln(
             step.represented(annotate=False, color=color)
         )
+
+        step_wrapper.entered = False
+
+step_wrapper.entered = False
 
 
 class AloeTestResult(TextTestResult):

@@ -55,6 +55,17 @@ def press_add(self):
     world.result = sum(world.numbers)
 
 
+@step(r'I press \[\+\]')
+def press_plus(self):
+    """Test behave_as"""
+    self.given('I press add')
+
+
+@step(r'I have a table')
+def press_add(self):
+    """Nothing."""
+
+
 @step(r'The result should be (\d+) on the screen')
 def assert_result(self, result):
     """Assert the result is correct."""
