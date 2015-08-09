@@ -225,7 +225,9 @@ class FeatureTest(unittest.TestCase):
             feature_file.flush()
             return self.run_features(os.path.relpath(feature_file.name))
 
-    def run_features(self, *features, verbosity=None):
+    def run_features(self, *features,
+                     verbosity=None,
+                     force_color=False):
         """
         Run the specified features.
         """
@@ -238,6 +240,9 @@ class FeatureTest(unittest.TestCase):
 
         if verbosity:
             argv += ['--verbosity', str(verbosity)]
+
+        if force_color:
+            argv += ['--color']
 
         argv += list(features)
 

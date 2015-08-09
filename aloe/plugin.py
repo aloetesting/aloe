@@ -112,6 +112,12 @@ class GherkinPlugin(Plugin):
             default='',
             help='Only run scenarios with these indices (comma-separated)',
         )
+        parser.add_option(
+            '--color', action='store_true',
+            dest='force_color',
+            default=None,
+            help='Force colored output',
+        )
 
         # Options for attribute plugin will be registered by its main instance
 
@@ -125,8 +131,9 @@ class GherkinPlugin(Plugin):
         module_name, class_name = options.test_class_name.rsplit('.', 1)
         module = import_module(module_name)
         self.test_class = getattr(module, class_name)
-
         self.ignore_python = options.ignore_python
+
+        conf.force_color = options.force_color
 
         if options.scenario_indices:
             self.scenario_indices = tuple(
