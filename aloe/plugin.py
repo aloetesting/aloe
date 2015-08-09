@@ -29,7 +29,6 @@ from future import standard_library
 standard_library.install_aliases()
 
 import os
-import types
 
 from importlib import import_module
 
@@ -247,12 +246,13 @@ class GherkinPlugin(Plugin):
         In unittest we could just set runner.resultclass, but Nose
         doesn't use this.
         """
-        def _makeResult(self):
-            return AloeTestResult(self.stream,
-                                  self.descriptions,
-                                  self.verbosity,
-                                  self.config)
+        def _makeResult():
+            """Build our result"""
+            return AloeTestResult(runner.stream,
+                                  runner.descriptions,
+                                  runner.verbosity,
+                                  runner.config)
 
-        runner._makeResult = types.MethodType(_makeResult, runner)
+        runner._makeResult = _makeResult  # pylint:disable=protected-access
 
         return runner

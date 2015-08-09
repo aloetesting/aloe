@@ -36,12 +36,14 @@ from aloe.testing import (
 
 
 class TermElement(object):
+    """A colourful element being output by the mock terminal"""
     def __init__(self, attr):
         self.attr = attr
 
-    def __call__(self, s):
+    def __call__(self, str_):
         # strips the string to make the output easier to read
-        return 't.{attr}({s})'.format(attr=self.attr, s=s.strip())
+        return 't.{attr}({str})'.format(attr=self.attr,
+                                        str=str_.strip())
 
     def __str__(self):
         return '<t.{attr}>'.format(attr=self.attr)
@@ -51,6 +53,7 @@ class TermElement(object):
 
 
 class MockTerminal(object):
+    """A mock of the blessings.Terminal class"""
 
     is_a_tty = False
 
@@ -69,6 +72,7 @@ class MockTerminal(object):
         return TermElement(attr)
 
     def color(self, color):
+        """Return a color callable"""
 
         return getattr(self, 'color%s' % color)
 
@@ -126,7 +130,7 @@ Feature: Scenario indices
       | 1     |
       | 2     |
 
-""".lstrip())
+""".lstrip())  # noqa
 
     def test_color_output(self):
         """Test streamed output with color"""
@@ -175,7 +179,7 @@ t.bold_green(Given I have a table:)
       | t.bold_green(1) |
       | t.bold_green(2) |
 
-""".lstrip())
+""".lstrip())  # noqa
 
     def test_tty_output(self):
         """Test streamed output with tty control codes"""
@@ -212,4 +216,4 @@ t.color8(Given I have entered 10 into the calculator
 t.color11(And I press [+])
 <t.move_up>t.bold_green(And I press [+])
 
-""".lstrip())
+""".lstrip())  # noqa

@@ -62,7 +62,7 @@ def press_plus(self):
 
 
 @step(r'I have a table')
-def press_add(self):
+def have_table(self):
     """Nothing."""
 
 
