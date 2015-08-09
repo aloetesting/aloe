@@ -129,10 +129,17 @@ def example_wrapper(scenario, outline, steps):
 
         # write a preview of the steps
         if term.is_a_tty:
+            steps_ = []
+
+            if scenario.feature.background:
+                steps_ += scenario.feature.background.steps
+
+            steps_ += steps
+
             STREAM_WRAPPER.writeln(
                 gray('\n'.join(
                     step.represented(annotate=False)
-                    for step in steps
+                    for step in steps_
                 ) + '\n'),
                 return_=True
             )
