@@ -35,8 +35,14 @@ from aloe.testing import (
 from mock import patch
 
 
-class TermElement(object):
-    """A colourful element being output by the mock terminal"""
+class MockTermElement(object):
+    """
+    Wraps a element being output by the MockTerminal (i.e. term.bold) and
+    replaces it with a string that can be checked in tests.
+
+    Like with the attributes in Terminal it can be used as a callable or
+    a string.
+    """
     def __init__(self, attr):
         self.attr = attr
 
@@ -53,7 +59,12 @@ class TermElement(object):
 
 
 class MockTerminal(object):
-    """A mock of the blessings.Terminal class"""
+    """
+    A mock of the blessings.Terminal class.
+
+    Allows control over whether or not the terminal is a tty and emits all
+    terminal control codes as strings.
+    """
 
     is_a_tty = False
 
@@ -70,7 +81,7 @@ class MockTerminal(object):
             raise AttributeError(attr)
 
         # callable factory
-        return TermElement(attr)
+        return MockTermElement(attr)
 
     def color(self, color):
         """Return a color callable"""
