@@ -111,7 +111,7 @@ class GherkinPlugin(Plugin):
         parser.add_option(
             '--color', action='store_true',
             dest='force_color',
-            default=None,
+            default=False,
             help='Force colored output',
         )
 
