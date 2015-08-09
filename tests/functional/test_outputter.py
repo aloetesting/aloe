@@ -91,7 +91,6 @@ class OutputterTest(FeatureTest):
             print(stream.getvalue())
             print("--END--")
 
-            # FIXME: where do these right alignments come from?
             self.assertEqual(stream.getvalue(), """
 Feature: Scenario indices
 
@@ -99,25 +98,25 @@ Feature: Scenario indices
   I want to see my scenarios with pretty highlighting
   So my output is easy to read
 
-  Scenario: First scenario                                                              features/highlighting.feature:9
+  Scenario: First scenario                              features/highlighting.feature:9
     Given I have entered 10 into the calculator
     And I press add
 
-  Scenario Outline: Scenario outline with two examples                                  features/highlighting.feature:13
+  Scenario Outline: Scenario outline with two examples  features/highlighting.feature:13
       | number |
       | 30     |
 
     Given I have entered <number> into the calculator
     And I press add
 
-  Scenario Outline: Scenario outline with two examples                                  features/highlighting.feature:13
+  Scenario Outline: Scenario outline with two examples  features/highlighting.feature:13
       | number |
       | 40     |
 
     Given I have entered <number> into the calculator
     And I press add
 
-  Scenario: Scenario with table                                                         features/highlighting.feature:22
+  Scenario: Scenario with table                         features/highlighting.feature:22
     Given I press add:
       | value |
       | 1     |

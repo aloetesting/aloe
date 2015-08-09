@@ -58,15 +58,11 @@ class StreamWrapper(object):
 
         return getattr(self.term.stream, attr)
 
-    def write(self, arg=None, return_=False):
-        if not self.term:
-            return
+    def write(self, arg='', return_=False):
+        self.term.stream.write(arg)
 
-        elif arg:
-            self.term.stream.write(arg)
-
-            if return_:
-                self.term.stream.write(self.term.move_up * arg.count('\n'))
+        if return_:
+            self.term.stream.write(self.term.move_up * arg.count('\n'))
 
     def writeln(self, arg='', return_=False):
         self.write(arg + '\n', return_=return_)
@@ -79,6 +75,10 @@ StreamWrapper = StreamWrapper(None)
 @contextmanager
 def feature_wrapper(feature):
     term = StreamWrapper.term
+
+    if not term:
+        yield
+        return
 
     try:
         if feature.tags:
@@ -100,6 +100,10 @@ def feature_wrapper(feature):
 def example_wrapper(scenario, outline, steps):
     """Display scenario execution."""
     term = StreamWrapper.term
+
+    if not term:
+        yield
+        return
 
     try:
         if scenario.tags:
@@ -140,6 +144,10 @@ def example_wrapper(scenario, outline, steps):
 def step_wrapper(step):
     """Display step execution."""
     term = StreamWrapper.term
+
+    if not term:
+        yield
+        return
 
     try:
         if term.does_styling:

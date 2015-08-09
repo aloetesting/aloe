@@ -275,7 +275,9 @@ class Step(Node):
 
         return max(
             0,
-            strings.get_terminal_width(self.represented(annotate=False)),
+            strings.get_terminal_width(self.represented(annotate=False,
+                                                        table=False,
+                                                        multiline=False)),
             *[strings.get_terminal_width(line)
               for line in self.represent_hashes().splitlines()]
         )
