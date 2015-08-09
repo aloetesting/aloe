@@ -35,6 +35,7 @@ from aloe.registry import (
     CALLBACK_REGISTRY,
     PriorityClass,
 )
+from aloe.strings import represent_table
 from blessings import Terminal
 from nose.result import TextTestResult
 
@@ -116,6 +117,13 @@ def example_wrapper(scenario, outline, steps):
         StreamWrapper.write(term.bold_white(start))
         StreamWrapper.writeln(gray(end))
 
+        if outline:
+            StreamWrapper.writeln(represent_table([outline.keys(),
+                                                   outline.values()],
+                                                  indent=6,
+                                                  cell_wrap=term.white))
+            StreamWrapper.writeln()
+
         # write a preview of the steps
         if term.does_styling:
             StreamWrapper.writeln(
@@ -138,11 +146,9 @@ def step_wrapper(step):
 
     try:
         if term.does_styling:
-            lines = step.represented(annotate=False)
-            if step.table:
-                lines += step.represent_hashes()
-
-            StreamWrapper.writeln(term.color(11)(lines), return_=True)
+            StreamWrapper.writeln(
+                step.represented(annotate=False, color=term.color(11)),
+                return_=True)
 
         yield
     finally:
@@ -153,9 +159,9 @@ def step_wrapper(step):
         else:
             color = term.yellow
 
-        StreamWrapper.writeln(color(step.represented(annotate=False)))
-        if step.table:
-            StreamWrapper.writeln(color(step.represent_hashes()))
+        StreamWrapper.writeln(
+            step.represented(annotate=False, color=color)
+        )
 
 
 class AloeTestResult(TextTestResult):
