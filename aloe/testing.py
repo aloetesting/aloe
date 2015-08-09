@@ -199,7 +199,14 @@ class TestRunner(Runner):
 
     def __init__(self, *args, **kwargs):
         self.tests_run = []
+        self.stream = kwargs.pop('stream')
+
         super().__init__(*args, **kwargs)
+
+    def makeConfig(self, *args, **kwargs):
+        config = super().makeConfig(*args, **kwargs)
+        config.stream = self.stream
+        return config
 
 
 class FeatureTest(unittest.TestCase):
@@ -227,6 +234,7 @@ class FeatureTest(unittest.TestCase):
 
     def run_features(self, *features,
                      verbosity=None,
+                     stream=None,
                      force_color=False):
         """
         Run the specified features.
@@ -246,7 +254,7 @@ class FeatureTest(unittest.TestCase):
 
         argv += list(features)
 
-        return TestRunner(exit=False, argv=argv)
+        return TestRunner(exit=False, argv=argv, stream=stream)
 
     def assert_feature_success(self, *features):
         """
