@@ -49,41 +49,35 @@ outer_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
 
 class StreamWrapper(object):
     """Used to decorate file-like objects with a handy 'writeln' method"""
-    def __init__(self, stream):
-        self.stream = stream
+    def __init__(self, term):
+        self.term = term
 
     def __getattr__(self, attr):
-        if attr in ('stream', '__getstate__'):
+        if attr in ('term', '__getstate__'):
             raise AttributeError(attr)
-        return getattr(self.stream,attr)
+        return getattr(self.term.stream, attr)
 
     def write(self, arg=None, return_=False):
-        if not self.stream:
+        if not self.term:
             return
 
         elif arg:
-            self.stream.write(arg)
+            self.term.stream.write(arg)
 
             if return_:
-                self.stream.write(term.move_up * arg.count('\n'))
+                self.term.stream.write(self.term.move_up * arg.count('\n'))
 
-    def writeln(self, arg=None, return_=False):
-        if arg:
-            self.write(arg, return_=return_)
-
-        self.write('\n') # text-mode streams translate to \r\n if needed
-
-        if return_:
-            self.write(term.move_up)
+    def writeln(self, arg='', return_=False):
+        self.write(arg + '\n', return_=return_)
 
 
 StreamWrapper = StreamWrapper(None)
-term = Terminal()
 
 
 @outer_around.each_feature
 @contextmanager
 def feature_wrapper(feature):
+    term = StreamWrapper.term
 
     try:
         if feature.tags:
@@ -104,6 +98,7 @@ def feature_wrapper(feature):
 @contextmanager
 def example_wrapper(scenario, outline, steps):
     """Display scenario execution."""
+    term = StreamWrapper.term
 
     try:
         if scenario.tags:
@@ -143,6 +138,7 @@ def example_wrapper(scenario, outline, steps):
 @contextmanager
 def step_wrapper(step):
     """Display step execution."""
+    term = StreamWrapper.term
 
     try:
         if term.does_styling:
@@ -172,4 +168,6 @@ class AloeTestResult(TextTestResult):
         self.showAll = verbosity == 2
         self.showSteps = verbosity >= 3
 
-        StreamWrapper.stream = stream if self.showSteps else None
+        StreamWrapper.term = Terminal(stream=stream,
+                                      force_styling=config.force_color) \
+            if self.showSteps else None
