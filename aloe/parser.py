@@ -281,6 +281,7 @@ class Step(Node):
               for line in self.represent_hashes().splitlines()]
         )
 
+    # pylint:disable=too-many-arguments,arguments-differ
     def represented(self, indent=4, annotate=True,
                     table=True, multiline=True,
                     color=str):
@@ -298,6 +299,7 @@ class Step(Node):
             pass  # FIXME
 
         return '\n'.join(lines)
+    # pylint:enable=too-many-arguments,arguments-differ
 
     def represent_hashes(self, indent=6, **kwargs):
         """
