@@ -40,10 +40,6 @@ import os
 from codecs import open
 from copy import deepcopy
 from collections import OrderedDict
-try:
-    from functools import lru_cache  # pylint:disable=no-name-in-module
-except ImportError:
-    from repoze.lru import lru_cache
 from warnings import warn
 
 import pyparsing
@@ -839,15 +835,6 @@ class Gherkin(object):
     Gherkin parser
     """
 
-    @classmethod
-    @lru_cache(20)
-    def get_parser(cls, language):
-        """
-        Get a parser for a specific language.
-        """
-
-        return cls(language=language)
-
     def __init__(self, language):
         self.language = language
 
@@ -1016,7 +1003,7 @@ def parse(string=None,
     if not language:
         language = guess_language(string, filename)
 
-    parser = parser_class.get_parser(language)
+    parser = parser_class(language)
 
     #
     # Try parsing the string
