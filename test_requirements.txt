@@ -1,6 +1,6 @@
 coverage
+factory_boy
+mock
 pep8
 pylint
 pylint-mccabe
-factory_boy
-mock

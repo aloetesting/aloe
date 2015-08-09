@@ -186,6 +186,8 @@ class TestGherkinPlugin(GherkinPlugin):
 class TestRunner(Runner):
     """
     A test test runner to store information about the tests run.
+
+    :param stream: pass your a stream to write the output into
     """
 
     def gherkin_plugin(self):

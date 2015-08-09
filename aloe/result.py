@@ -48,8 +48,12 @@ outer_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
 
 
 class StreamWrapper(object):
-    """Used to decorate file-like objects with a handy 'writeln' method"""
-    def __init__(self, term):
+    """
+    Hold a reference to the Terminal object and wrap its stream.
+
+    Allows us to store `term` as a global.
+    """
+    def __init__(self, term=None):
         self.term = term
 
     def __getattr__(self, attr):
@@ -59,18 +63,22 @@ class StreamWrapper(object):
         return getattr(self.term.stream, attr)
 
     def write(self, arg='', return_=False):
-        """Write to the stream"""
+        """
+        Write to the stream.
+
+        Takes an optional parameter `return_`
+        """
         self.term.stream.write(arg)
 
         if return_:
             self.term.stream.write(self.term.move_up * arg.count('\n'))
 
     def writeln(self, arg='', return_=False):
-        """Convenience function to write a line to the stream"""
+        """Convenience function to write a line to the stream."""
         self.write(arg + '\n', return_=return_)
 
 
-STREAM_WRAPPER = StreamWrapper(None)
+STREAM_WRAPPER = StreamWrapper()
 
 
 @outer_around.each_feature
@@ -156,9 +164,8 @@ def step_wrapper(step):
 
     term = STREAM_WRAPPER.term
 
-    # if we don't have a term, that means the v3 level outputter isn't
-    # enabled; also
-    # don't reenter, which will happen if someone called step.behave_as
+    # if we don't have a term, that means the v3 level outputter isn't enabled;
+    # also don't reenter, which will happen if someone called step.behave_as
     if not term or step_wrapper.entered:
         yield
         return
@@ -201,6 +208,8 @@ class AloeTestResult(TextTestResult):
         self.showAll = verbosity == 2
         self.showSteps = verbosity >= 3  # pylint:disable=invalid-name
 
-        STREAM_WRAPPER.term = Terminal(stream=stream,
-                                       force_styling=config.force_color) \
-            if self.showSteps else None
+        if self.showSteps:
+            STREAM_WRAPPER.term = Terminal(stream=stream,
+                                           force_styling=config.force_color)
+        else:
+            STREAM_WRAPPER.term = None  # unset the global
