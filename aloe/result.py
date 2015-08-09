@@ -29,6 +29,7 @@ from future import standard_library
 standard_library.install_aliases()
 
 from contextlib import contextmanager
+from functools import wraps
 
 from aloe.registry import (
     CallbackDecorator,
@@ -36,6 +37,7 @@ from aloe.registry import (
     PriorityClass,
 )
 from aloe.strings import represent_table
+from aloe.tools import hook_not_reentrant, _empty_generator
 from blessings import Terminal
 from nose.result import TextTestResult
 
@@ -77,19 +79,28 @@ class StreamWrapper(object):
         """Convenience function to write a line to the stream."""
         self.write(arg + '\n', return_=return_)
 
+    def require_term(self, func):
+        """Decorate this hook to only execute if term is available"""
+
+        @wraps(func)
+        def inner(*args, **kwargs):
+            """Wrap func to check for term."""
+            if not self.term:
+                return _empty_generator()
+
+            return func(self.term, *args, **kwargs)
+
+        return inner
+
 
 STREAM_WRAPPER = StreamWrapper()
 
 
 @outer_around.each_feature
 @contextmanager
-def feature_wrapper(feature):
+@STREAM_WRAPPER.require_term
+def feature_wrapper(term, feature):
     """Display feature execution."""
-    term = STREAM_WRAPPER.term
-
-    if not term:
-        yield
-        return
 
     try:
         if feature.tags:
@@ -108,13 +119,9 @@ def feature_wrapper(feature):
 
 @outer_around.each_example
 @contextmanager
-def example_wrapper(scenario, outline, steps):
+@STREAM_WRAPPER.require_term
+def example_wrapper(term, scenario, outline, steps):
     """Display scenario execution."""
-    term = STREAM_WRAPPER.term
-
-    if not term:
-        yield
-        return
 
     try:
         if scenario.tags:
@@ -159,18 +166,10 @@ def example_wrapper(scenario, outline, steps):
 
 @outer_around.each_step
 @contextmanager
-def step_wrapper(step):
+@STREAM_WRAPPER.require_term
+@hook_not_reentrant
+def step_wrapper(term, step):
     """Display step execution."""
-
-    term = STREAM_WRAPPER.term
-
-    # if we don't have a term, that means the v3 level outputter isn't enabled;
-    # also don't reenter, which will happen if someone called step.behave_as
-    if not term or step_wrapper.entered:
-        yield
-        return
-
-    step_wrapper.entered = True
 
     try:
         if term.is_a_tty:
@@ -190,10 +189,6 @@ def step_wrapper(step):
         STREAM_WRAPPER.writeln(
             step.represented(annotate=False, color=color)
         )
-
-        step_wrapper.entered = False
-
-step_wrapper.entered = False
 
 
 class AloeTestResult(TextTestResult):

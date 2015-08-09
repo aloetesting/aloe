@@ -32,7 +32,9 @@ from future import standard_library
 standard_library.install_aliases()
 
 import re
+import inspect
 from datetime import datetime
+from functools import wraps
 
 
 def guess_types(data):  # pylint:disable=too-complex
@@ -93,3 +95,66 @@ def guess_types(data):  # pylint:disable=too-complex
 
     #  give up
     return data
+
+
+def _empty_generator(*args, **kwargs):
+    """An empty generator suitable to replace a context manager"""
+    yield
+    return
+
+
+def hook_not_reentrant(func):
+    """
+    Decorate a hook as unable to be reentered while it is already in the
+    stack.
+
+    Any further attempts to enter the hook before exiting will be replaced
+    by a no-op.
+
+    This is generally useful for step hooks where a step might call
+    :meth:`Step.behave_as` and trigger a second level of step hooks i.e.
+    when displaying information about the running test.
+    """
+
+    # pylint:disable=protected-access
+    func._entered = False
+
+    @wraps(func)
+    def inner(*args, **kwargs):
+        """
+        Wrap func to check if we've already entered this function and if
+        so replace it with a no-op.
+        """
+
+        def generator():
+            """
+            Hide the generator in a separate function
+            because Python 2 can't support "returning from generators"
+            """
+            if func._entered:
+                gen = _empty_generator()
+
+                yield next(gen)
+                next(gen)
+                return
+            else:
+                try:
+                    func._entered = True
+                    gen = func(*args, **kwargs)
+                    yield next(gen)
+                    next(gen)
+                    return
+                finally:
+                    func._entered = False
+
+        if inspect.isgeneratorfunction(func):
+            return generator()
+        else:
+            if not func._entered:
+                try:
+                    func._entered = True
+                    return func(*args, **kwargs)
+                finally:
+                    func._entered = False
+
+    return inner
