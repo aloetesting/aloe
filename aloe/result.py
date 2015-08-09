@@ -55,6 +55,7 @@ class StreamWrapper(object):
     def __getattr__(self, attr):
         if attr in ('term', '__getstate__'):
             raise AttributeError(attr)
+
         return getattr(self.term.stream, attr)
 
     def write(self, arg=None, return_=False):
