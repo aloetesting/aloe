@@ -28,6 +28,10 @@ standard_library.install_aliases()
 import re
 import sys
 
+try:
+    from functools import lru_cache  # pylint:disable=no-name-in-module
+except ImportError:
+    from repoze.lru import lru_cache
 from contextlib import contextmanager
 
 
@@ -98,3 +102,14 @@ class memoizedproperty(object):  # pylint:disable=invalid-name
         result = self.func(instance)
         instance.__dict__[self.name] = result
         return result
+
+
+class memoizedtype(type):  # pylint:disable=invalid-name
+    """
+    A type that caches the created instances.
+    """
+
+    @lru_cache(20)
+    def __call__(cls, *args, **kwargs):
+        # On Python 2, newsuper can't deal with metaclasses
+        return super(memoizedtype, cls).__call__(*args, **kwargs)
