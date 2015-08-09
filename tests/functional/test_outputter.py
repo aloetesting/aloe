@@ -56,7 +56,7 @@ class MockTerminal(object):
 
     def __init__(self, stream, force_styling=None, is_tty=True):
         self.stream = stream
-        self.does_styling = True
+        self.does_styling = force_styling or self.is_a_tty
 
     def __getattr__(self, attr):
         if attr in ('stream',
@@ -81,7 +81,7 @@ class OutputterTest(FeatureTest):
 
     maxDiff = None
 
-    def test_output(self):
+    def test_uncolored_output(self):
         """Test streamed output"""
 
         with \
@@ -101,26 +101,26 @@ Feature: Scenario indices
   I want to see my scenarios with pretty highlighting
   So my output is easy to read
 
-  Scenario: First scenario                              features/highlighting.feature:9
+  Scenario: behave_as works                            features/highlighting.feature:9
     Given I have entered 10 into the calculator
-    And I press add
+    And I press [+]
 
-  Scenario Outline: Scenario outline with two examples  features/highlighting.feature:13
+  Scenario Outline: Scenario outlines                  features/highlighting.feature:13
       | number |
       | 30     |
 
     Given I have entered <number> into the calculator
     And I press add
 
-  Scenario Outline: Scenario outline with two examples  features/highlighting.feature:13
+  Scenario Outline: Scenario outlines                  features/highlighting.feature:13
       | number |
       | 40     |
 
     Given I have entered <number> into the calculator
     And I press add
 
-  Scenario: Scenario with table                         features/highlighting.feature:22
-    Given I press add:
+  Scenario: Scenario with table                        features/highlighting.feature:22
+    Given I have a table:
       | value |
       | 1     |
       | 1     |
@@ -150,18 +150,18 @@ t.white(As a programmer
   I want to see my scenarios with pretty highlighting
   So my output is easy to read)
 
-t.bold_white(Scenario: First scenario)t.color8(features/highlighting.feature:9)
+t.bold_white(Scenario: behave_as works)t.color8(features/highlighting.feature:9)
 t.bold_green(Given I have entered 10 into the calculator)
-t.bold_green(And I press add)
+t.bold_green(And I press [+])
 
-t.bold_white(Scenario Outline: Scenario outline with two examples)t.color8(features/highlighting.feature:13)
+t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.feature:13)
       | t.white(number) |
       | t.white(30) |
 
 t.bold_green(Given I have entered <number> into the calculator)
 t.bold_green(And I press add)
 
-t.bold_white(Scenario Outline: Scenario outline with two examples)t.color8(features/highlighting.feature:13)
+t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.feature:13)
       | t.white(number) |
       | t.white(40) |
 
@@ -169,7 +169,7 @@ t.bold_green(Given I have entered <number> into the calculator)
 t.bold_green(And I press add)
 
 t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:22)
-t.bold_green(Given I press add:)
+t.bold_green(Given I have a table:)
       | t.bold_green(value) |
       | t.bold_green(1) |
       | t.bold_green(1) |
@@ -178,7 +178,7 @@ t.bold_green(Given I press add:)
 """.lstrip())
 
     def test_tty_output(self):
-        """Test streamed output with color"""
+        """Test streamed output with tty control codes"""
 
         with \
                 patch('aloe.result.Terminal', new=MockTerminal) as mock_term, \
@@ -186,14 +186,17 @@ t.bold_green(Given I press add:)
                 StringIO() as stream:
 
             mock_term.is_a_tty = True
-            self.run_features('features/highlighting.feature',
-                              verbosity=3, stream=stream,
-                              force_color=True)
+            self.run_features('-n', '1',
+                              'features/highlighting.feature',
+                              verbosity=3, stream=stream)
 
             print("--Output--")
             print(stream.getvalue())
             print("--END--")
 
+            # we are going to see the scenario written out 3 times
+            # once in color 8 as a preview, then each line individually
+            # followed by a green version of it
             self.assertEqual(stream.getvalue(), """
 t.bold_white(Feature: Scenario indices)
 
@@ -201,51 +204,12 @@ t.white(As a programmer
   I want to see my scenarios with pretty highlighting
   So my output is easy to read)
 
-t.bold_white(Scenario: First scenario)t.color8(features/highlighting.feature:9)
+t.bold_white(Scenario: behave_as works)t.color8(features/highlighting.feature:9)
 t.color8(Given I have entered 10 into the calculator
-    And I press add)
+    And I press [+])
 <t.move_up><t.move_up>t.color11(Given I have entered 10 into the calculator)
 <t.move_up>t.bold_green(Given I have entered 10 into the calculator)
-t.color11(And I press add)
-<t.move_up>t.bold_green(And I press add)
-
-t.bold_white(Scenario Outline: Scenario outline with two examples)t.color8(features/highlighting.feature:13)
-      | t.white(number) |
-      | t.white(30) |
-
-t.color8(Given I have entered <number> into the calculator
-    And I press add)
-<t.move_up><t.move_up>t.color11(Given I have entered <number> into the calculator)
-<t.move_up>t.bold_green(Given I have entered <number> into the calculator)
-t.color11(And I press add)
-<t.move_up>t.bold_green(And I press add)
-
-t.bold_white(Scenario Outline: Scenario outline with two examples)t.color8(features/highlighting.feature:13)
-      | t.white(number) |
-      | t.white(40) |
-
-t.color8(Given I have entered <number> into the calculator
-    And I press add)
-<t.move_up><t.move_up>t.color11(Given I have entered <number> into the calculator)
-<t.move_up>t.bold_green(Given I have entered <number> into the calculator)
-t.color11(And I press add)
-<t.move_up>t.bold_green(And I press add)
-
-t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:22)
-t.color8(Given I press add:
-      | value |
-      | 1     |
-      | 1     |
-      | 2     |)
-<t.move_up><t.move_up><t.move_up><t.move_up><t.move_up>t.color11(Given I press add:)
-      | t.color11(value) |
-      | t.color11(1) |
-      | t.color11(1) |
-      | t.color11(2) |
-<t.move_up><t.move_up><t.move_up><t.move_up><t.move_up>t.bold_green(Given I press add:)
-      | t.bold_green(value) |
-      | t.bold_green(1) |
-      | t.bold_green(1) |
-      | t.bold_green(2) |
+t.color11(And I press [+])
+<t.move_up>t.bold_green(And I press [+])
 
 """.lstrip())

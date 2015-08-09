@@ -6,11 +6,11 @@ Feature: Scenario indices
 
   # Comments are not shown
 
-  Scenario: First scenario
+  Scenario: behave_as works
     Given I have entered 10 into the calculator
-    And I press add
+    And I press [+]
 
-  Scenario Outline: Scenario outline with two examples
+  Scenario Outline: Scenario outlines
     Given I have entered <number> into the calculator
     And I press add
 
@@ -20,7 +20,7 @@ Feature: Scenario indices
       | 40     |
 
   Scenario: Scenario with table
-    Given I press add:
+    Given I have a table:
       | value |
       | 1     |
       | 1     |
