@@ -26,16 +26,13 @@ from builtins import *
 from future import standard_library
 standard_library.install_aliases()
 
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch
-
 from io import StringIO
+
 from aloe.testing import (
     FeatureTest,
     in_directory,
 )
+from mock import patch
 
 
 class TermElement(object):
