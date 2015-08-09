@@ -52,13 +52,16 @@ class TermElement(object):
 
 class MockTerminal(object):
 
-    def __init__(self, stream, force_styling=None):
+    is_a_tty = False
+
+    def __init__(self, stream, force_styling=None, is_tty=True):
         self.stream = stream
         self.does_styling = True
 
     def __getattr__(self, attr):
         if attr in ('stream',
                     'does_styling',
+                    'is_a_tty',
                     '__getstate__'):
             raise AttributeError(attr)
 
@@ -132,6 +135,57 @@ Feature: Scenario indices
                 patch('aloe.result.Terminal', new=MockTerminal), \
                 patch('aloe.result.AloeTestResult.printSummary'), \
                 StringIO() as stream:
+            self.run_features('features/highlighting.feature',
+                              verbosity=3, stream=stream,
+                              force_color=True)
+
+            print("--Output--")
+            print(stream.getvalue())
+            print("--END--")
+
+            self.assertEqual(stream.getvalue(), """
+t.bold_white(Feature: Scenario indices)
+
+t.white(As a programmer
+  I want to see my scenarios with pretty highlighting
+  So my output is easy to read)
+
+t.bold_white(Scenario: First scenario)t.color8(features/highlighting.feature:9)
+t.bold_green(Given I have entered 10 into the calculator)
+t.bold_green(And I press add)
+
+t.bold_white(Scenario Outline: Scenario outline with two examples)t.color8(features/highlighting.feature:13)
+      | t.white(number) |
+      | t.white(30) |
+
+t.bold_green(Given I have entered <number> into the calculator)
+t.bold_green(And I press add)
+
+t.bold_white(Scenario Outline: Scenario outline with two examples)t.color8(features/highlighting.feature:13)
+      | t.white(number) |
+      | t.white(40) |
+
+t.bold_green(Given I have entered <number> into the calculator)
+t.bold_green(And I press add)
+
+t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:22)
+t.bold_green(Given I press add:)
+      | t.bold_green(value) |
+      | t.bold_green(1) |
+      | t.bold_green(1) |
+      | t.bold_green(2) |
+
+""".lstrip())
+
+    def test_tty_output(self):
+        """Test streamed output with color"""
+
+        with \
+                patch('aloe.result.Terminal', new=MockTerminal) as mock_term, \
+                patch('aloe.result.AloeTestResult.printSummary'), \
+                StringIO() as stream:
+
+            mock_term.is_a_tty = True
             self.run_features('features/highlighting.feature',
                               verbosity=3, stream=stream,
                               force_color=True)

@@ -125,7 +125,7 @@ def example_wrapper(scenario, outline, steps):
             StreamWrapper.writeln()
 
         # write a preview of the steps
-        if term.does_styling:
+        if term.is_a_tty:
             StreamWrapper.writeln(
                 gray('\n'.join(
                     step.represented(annotate=False)
@@ -150,7 +150,7 @@ def step_wrapper(step):
         return
 
     try:
-        if term.does_styling:
+        if term.is_a_tty:
             StreamWrapper.writeln(
                 step.represented(annotate=False, color=term.color(11)),
                 return_=True)
