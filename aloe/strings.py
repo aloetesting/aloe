@@ -33,7 +33,7 @@ standard_library.install_aliases()
 import unicodedata
 
 
-def represent_table(table, indent=0, cell_wrap=lambda s: s):
+def represent_table(table, indent=0, cell_wrap=str):
     """
     Render a table
 

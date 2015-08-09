@@ -280,12 +280,23 @@ class Step(Node):
               for line in self.represent_hashes().splitlines()]
         )
 
-    def represented(self, indent=4, annotate=True):
+    def represented(self, indent=4, annotate=True,
+                    table=True, multiline=True,
+                    color=str):
         """
         Render the line.
         """
 
-        return super().represented(indent=indent, annotate=annotate)
+        lines = [color(super().represented(indent=indent, annotate=annotate))]
+
+        if table and self.table:
+            lines.append(self.represent_hashes(indent=indent + 2,
+                                               cell_wrap=color))
+
+        if multiline and self.multiline:
+            pass  # FIXME
+
+        return '\n'.join(lines)
 
     def represent_hashes(self, indent=6, **kwargs):
         """
