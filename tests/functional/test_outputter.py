@@ -105,25 +105,29 @@ Feature: Scenario indices
   I want to see my scenarios with pretty highlighting
   So my output is easy to read
 
-  Scenario: behave_as works                            features/highlighting.feature:9
+  Scenario: behave_as works                            features/highlighting.feature:12
+    Given I have a table
     Given I have entered 10 into the calculator
     And I press [+]
 
-  Scenario Outline: Scenario outlines                  features/highlighting.feature:13
+  Scenario Outline: Scenario outlines                  features/highlighting.feature:16
       | number |
       | 30     |
 
+    Given I have a table
     Given I have entered <number> into the calculator
     And I press add
 
-  Scenario Outline: Scenario outlines                  features/highlighting.feature:13
+  Scenario Outline: Scenario outlines                  features/highlighting.feature:16
       | number |
       | 40     |
 
+    Given I have a table
     Given I have entered <number> into the calculator
     And I press add
 
-  Scenario: Scenario with table                        features/highlighting.feature:22
+  Scenario: Scenario with table                        features/highlighting.feature:25
+    Given I have a table
     Given I have a table:
       | value |
       | 1     |
@@ -154,25 +158,29 @@ t.white(As a programmer
   I want to see my scenarios with pretty highlighting
   So my output is easy to read)
 
-t.bold_white(Scenario: behave_as works)t.color8(features/highlighting.feature:9)
+t.bold_white(Scenario: behave_as works)t.color8(features/highlighting.feature:12)
+t.bold_green(Given I have a table)
 t.bold_green(Given I have entered 10 into the calculator)
 t.bold_green(And I press [+])
 
-t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.feature:13)
+t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.feature:16)
       | t.white(number) |
       | t.white(30) |
 
+t.bold_green(Given I have a table)
 t.bold_green(Given I have entered <number> into the calculator)
 t.bold_green(And I press add)
 
-t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.feature:13)
+t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.feature:16)
       | t.white(number) |
       | t.white(40) |
 
+t.bold_green(Given I have a table)
 t.bold_green(Given I have entered <number> into the calculator)
 t.bold_green(And I press add)
 
-t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:22)
+t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:25)
+t.bold_green(Given I have a table)
 t.bold_green(Given I have a table:)
       | t.bold_green(value) |
       | t.bold_green(1) |
@@ -208,10 +216,13 @@ t.white(As a programmer
   I want to see my scenarios with pretty highlighting
   So my output is easy to read)
 
-t.bold_white(Scenario: behave_as works)t.color8(features/highlighting.feature:9)
-t.color8(Given I have entered 10 into the calculator
+t.bold_white(Scenario: behave_as works)t.color8(features/highlighting.feature:12)
+t.color8(Given I have a table
+    Given I have entered 10 into the calculator
     And I press [+])
-<t.move_up><t.move_up>t.color11(Given I have entered 10 into the calculator)
+<t.move_up><t.move_up><t.move_up>t.color11(Given I have a table)
+<t.move_up>t.bold_green(Given I have a table)
+t.color11(Given I have entered 10 into the calculator)
 <t.move_up>t.bold_green(Given I have entered 10 into the calculator)
 t.color11(And I press [+])
 <t.move_up>t.bold_green(And I press [+])
