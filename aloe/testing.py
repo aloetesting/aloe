@@ -205,7 +205,10 @@ class TestRunner(Runner):
 
     def makeConfig(self, *args, **kwargs):
         config = super().makeConfig(*args, **kwargs)
-        config.stream = self.stream
+
+        if self.stream:
+            config.stream = self.stream
+
         return config
 
 
@@ -239,7 +242,7 @@ class FeatureTest(unittest.TestCase):
 
         verbosity = kwargs.get('verbosity')
         stream = kwargs.get('stream')
-        force_color=kwargs.get('force_color', False)
+        force_color = kwargs.get('force_color', False)
 
         CALLBACK_REGISTRY.clear(priority_class=PriorityClass.USER)
         STEP_REGISTRY.clear()
