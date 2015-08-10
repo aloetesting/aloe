@@ -217,9 +217,17 @@ class FeatureTest(unittest.TestCase):
     def run_feature_string(self, feature_string):
         """
         Run the specified string as a feature.
+
+        The feature will be created as a temporary file in the 'features'
+        directory relative to the current directory. This ensures the steps
+        contained within would be found by the loader.
         """
 
-        with tempfile.NamedTemporaryFile(suffix='.feature', dir=os.getcwd()) \
+        if not os.path.isdir('features'):
+            raise ValueError(
+                "Features directory not found in {0}".format(os.getcwd()))
+
+        with tempfile.NamedTemporaryFile(suffix='.feature', dir='features') \
                 as feature_file:
             feature_file.write(feature_string.encode())
             feature_file.flush()
