@@ -28,3 +28,9 @@ Feature: Highlighting
       | 1     |
       | 1     |
       | 2     |
+
+  Scenario: Scenario with a multiline
+    Given I have a table:
+    """
+    Not actually a table :-P
+    """

@@ -126,6 +126,13 @@ Feature: Highlighting
       | 1     |
       | 2     |
 
+  Scenario: Scenario with a multiline                  features/highlighting.feature:32
+    Given I have a table
+    Given I have a table:
+      \"\"\"
+      Not actually a table :-P
+      \"\"\"
+
 """.lstrip())  # noqa
 
     def test_color_output(self):
@@ -179,6 +186,13 @@ t.bold_green(Given I have a table:)
       | t.bold_green(1) |
       | t.bold_green(1) |
       | t.bold_green(2) |
+
+t.bold_white(Scenario: Scenario with a multiline)t.color8(features/highlighting.feature:32)
+t.bold_green(Given I have a table)
+t.bold_green(Given I have a table:)
+      \"\"\"
+      t.bold_green(Not actually a table :-P)
+      \"\"\"
 
 """.lstrip())  # noqa
 
