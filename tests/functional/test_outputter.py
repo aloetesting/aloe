@@ -32,6 +32,7 @@ from aloe.testing import (
     FeatureTest,
     in_directory,
 )
+from aloe.result import OutputTerminal
 from mock import patch
 
 
@@ -58,34 +59,13 @@ class MockTermElement(object):
         return str(self) * other
 
 
-class MockTerminal(object):
-    """
-    A mock of the blessings.Terminal class.
-
-    Allows control over whether or not the terminal is a tty and emits all
-    terminal control codes as strings.
-    """
-
-    is_a_tty = False
-
-    def __init__(self, stream, force_styling=None, is_tty=True):
-        self.stream = stream
-        self.does_styling = force_styling or self.is_a_tty
+class MockOutputTerminal(OutputTerminal):
+    """Mock terminal to output printable elements instead of ANSI sequences"""
 
     def __getattr__(self, attr):
-        if attr in ('stream',
-                    'does_styling',
-                    'is_a_tty',
-                    '__getstate__',
-                    '__bool__'):
-            raise AttributeError(attr)
-
-        # callable factory
         return MockTermElement(attr)
 
-    def color(self, color):
-        """Return a color callable"""
-
+    def color(self, color):  # pylint:disable=arguments-differ
         return getattr(self, 'color%s' % color)
 
 
@@ -152,7 +132,8 @@ Feature: Scenario indices
         """Test streamed output with color"""
 
         with \
-                patch('aloe.result.Terminal', new=MockTerminal), \
+                patch('aloe.result.OutputTerminal',
+                      new=MockOutputTerminal), \
                 patch('aloe.result.AloeTestResult.printSummary'), \
                 StringIO() as stream:
             self.run_features('features/highlighting.feature',
@@ -205,7 +186,8 @@ t.bold_green(Given I have a table:)
         """Test streamed output with tty control codes"""
 
         with \
-                patch('aloe.result.Terminal', new=MockTerminal) as mock_term, \
+                patch('aloe.result.OutputTerminal',
+                      new=MockOutputTerminal) as mock_term, \
                 patch('aloe.result.AloeTestResult.printSummary'), \
                 StringIO() as stream:
 

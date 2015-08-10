@@ -49,20 +49,13 @@ outer_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
 # pylint:enable=invalid-name
 
 
-class StreamWrapper(object):
+TERMINAL = [None]
+
+
+class OutputTerminal(Terminal):
     """
-    Hold a reference to the Terminal object and wrap its stream.
-
-    Allows us to store `term` as a global.
+    Terminal object.
     """
-    def __init__(self, term=None):
-        self.term = term
-
-    def __getattr__(self, attr):
-        if attr in ('term', '__getstate__'):
-            raise AttributeError(attr)
-
-        return getattr(self.term.stream, attr)
 
     def write(self, arg='', return_=False):
         """
@@ -70,47 +63,45 @@ class StreamWrapper(object):
 
         Takes an optional parameter `return_`
         """
-        self.term.stream.write(arg)
+        self.stream.write(arg)
 
         if return_:
-            self.term.stream.write(self.term.move_up * arg.count('\n'))
+            self.stream.write(self.move_up * arg.count('\n'))
 
     def writeln(self, arg='', return_=False):
         """Convenience function to write a line to the stream."""
         self.write(arg + '\n', return_=return_)
 
-    def require_term(self, func):
+    @classmethod
+    def required(cls, func):
         """Decorate this hook to only execute if term is available"""
 
         @wraps(func)
         def inner(*args, **kwargs):
             """Wrap func to check for term."""
-            if not self.term:
+            if not TERMINAL[0]:
                 return _empty_generator()
 
-            return func(self.term, *args, **kwargs)
+            return func(TERMINAL[0], *args, **kwargs)
 
         return inner
 
 
-STREAM_WRAPPER = StreamWrapper()
-
-
 @outer_around.each_feature
 @contextmanager
-@STREAM_WRAPPER.require_term
+@OutputTerminal.required
 def feature_wrapper(term, feature):
     """Display feature execution."""
 
     try:
         if feature.tags:
-            STREAM_WRAPPER.writeln(term.cyan(feature.represent_tags()))
+            term.writeln(term.cyan(feature.represent_tags()))
 
         lines = feature.represented(annotate=False).splitlines()
-        STREAM_WRAPPER.writeln(term.bold_white(lines[0]))
-        STREAM_WRAPPER.writeln()
-        STREAM_WRAPPER.writeln(term.white('\n'.join(lines[1:])))
-        STREAM_WRAPPER.writeln()
+        term.writeln(term.bold_white(lines[0]))
+        term.writeln()
+        term.writeln(term.white('\n'.join(lines[1:])))
+        term.writeln()
 
         yield
     finally:
@@ -119,28 +110,28 @@ def feature_wrapper(term, feature):
 
 @outer_around.each_example
 @contextmanager
-@STREAM_WRAPPER.require_term
+@OutputTerminal.required
 def example_wrapper(term, scenario, outline, steps):
     """Display scenario execution."""
 
     try:
         if scenario.tags:
-            STREAM_WRAPPER.writeln(term.cyan(scenario.represent_tags()))
+            term.writeln(term.cyan(scenario.represent_tags()))
 
         # blessings doesn't degrade term.color nicely if there's no styling
         # available
         gray = term.color(8) if term.does_styling else str
 
         start, end = scenario.represented().rsplit('#')
-        STREAM_WRAPPER.write(term.bold_white(start))
-        STREAM_WRAPPER.writeln(gray(end))
+        term.write(term.bold_white(start))
+        term.writeln(gray(end))
 
         if outline:
-            STREAM_WRAPPER.writeln(represent_table([outline.keys(),
-                                                    outline.values()],
-                                                   indent=6,
-                                                   cell_wrap=term.white))
-            STREAM_WRAPPER.writeln()
+            term.writeln(represent_table([outline.keys(),
+                                          outline.values()],
+                                         indent=6,
+                                         cell_wrap=term.white))
+            term.writeln()
 
         # write a preview of the steps
         if term.is_a_tty:
@@ -151,7 +142,7 @@ def example_wrapper(term, scenario, outline, steps):
 
             steps_ += steps
 
-            STREAM_WRAPPER.writeln(
+            term.writeln(
                 gray('\n'.join(
                     step.represented(annotate=False)
                     for step in steps_
@@ -161,19 +152,19 @@ def example_wrapper(term, scenario, outline, steps):
 
         yield
     finally:
-        STREAM_WRAPPER.writeln()
+        term.writeln()
 
 
 @outer_around.each_step
 @contextmanager
-@STREAM_WRAPPER.require_term
+@OutputTerminal.required
 @hook_not_reentrant
 def step_wrapper(term, step):
     """Display step execution."""
 
     try:
         if term.is_a_tty:
-            STREAM_WRAPPER.writeln(
+            term.writeln(
                 step.represented(annotate=False, color=term.color(11)),
                 return_=True)
 
@@ -186,7 +177,7 @@ def step_wrapper(term, step):
         else:
             color = term.yellow
 
-        STREAM_WRAPPER.writeln(
+        term.writeln(
             step.represented(annotate=False, color=color)
         )
 
@@ -204,7 +195,8 @@ class AloeTestResult(TextTestResult):
         self.showSteps = verbosity >= 3  # pylint:disable=invalid-name
 
         if self.showSteps:
-            STREAM_WRAPPER.term = Terminal(stream=stream,
-                                           force_styling=config.force_color)
+            TERMINAL[0] = OutputTerminal(
+                stream=stream,
+                force_styling=config.force_color)
         else:
-            STREAM_WRAPPER.term = None  # unset the global
+            TERMINAL[0] = None  # unset the global
