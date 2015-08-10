@@ -49,7 +49,7 @@ from tests.utils import appender, before_after
 
 def test_StepDict_raise_StepLoadingError_if_first_argument_is_not_a_regex():
     """
-    lettuce.STEP_REGISTRY.load(step, func) should raise an error if step is
+    aloe.STEP_REGISTRY.load(step, func) should raise an error if step is
     not a regex
     """
     steps = StepDict()
@@ -59,7 +59,7 @@ def test_StepDict_raise_StepLoadingError_if_first_argument_is_not_a_regex():
 
 def test_StepDict_can_load_a_step_composed_of_a_regex_and_a_function():
     """
-    lettuce.STEP_REGISTRY.load(step, func) append item(step, func) to
+    aloe.STEP_REGISTRY.load(step, func) append item(step, func) to
     STEP_REGISTRY
     """
     steps = StepDict()
@@ -77,7 +77,7 @@ def test_StepDict_can_load_a_step_composed_of_a_regex_and_a_function():
 
 def test_StepDict_load_a_step_return_the_given_function():
     """
-    lettuce.STEP_REGISTRY.load(step, func) returns func
+    aloe.STEP_REGISTRY.load(step, func) returns func
     """
     steps = StepDict()
 
@@ -89,7 +89,7 @@ def test_StepDict_load_a_step_return_the_given_function():
 
 def test_StepDict_can_extract_a_step_sentence_from_function_name():
     """
-    lettuce.STEP_REGISTRY.extract_sentence(func) parse func name and return
+    aloe.STEP_REGISTRY.extract_sentence(func) parse func name and return
     a sentence
     """
     steps = StepDict()
@@ -101,7 +101,7 @@ def test_StepDict_can_extract_a_step_sentence_from_function_name():
 
 def test_StepDict_can_extract_a_step_sentence_from_function_doc():
     """
-    lettuce.STEP_REGISTRY.extract_sentence(func) parse func doc and return
+    aloe.STEP_REGISTRY.extract_sentence(func) parse func doc and return
     a sentence
     """
     steps = StepDict()
@@ -114,7 +114,7 @@ def test_StepDict_can_extract_a_step_sentence_from_function_doc():
 
 def test_StepDict_can_load_a_step_from_a_function():
     """
-    lettuce.STEP_REGISTRY.load_func(func) append item(step, func) to
+    aloe.STEP_REGISTRY.load_func(func) append item(step, func) to
     STEP_REGISTRY
     """
     steps = StepDict()
@@ -131,7 +131,7 @@ def test_StepDict_can_load_a_step_from_a_function():
 
 def test_StepDict_can_load_steps_from_an_object():
     """
-    lettuce.STEP_REGISTRY.load_steps(obj) append all obj methods to
+    aloe.STEP_REGISTRY.load_steps(obj) append all obj methods to
     STEP_REGISTRY
     """
     steps = StepDict()
@@ -159,7 +159,7 @@ def test_StepDict_can_load_steps_from_an_object():
 
 def test_StepDict_can_exclude_methods_when_load_steps():
     """
-    lettuce.STEP_REGISTRY.load_steps(obj) don't load exluded attr in
+    aloe.STEP_REGISTRY.load_steps(obj) don't load exluded attr in
     STEP_REGISTRY
     """
     steps = StepDict()
@@ -186,7 +186,7 @@ def test_StepDict_can_exclude_methods_when_load_steps():
 
 def test_StepDict_can_exclude_callable_object_when_load_steps():
     """
-    lettuce.STEP_REGISTRY.load_steps(obj) don't load callable objets in
+    aloe.STEP_REGISTRY.load_steps(obj) don't load callable objets in
     STEP_REGISTRY
     """
     steps = StepDict()
