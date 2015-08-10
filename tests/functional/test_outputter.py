@@ -91,7 +91,7 @@ class OutputterTest(FeatureTest):
             print("--END--")
 
             self.assertEqual(stream.getvalue(), """
-Feature: Scenario indices
+Feature: Highlighting
 
   As a programmer
   I want to see my scenarios with pretty highlighting
@@ -145,7 +145,7 @@ Feature: Scenario indices
             print("--END--")
 
             self.assertEqual(stream.getvalue(), """
-t.bold_white(Feature: Scenario indices)
+t.bold_white(Feature: Highlighting)
 
 t.white(As a programmer
   I want to see my scenarios with pretty highlighting
@@ -204,7 +204,7 @@ t.bold_green(Given I have a table:)
             # once in color 8 as a preview, then each line individually
             # followed by a green version of it
             self.assertEqual(stream.getvalue(), """
-t.bold_white(Feature: Scenario indices)
+t.bold_white(Feature: Highlighting)
 
 t.white(As a programmer
   I want to see my scenarios with pretty highlighting

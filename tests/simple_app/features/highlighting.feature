@@ -1,4 +1,4 @@
-Feature: Scenario indices
+Feature: Highlighting
 
   As a programmer
   I want to see my scenarios with pretty highlighting
