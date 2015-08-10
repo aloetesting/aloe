@@ -296,7 +296,8 @@ class Step(Node):
                                                cell_wrap=color))
 
         if multiline and self.multiline:
-            pass  # FIXME
+            lines.append(self.represent_multiline(indent=indent + 2,
+                                                  string_wrap=color))
 
         return '\n'.join(lines)
     # pylint:enable=too-many-arguments,arguments-differ
@@ -304,9 +305,25 @@ class Step(Node):
     def represent_hashes(self, indent=6, **kwargs):
         """
         Render the table.
+
+        :param cell_wrap: color to use inside the table cells
         """
 
         return strings.represent_table(self.table, indent=indent, **kwargs)
+
+    def represent_multiline(self, indent=6, string_wrap=str):
+        """
+        Render the multiline.
+
+        :param string_wrap: color to use inside the string
+        """
+
+        lines = [' ' * indent + '"""']
+        lines += [' ' * indent + string_wrap(line)
+                  for line in self.multiline.splitlines()]
+        lines += [' ' * indent + '"""']
+
+        return '\n'.join(lines)
 
     def resolve_substitutions(self, outline):
         """
