@@ -97,12 +97,6 @@ def guess_types(data):  # pylint:disable=too-complex
     return data
 
 
-def _empty_generator(*args, **kwargs):
-    """An empty generator suitable to replace a context manager"""
-    yield
-    return
-
-
 def hook_not_reentrant(func):
     """
     Decorate a hook as unable to be reentered while it is already in the
@@ -132,18 +126,12 @@ def hook_not_reentrant(func):
             because Python 2 can't support "returning from generators"
             """
             if func._entered:
-                gen = _empty_generator()
-
-                yield next(gen)
-                next(gen)
-                return
+                yield
             else:
                 try:
                     func._entered = True
-                    gen = func(*args, **kwargs)
-                    yield next(gen)
-                    next(gen)
-                    return
+                    for val in func(*args, **kwargs):
+                        yield val
                 finally:
                     func._entered = False
 

@@ -187,7 +187,7 @@ class TestRunner(Runner):
     """
     A test test runner to store information about the tests run.
 
-    :param stream: pass your a stream to write the output into
+    :param stream: a stream to write the output into (optional)
     """
 
     def gherkin_plugin(self):

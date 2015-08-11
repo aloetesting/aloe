@@ -37,7 +37,7 @@ from aloe.registry import (
     PriorityClass,
 )
 from aloe.strings import represent_table
-from aloe.tools import hook_not_reentrant, _empty_generator
+from aloe.tools import hook_not_reentrant
 from blessings import Terminal
 from nose.result import TextTestResult
 
@@ -49,19 +49,25 @@ outer_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
 # pylint:enable=invalid-name
 
 
-TERMINAL = [None]
+TERMINAL = [None]  # global reference to the OutputTerminal
 
 
 class OutputTerminal(Terminal):
     """
-    Terminal object.
+    Wrapped Terminal object for display hooks.
+
+     * Adds additional features: write and writeln.
+     * Adds a decorator to require the terminal global being set and
+       pass it into hooks.
+     * Works around a bug in blessings.Terminal.
     """
 
     def write(self, arg='', return_=False):
         """
         Write to the stream.
 
-        Takes an optional parameter `return_`
+        :param return_: if True return the cursor back to where it was
+            before the write.
         """
         self.stream.write(arg)
 
@@ -72,6 +78,10 @@ class OutputTerminal(Terminal):
         """Convenience function to write a line to the stream."""
         self.write(arg + '\n', return_=return_)
 
+    def color(self, color):  # pylint:disable=arguments-differ
+        """Wrap Terminal.color() to work if styling is not set"""
+        return super().color(color) if self.does_styling else str
+
     @classmethod
     def required(cls, func):
         """Decorate this hook to only execute if term is available"""
@@ -79,10 +89,18 @@ class OutputTerminal(Terminal):
         @wraps(func)
         def inner(*args, **kwargs):
             """Wrap func to check for term."""
-            if not TERMINAL[0]:
-                return _empty_generator()
 
-            return func(TERMINAL[0], *args, **kwargs)
+            def empty_generator():
+                """
+                Hide the generator in a separate function
+                because Python 2 can't support "returning from generators"
+                """
+                yield
+
+            if not TERMINAL[0]:
+                return empty_generator()
+            else:
+                return func(TERMINAL[0], *args, **kwargs)
 
         return inner
 
@@ -118,13 +136,9 @@ def example_wrapper(term, scenario, outline, steps):
         if scenario.tags:
             term.writeln(term.cyan(scenario.represent_tags()))
 
-        # blessings doesn't degrade term.color nicely if there's no styling
-        # available
-        gray = term.color(8) if term.does_styling else str
-
         start, end = scenario.represented().rsplit('#')
         term.write(term.bold_white(start))
-        term.writeln(gray(end))
+        term.writeln(term.color(8)(end))
 
         if outline:
             term.writeln(represent_table([outline.keys(),
@@ -143,7 +157,7 @@ def example_wrapper(term, scenario, outline, steps):
             steps_ += steps
 
             term.writeln(
-                gray('\n'.join(
+                term.color(8)('\n'.join(
                     step.represented(annotate=False)
                     for step in steps_
                 ) + '\n'),
@@ -158,7 +172,7 @@ def example_wrapper(term, scenario, outline, steps):
 @outer_around.each_step
 @contextmanager
 @OutputTerminal.required
-@hook_not_reentrant
+@hook_not_reentrant  # don't display inner steps called by top-level steps
 def step_wrapper(term, step):
     """Display step execution."""
 
