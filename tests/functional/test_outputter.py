@@ -38,7 +38,7 @@ from mock import patch
 
 class MockTermElement(object):
     """
-    Wraps a element being output by the MockTerminal (i.e. term.bold) and
+    Wraps an element being output by the MockTerminal (i.e. term.bold) and
     replaces it with a string that can be checked in tests.
 
     Like with the attributes in Terminal it can be used as a callable or
@@ -65,7 +65,7 @@ class MockOutputTerminal(OutputTerminal):
     def __getattr__(self, attr):
         return MockTermElement(attr)
 
-    def color(self, color):  # pylint:disable=arguments-differ
+    def color(self, color):
         return getattr(self, 'color%s' % color)
 
 

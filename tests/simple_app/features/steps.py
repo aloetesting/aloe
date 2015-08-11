@@ -57,7 +57,11 @@ def press_add(self):
 
 @step(r'I press \[\+\]')
 def press_plus(self):
-    """Test behave_as"""
+    """
+    Alias of 'I press add'.
+
+    Tests behave_as().
+    """
     self.given('I press add')
 
 
