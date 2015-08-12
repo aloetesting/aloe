@@ -38,6 +38,7 @@ from nose.plugins.attrib import AttributeSelector
 from aloe.fs import FeatureLoader
 from aloe.registry import CALLBACK_REGISTRY
 from aloe.testclass import TestCase
+from aloe.result import AloeTestResult
 
 
 class GherkinPlugin(Plugin):
@@ -110,6 +111,12 @@ class GherkinPlugin(Plugin):
             default='',
             help='Only run scenarios with these indices (comma-separated)',
         )
+        parser.add_option(
+            '--color', action='store_true',
+            dest='force_color',
+            default=False,
+            help='Force colored output',
+        )
 
         # Options for attribute plugin will be registered by its main instance
 
@@ -123,8 +130,9 @@ class GherkinPlugin(Plugin):
         module_name, class_name = options.test_class_name.rsplit('.', 1)
         module = import_module(module_name)
         self.test_class = getattr(module, class_name)
-
         self.ignore_python = options.ignore_python
+
+        conf.force_color = options.force_color
 
         if options.scenario_indices:
             self.scenario_indices = tuple(
@@ -230,3 +238,21 @@ class GherkinPlugin(Plugin):
         if hasattr(self, 'after_hook'):
             self.after_hook()
             delattr(self, 'after_hook')
+
+    def prepareTestRunner(self, runner):
+        """
+        Monkeypatch in our TestResult class.
+
+        In unittest we could just set runner.resultclass, but Nose
+        doesn't use this.
+        """
+        def _makeResult():
+            """Build our result"""
+            return AloeTestResult(runner.stream,
+                                  runner.descriptions,
+                                  runner.verbosity,
+                                  runner.config)
+
+        runner._makeResult = _makeResult  # pylint:disable=protected-access
+
+        return runner

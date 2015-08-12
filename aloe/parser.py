@@ -273,24 +273,56 @@ class Step(Node):
 
         return max(
             0,
-            strings.get_terminal_width(self.represented(annotate=False)),
+            strings.get_terminal_width(self.represented(annotate=False,
+                                                        table=False,
+                                                        multiline=False)),
             *[strings.get_terminal_width(line)
-              for line in self.represent_hashes().splitlines()]
+              for line in self.represent_table().splitlines()]
         )
 
-    def represented(self, indent=4, annotate=True):
+    # pylint:disable=too-many-arguments,arguments-differ
+    def represented(self, indent=4, annotate=True,
+                    table=True, multiline=True,
+                    color=str):
         """
         Render the line.
         """
 
-        return super().represented(indent=indent, annotate=annotate)
+        lines = [color(super().represented(indent=indent, annotate=annotate))]
 
-    def represent_hashes(self, indent=6, **kwargs):
+        if table and self.table:
+            lines.append(self.represent_table(indent=indent + 2,
+                                              cell_wrap=color))
+
+        if multiline and self.multiline:
+            lines.append(self.represent_multiline(indent=indent + 2,
+                                                  string_wrap=color))
+
+        return '\n'.join(lines)
+    # pylint:enable=too-many-arguments,arguments-differ
+
+    def represent_table(self, indent=6, **kwargs):
         """
         Render the table.
+
+        :param cell_wrap: color to use inside the table cells
         """
 
         return strings.represent_table(self.table, indent=indent, **kwargs)
+
+    def represent_multiline(self, indent=6, string_wrap=str):
+        """
+        Render the multiline.
+
+        :param string_wrap: color to use inside the string
+        """
+
+        lines = [' ' * indent + '"""']
+        lines += [' ' * indent + string_wrap(line)
+                  for line in self.multiline.splitlines()]
+        lines += [' ' * indent + '"""']
+
+        return '\n'.join(lines)
 
     def resolve_substitutions(self, outline):
         """
@@ -553,7 +585,7 @@ class Description(Node):
 
     def represented(self, indent=2, annotate=True):
         return u'\n'.join(
-            self.represent_line(n)
+            self.represent_line(n, annotate=annotate)
             for n, _ in enumerate(self.lines)
         )
 

@@ -1,3 +1,4 @@
+blessings
 future
 nose
 pyparsing
