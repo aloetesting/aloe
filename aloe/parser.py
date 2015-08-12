@@ -279,7 +279,7 @@ class Step(Node):
                                                         table=False,
                                                         multiline=False)),
             *[strings.get_terminal_width(line)
-              for line in self.represent_hashes().splitlines()]
+              for line in self.represent_table().splitlines()]
         )
 
     # pylint:disable=too-many-arguments,arguments-differ
@@ -293,8 +293,8 @@ class Step(Node):
         lines = [color(super().represented(indent=indent, annotate=annotate))]
 
         if table and self.table:
-            lines.append(self.represent_hashes(indent=indent + 2,
-                                               cell_wrap=color))
+            lines.append(self.represent_table(indent=indent + 2,
+                                              cell_wrap=color))
 
         if multiline and self.multiline:
             lines.append(self.represent_multiline(indent=indent + 2,
@@ -303,7 +303,7 @@ class Step(Node):
         return '\n'.join(lines)
     # pylint:enable=too-many-arguments,arguments-differ
 
-    def represent_hashes(self, indent=6, **kwargs):
+    def represent_table(self, indent=6, **kwargs):
         """
         Render the table.
 
