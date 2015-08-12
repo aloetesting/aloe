@@ -21,6 +21,9 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
+from io import StringIO
+from os.path import dirname
+
 from aloe import world
 
 from aloe.testing import (
@@ -47,7 +50,31 @@ class CalculatorTest(FeatureTest):
         Test that a failing feature fails tests.
         """
 
-        self.assert_feature_fail('features/wrong_expectations.feature')
+        with StringIO() as stream:
+            self.assert_feature_fail('features/wrong_expectations.feature',
+                                     stream=stream)
+
+            output = stream.getvalue()
+
+            error_header = "FAIL: Add two numbers (aloe.testclass.Wrong expectations)"  # noqa
+
+            self.assertIn(error_header, output)
+
+            feature_stack_frame = """
+  File "features/wrong_expectations.feature", line 10, in Add two numbers
+    Then the result should be 40 on the screen
+            """.strip()
+
+            self.assertIn(feature_stack_frame, output)
+
+            step_stack_frame = """
+  File "{root}/tests/simple_app/features/steps.py", line 76, in assert_result
+    assert world.result == float(result)
+AssertionError
+            """.strip().format(
+                root=dirname(dirname(dirname(__file__))))
+
+            self.assertIn(step_stack_frame, output)
 
     def test_background(self):
         """
