@@ -110,8 +110,9 @@ def hook_not_reentrant(func):
     when displaying information about the running test.
     """
 
-    # pylint:disable=protected-access
-    func._entered = False
+    # closure-scoped variable to track whether this hook has been
+    # entered
+    entered = [False]
 
     @wraps(func)
     def inner(*args, **kwargs):
@@ -125,24 +126,24 @@ def hook_not_reentrant(func):
             Hide the generator in a separate function
             because Python 2 can't support "returning from generators"
             """
-            if func._entered:
+            if entered[0]:
                 yield
             else:
                 try:
-                    func._entered = True
+                    entered[0] = True
                     for val in func(*args, **kwargs):
                         yield val
                 finally:
-                    func._entered = False
+                    entered[0] = False
 
         if inspect.isgeneratorfunction(func):
             return generator()
         else:
-            if not func._entered:
+            if not entered[0]:
                 try:
-                    func._entered = True
+                    entered[0] = True
                     return func(*args, **kwargs)
                 finally:
-                    func._entered = False
+                    entered[0] = False
 
     return inner
