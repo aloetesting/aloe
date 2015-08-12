@@ -21,7 +21,7 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
-from io import StringIO
+import sys
 from os.path import dirname
 
 from aloe import world
@@ -30,6 +30,7 @@ from aloe.testing import (
     FeatureTest,
     in_directory,
 )
+from aloe.utils import str_io
 
 
 @in_directory('tests/simple_app')
@@ -45,36 +46,38 @@ class CalculatorTest(FeatureTest):
 
         self.assert_feature_success('features/calculator.feature')
 
-    def test_wrong_expectations(self):
+    def test_failure(self):
         """
         Test that a failing feature fails tests.
         """
 
-        with StringIO() as stream:
-            self.assert_feature_fail('features/wrong_expectations.feature',
-                                     stream=stream)
+        stream = str_io()
 
-            output = stream.getvalue()
+        self.assert_feature_fail('features/wrong_expectations.feature',
+                                 stream=stream)
 
-            error_header = "FAIL: Add two numbers (aloe.testclass.Wrong expectations)"  # noqa
+        # Check that the appropriate error messages were printed
 
-            self.assertIn(error_header, output)
+        output = stream.getvalue()
 
-            feature_stack_frame = """
+        error_header = "FAIL: Add two numbers (aloe.testclass.Wrong expectations)"  # noqa
+
+        self.assertIn(error_header, output)
+
+        feature_stack_frame = """
   File "features/wrong_expectations.feature", line 10, in Add two numbers
     Then the result should be 40 on the screen
-            """.strip()
+        """.strip()
 
-            self.assertIn(feature_stack_frame, output)
+        self.assertIn(feature_stack_frame, output)
 
-            step_stack_frame = """
+        step_stack_frame = """
   File "{root}/tests/simple_app/features/steps.py", line 76, in assert_result
     assert world.result == float(result)
 AssertionError
-            """.strip().format(
-                root=dirname(dirname(dirname(__file__))))
+        """.strip().format(root=dirname(dirname(dirname(__file__))))
 
-            self.assertIn(step_stack_frame, output)
+        self.assertIn(step_stack_frame, output)
 
     def test_background(self):
         """

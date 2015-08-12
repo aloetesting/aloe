@@ -27,6 +27,7 @@ standard_library.install_aliases()
 
 import re
 import sys
+from io import BytesIO, StringIO
 
 try:
     from functools import lru_cache  # pylint:disable=no-name-in-module
@@ -41,15 +42,29 @@ def dummy_cm():
     pass
 
 
+PY3 = sys.version_info >= (3, 0)
+
+
 def always_str(value):
     """
     Make an str on either Python 2 or Python 3.
     """
 
-    if sys.version_info >= (3, 0):
+    if PY3:
         return value
     else:
         return value.encode()
+
+
+def str_io():
+    """
+    A stream that can be written to by Nose.
+    """
+
+    if PY3:
+        return StringIO()
+    else:
+        return BytesIO()
 
 
 def unwrap_function(func):
