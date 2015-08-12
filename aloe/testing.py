@@ -186,6 +186,8 @@ class TestGherkinPlugin(GherkinPlugin):
 class TestRunner(Runner):
     """
     A test test runner to store information about the tests run.
+
+    :param stream: a stream to write the output into (optional)
     """
 
     def gherkin_plugin(self):
@@ -199,7 +201,17 @@ class TestRunner(Runner):
 
     def __init__(self, *args, **kwargs):
         self.tests_run = []
+        self.stream = kwargs.pop('stream')
+
         super().__init__(*args, **kwargs)
+
+    def makeConfig(self, *args, **kwargs):
+        config = super().makeConfig(*args, **kwargs)
+
+        if self.stream:
+            config.stream = self.stream
+
+        return config
 
 
 class FeatureTest(unittest.TestCase):
@@ -233,17 +245,30 @@ class FeatureTest(unittest.TestCase):
             feature_file.flush()
             return self.run_features(os.path.relpath(feature_file.name))
 
-    def run_features(self, *features):
+    def run_features(self, *features, **kwargs):
         """
         Run the specified features.
         """
+
+        verbosity = kwargs.get('verbosity')
+        stream = kwargs.get('stream')
+        force_color = kwargs.get('force_color', False)
 
         CALLBACK_REGISTRY.clear(priority_class=PriorityClass.USER)
         STEP_REGISTRY.clear()
         world.__dict__.clear()
 
-        return TestRunner(exit=False,
-                          argv=['aloe'] + list(features))
+        argv = ['aloe']
+
+        if verbosity:
+            argv += ['--verbosity', str(verbosity)]
+
+        if force_color:
+            argv += ['--color']
+
+        argv += list(features)
+
+        return TestRunner(exit=False, argv=argv, stream=stream)
 
     def assert_feature_success(self, *features):
         """

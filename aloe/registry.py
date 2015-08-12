@@ -60,7 +60,8 @@ class PriorityClass(object):
     Priority class constants.
     """
 
-    SYSTEM_OUTER = -10  # System callbacks executing before others
+    DISPLAY = -20  # Display callbacks run first/last
+    SYSTEM_OUTER = -10  # System callbacks executing before all except DISPLAY
     USER = 0  # User callbacks
     SYSTEM_INNER = 10  # System callbacks executing after others
 
