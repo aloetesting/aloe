@@ -270,20 +270,20 @@ class FeatureTest(unittest.TestCase):
 
         return TestRunner(exit=False, argv=argv, stream=stream)
 
-    def assert_feature_success(self, *features):
+    def assert_feature_success(self, *features, **kwargs):
         """
         Assert that the specified features can be run successfully.
         """
 
-        result = self.run_features(*features)
+        result = self.run_features(*features, **kwargs)
         assert result.success
         return result
 
-    def assert_feature_fail(self, *features):
+    def assert_feature_fail(self, *features, **kwargs):
         """
         Assert that the specified features fail when run.
         """
 
-        result = self.run_features(*features)
+        result = self.run_features(*features, **kwargs)
         assert not result.success
         return result
