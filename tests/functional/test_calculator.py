@@ -60,7 +60,7 @@ class CalculatorTest(FeatureTest):
 
         output = stream.getvalue()
 
-        error_header = "FAIL: Add two numbers (aloe.testclass.Wrong expectations)"  # noqa
+        error_header = "FAIL: Add two numbers (features.wrong_expectations: Wrong expectations)"
 
         self.assertIn(error_header, output)
 

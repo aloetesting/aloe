@@ -34,6 +34,7 @@ from contextlib import contextmanager
 from nose.plugins.attrib import attr
 
 from aloe.codegen import make_function
+from aloe.fs import path_to_module_name
 from aloe.parser import Feature, Step, Gherkin
 from aloe.registry import (
     CallbackDecorator,
@@ -132,6 +133,13 @@ class TestCase(unittest.TestCase):
             definition['func'](definition['step'],
                                *definition['args'],
                                **definition['kwargs'])
+
+    def __str__(self):
+        return "%s (%s: %s)" % (
+            self._testMethodName,
+            path_to_module_name(self.feature.described_at.file),
+            self.feature.name,
+        )
 
     # Methods for generating test classes
 
