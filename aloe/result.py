@@ -31,6 +31,7 @@ standard_library.install_aliases()
 from contextlib import contextmanager
 from functools import wraps
 
+import blessings
 from aloe.registry import (
     CallbackDecorator,
     CALLBACK_REGISTRY,
@@ -38,7 +39,6 @@ from aloe.registry import (
 )
 from aloe.strings import represent_table
 from aloe.tools import hook_not_reentrant
-from blessings import Terminal
 from nose.result import TextTestResult
 
 # A decorator to add callbacks which wrap the steps looser than all the other
@@ -49,10 +49,13 @@ outer_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
 # pylint:enable=invalid-name
 
 
-TERMINAL = [None]  # global reference to the OutputTerminal
+# Global reference to the Terminal:
+# This exists because the hooks have to be registered before the test is
+# started, which is when the stream is passed in.
+TERMINAL = [None]
 
 
-class OutputTerminal(Terminal):
+class Terminal(blessings.Terminal):
     """
     Wrapped Terminal object for display hooks.
 
@@ -107,7 +110,7 @@ class OutputTerminal(Terminal):
 
 @outer_around.each_feature
 @contextmanager
-@OutputTerminal.required
+@Terminal.required
 def feature_wrapper(term, feature):
     """Display feature execution."""
 
@@ -128,7 +131,7 @@ def feature_wrapper(term, feature):
 
 @outer_around.each_example
 @contextmanager
-@OutputTerminal.required
+@Terminal.required
 def example_wrapper(term, scenario, outline, steps):
     """Display scenario execution."""
 
@@ -171,7 +174,7 @@ def example_wrapper(term, scenario, outline, steps):
 
 @outer_around.each_step
 @contextmanager
-@OutputTerminal.required
+@Terminal.required
 @hook_not_reentrant  # don't display inner steps called by top-level steps
 def step_wrapper(term, step):
     """Display step execution."""
@@ -209,8 +212,12 @@ class AloeTestResult(TextTestResult):
         self.showSteps = verbosity >= 3  # pylint:disable=invalid-name
 
         if self.showSteps:
-            TERMINAL[0] = OutputTerminal(
+            # Register the global terminal so that it can be accessed by
+            # the hooks.
+            TERMINAL[0] = Terminal(
                 stream=stream,
                 force_styling=config.force_color)
         else:
-            TERMINAL[0] = None  # unset the global
+            # unset the global -- primarily for the tests where we're going
+            # to create more TestResults with different streams.
+            TERMINAL[0] = None

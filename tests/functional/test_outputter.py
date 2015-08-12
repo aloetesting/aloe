@@ -32,7 +32,7 @@ from aloe.testing import (
     FeatureTest,
     in_directory,
 )
-from aloe.result import OutputTerminal
+from aloe.result import Terminal
 from mock import patch
 
 
@@ -59,7 +59,7 @@ class MockTermElement(object):
         return str(self) * other
 
 
-class MockOutputTerminal(OutputTerminal):
+class MockTerminal(Terminal):
     """Mock terminal to output printable elements instead of ANSI sequences"""
 
     def __getattr__(self, attr):
@@ -139,8 +139,7 @@ Feature: Highlighting
         """Test streamed output with color"""
 
         with \
-                patch('aloe.result.OutputTerminal',
-                      new=MockOutputTerminal), \
+                patch('aloe.result.Terminal', new=MockTerminal), \
                 patch('aloe.result.AloeTestResult.printSummary'), \
                 StringIO() as stream:
             self.run_features('features/highlighting.feature',
@@ -200,8 +199,7 @@ t.bold_green(Given I have a table:)
         """Test streamed output with tty control codes"""
 
         with \
-                patch('aloe.result.OutputTerminal',
-                      new=MockOutputTerminal) as mock_term, \
+                patch('aloe.result.Terminal', new=MockTerminal) as mock_term, \
                 patch('aloe.result.AloeTestResult.printSummary'), \
                 StringIO() as stream:
 
