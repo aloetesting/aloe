@@ -44,6 +44,7 @@ from aloe.registry import (
     STEP_REGISTRY,
 )
 from aloe.runner import Runner
+from aloe.utils import str_io
 
 
 @contextmanager
@@ -250,9 +251,15 @@ class FeatureTest(unittest.TestCase):
         Run the specified features.
         """
 
+        # named keyword args and variable positional args aren't supported on
+        # Python 2
         verbosity = kwargs.get('verbosity')
         stream = kwargs.get('stream')
         force_color = kwargs.get('force_color', False)
+
+        if stream is None:
+            # Don't show results of running the inner tests on screen
+            stream = str_io()
 
         CALLBACK_REGISTRY.clear(priority_class=PriorityClass.USER)
         STEP_REGISTRY.clear()
