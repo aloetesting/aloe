@@ -1,3 +1,4 @@
+# Line numbers in this file are tested against
 Feature: Wrong expectations
 
   This feature is intended to raise an assertion failure
