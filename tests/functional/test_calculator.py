@@ -117,3 +117,7 @@ class CalculatorTest(FeatureTest):
         # Specify more than one tag to run
         self.assert_feature_success(feature_one, '-a', 'hana', '-a', 'dul')
         self.assertEqual(world.all_results, [1, 2, 11])
+
+        # Specify more than one tag to exclude
+        self.assert_feature_success(feature_dir, '-a', '!hana,!dul')
+        self.assertEqual(world.all_results, [4])
