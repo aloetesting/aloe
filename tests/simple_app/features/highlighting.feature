@@ -1,3 +1,4 @@
+# Line numbers in this file are tested against
 Feature: Highlighting
 
   As a programmer

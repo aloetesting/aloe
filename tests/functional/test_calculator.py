@@ -25,12 +25,15 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
+from os.path import dirname
+
 from aloe import world
 
 from aloe.testing import (
     FeatureTest,
     in_directory,
 )
+from aloe.utils import str_io
 
 
 @in_directory('tests/simple_app')
@@ -46,12 +49,39 @@ class CalculatorTest(FeatureTest):
 
         self.assert_feature_success('features/calculator.feature')
 
-    def test_wrong_expectations(self):
+    def test_failure(self):
         """
         Test that a failing feature fails tests.
         """
 
-        self.assert_feature_fail('features/wrong_expectations.feature')
+        stream = str_io()
+
+        self.assert_feature_fail('features/wrong_expectations.feature',
+                                 stream=stream)
+
+        # Check that the appropriate error messages were printed
+
+        output = stream.getvalue()
+
+        error_header = "FAIL: Add two numbers " + \
+            "(features.wrong_expectations: Wrong expectations)"
+
+        self.assertIn(error_header, output)
+
+        feature_stack_frame = """
+  File "features/wrong_expectations.feature", line 11, in Add two numbers
+    Then the result should be 40 on the screen
+        """.strip()
+
+        self.assertIn(feature_stack_frame, output)
+
+        step_stack_frame = """
+  File "{root}/tests/simple_app/features/steps.py", line 76, in assert_result
+    assert world.result == float(result)
+AssertionError
+        """.strip().format(root=dirname(dirname(dirname(__file__))))
+
+        self.assertIn(step_stack_frame, output)
 
     def test_background(self):
         """
