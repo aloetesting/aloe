@@ -44,6 +44,16 @@ from aloe.registry import (
     STEP_REGISTRY,
 )
 from aloe.runner import Runner
+from aloe.utils import str_io
+
+# When the outer Nose captures output, it's a different type between Python 2
+# and 3.
+try:
+    import StringIO
+    CAPTURED_OUTPUTS = (StringIO.StringIO,)
+except ImportError:
+    import io
+    CAPTURED_OUTPUTS = (io.StringIO,)
 
 
 @contextmanager
@@ -250,9 +260,16 @@ class FeatureTest(unittest.TestCase):
         Run the specified features.
         """
 
+        # named keyword args and variable positional args aren't supported on
+        # Python 2
         verbosity = kwargs.get('verbosity')
         stream = kwargs.get('stream')
         force_color = kwargs.get('force_color', False)
+
+        if stream is None and isinstance(sys.stdout, CAPTURED_OUTPUTS):
+            # Don't show results of running the inner tests if the outer Nose
+            # redirects output
+            stream = str_io()
 
         CALLBACK_REGISTRY.clear(priority_class=PriorityClass.USER)
         STEP_REGISTRY.clear()
@@ -270,20 +287,20 @@ class FeatureTest(unittest.TestCase):
 
         return TestRunner(exit=False, argv=argv, stream=stream)
 
-    def assert_feature_success(self, *features):
+    def assert_feature_success(self, *features, **kwargs):
         """
         Assert that the specified features can be run successfully.
         """
 
-        result = self.run_features(*features)
+        result = self.run_features(*features, **kwargs)
         assert result.success
         return result
 
-    def assert_feature_fail(self, *features):
+    def assert_feature_fail(self, *features, **kwargs):
         """
         Assert that the specified features fail when run.
         """
 
-        result = self.run_features(*features)
+        result = self.run_features(*features, **kwargs)
         assert not result.success
         return result
