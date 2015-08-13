@@ -25,7 +25,6 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
-import sys
 from os.path import dirname
 
 from aloe import world
@@ -64,7 +63,8 @@ class CalculatorTest(FeatureTest):
 
         output = stream.getvalue()
 
-        error_header = "FAIL: Add two numbers (features.wrong_expectations: Wrong expectations)"
+        error_header = "FAIL: Add two numbers " + \
+            "(features.wrong_expectations: Wrong expectations)"
 
         self.assertIn(error_header, output)
 
