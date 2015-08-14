@@ -48,23 +48,28 @@ class SimpleScenarioTest(FeatureTest):
         Test that a failing feature fails tests.
         """
 
+        self.assert_feature_fail('features/wrong_expectations.feature')
+
+    def test_error_message(self):
+        """
+        Check that the appropriate error messages are printed on failure.
+        """
+
         stream = TestWrapperIO()
 
         failing_feature = 'features/wrong_expectations.feature'
 
-        self.assert_feature_fail(failing_feature, stream=stream)
-
-        # Check that the appropriate error messages were printed
+        self.assert_feature_fail(failing_feature, '-n', '1', stream=stream)
 
         output = stream.getvalue()
 
-        error_header = "FAIL: Add two numbers " + \
+        error_header = "FAIL: Fail at adding " + \
             "(features.wrong_expectations: Wrong expectations)"
 
         self.assertIn(error_header, output)
 
         feature_stack_frame = """
-  File "{feature}", line 11, in Add two numbers
+  File "{feature}", line 11, in Fail at adding
     Then the result should be 40 on the screen
         """.strip().format(feature=os.path.abspath(failing_feature))
 
@@ -141,6 +146,50 @@ AssertionError
         """
 
         self.assert_feature_success('features/outlines.feature')
+
+    def test_error_message_outline(self):
+        """
+        Check that the appropriate error messages are printed on failure in a
+        scenario outline.
+        """
+
+        stream = TestWrapperIO()
+
+        failing_feature = 'features/wrong_expectations.feature'
+
+        self.assert_feature_fail(failing_feature, '-n', '2', stream=stream)
+
+        output = stream.getvalue()
+
+        error_header = "FAIL: Fail repeatedly " + \
+            "(features.wrong_expectations: Wrong expectations)"
+
+        self.assertIn(error_header, output)
+
+        # TODO: Why isn't the line indented with 6 spaces like in the file?
+        feature_stack_frame = """
+  File "{feature}", line 22, in Fail repeatedly
+    | 50     |
+        """.strip().format(feature=os.path.abspath(failing_feature))
+
+        self.assertIn(feature_stack_frame, output)
+
+        example_stack_frame = """
+  File "{feature}", line 18, in Fail repeatedly
+    Then the result should be <result> on the screen
+        """.strip().format(feature=os.path.abspath(failing_feature))
+
+        self.assertIn(example_stack_frame, output)
+
+        step_file = getsourcefile(sys.modules['features.steps'])
+
+        step_stack_frame = """
+  File "{step_file}", line 64, in assert_result
+    assert world.result == float(result)
+AssertionError
+        """.strip().format(step_file=step_file)
+
+        self.assertIn(step_stack_frame, output)
 
     def test_python_test_skipped(self):
         """
