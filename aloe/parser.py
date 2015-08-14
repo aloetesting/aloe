@@ -15,7 +15,7 @@ standard_library.install_aliases()
 
 import os
 from collections import OrderedDict
-from copy import deepcopy
+from copy import copy
 from io import StringIO
 
 from gherkin3.dialect import Dialect
@@ -345,7 +345,7 @@ class Step(Node):
         Creates a copy of the step with any <variables> resolved.
         """
 
-        replaced = deepcopy(self)
+        replaced = copy(self)
 
         def replace_vars(string):
             """Replace all the variables in a string."""
@@ -485,6 +485,19 @@ class Background(StepContainer):
     text = 'Background:'
 
 
+class Outline(OrderedDict, Node):
+    """An outline within a :class:`Scenario`."""
+
+    def __init__(self, keys, table_row, filename=None):
+        """Construct the outline."""
+
+        # Extract values
+        OrderedDict.__init__(self, zip(keys, cell_values(table_row)))
+
+        # Store the file and line information
+        Node.__init__(self, table_row, filename=filename)
+
+
 class Scenario(HeaderNode, StepContainer):
     """A scenario within a :class:`Feature`."""
 
@@ -502,9 +515,8 @@ class Scenario(HeaderNode, StepContainer):
             # the first row of the table is the column headings
             keys = cell_values(example_table['tableHeader'])
 
-            # TODO: store line information here
             self.outlines += tuple(
-                OrderedDict(zip(keys, cell_values(row)))
+                Outline(keys, row)
                 for row in example_table['tableBody']
             )
 
