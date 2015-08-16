@@ -4,7 +4,7 @@ Feature: Add up different sets numbers
   I want to check how different numbers add up
   So that I am sure of commutativity
 
-  Scenario: Add two numbers
+  Scenario Outline: Add two numbers
     Given I have entered <num1> into the calculator
     And I have entered <num2> into the calculator
     And I have entered <num3> into the calculator
