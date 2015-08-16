@@ -116,21 +116,6 @@ def parse_scenario(string, language=None):
     return feature.scenarios[0]
 
 
-def test_language_french():
-    """
-    Language: FR -> Language class supports french through code "fr"
-    """
-
-    lang = Language('fr')
-
-    assert_equal(lang.code, u'fr')
-    assert_equal(lang.name, u'French')
-    assert_equal(lang.native, u'Français')
-    assert_equal(lang.FEATURE, u'Fonctionnalité')
-    assert_equal(lang.SCENARIO, u'Scénario')
-    assert_equal(lang.EXAMPLES, u'Exemples')
-
-
 def test_scenario_fr_from_string():
     """
     Language: FR -> Scenario.from_string

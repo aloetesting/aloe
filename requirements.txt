@@ -1,5 +1,5 @@
 blessings
 future
+gherkin3
 nose
-pyparsing
 repoze.lru
