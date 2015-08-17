@@ -32,6 +32,18 @@ def cell_values(row):
     return tuple(cell['value'] for cell in row['cells'])
 
 
+class LanguageTokenMatcher(TokenMatcher):
+    """A token matcher that actually remembers the language it's set to."""
+
+    def __init__(self, dialect_name='en'):
+        self.actual_dialect_name = dialect_name
+        super().__init__(dialect_name=dialect_name)
+
+    def _change_dialect(self, dialect_name, location=None):
+        """Force the dialect name given in the constructor."""
+        super()._change_dialect(self.actual_dialect_name, location=location)
+
+
 class Node(object):
     """
     A base parse node.
@@ -268,26 +280,38 @@ class Step(Node):
         Creates a copy of the step with any <variables> resolved.
         """
 
-        self = deepcopy(self)
+        replaced = deepcopy(self)
 
-        for key, value in outline.items():
-            key = '<{key}>'.format(key=key)
+        def replace_vars(string):
+            """Replace all the variables in a string."""
+            for key, value in outline.items():
+                key = '<{key}>'.format(key=key)
+                string = string.replace(key, value)
+            return string
 
-            self.sentence = self.sentence.replace(key, value)
+        replaced.sentence = replace_vars(self.sentence)
 
-            if self.multiline:
-                self.multiline = self.multiline.replace(key, value)
+        if self.multiline:
+            replaced.multiline = replace_vars(self.multiline)
 
-            if self.table:
-                for i, row in enumerate(self.table):
-                    for j, cell in enumerate(row):
-                        self.table[i][j] = cell.replace(key, value)
+        if self.table:
+            replaced.table = tuple(
+                tuple(
+                    replace_vars(cell)
+                    for cell in row
+                )
+                for row in self.table
+            )
 
-        return self
+        return replaced
 
 
 class StepContainer(Node):
     """A node containing steps, e.g. Feature:, Scenario:"""
+
+    step_class = Step
+
+    container_name = 'container'  # override in subclasses
 
     def __init__(self, parsed, feature=None, filename=None, **kwargs):
         super().__init__(parsed, filename=filename, **kwargs)
@@ -295,10 +319,10 @@ class StepContainer(Node):
         self.feature = feature
 
         # Put a reference to the parent node into all the steps
-        parent_ref = {self.__class__.__name__.lower(): self}
+        parent_ref = {self.container_name: self}
 
         self.steps = tuple(
-            Step(step, filename=filename, **parent_ref)
+            self.step_class(step, filename=filename, **parent_ref)
             for step in parsed['steps']
         )
 
@@ -366,7 +390,7 @@ class Tagged(Node):
                                                       name=self.name)
         if annotate:
             s = strings.ljust(s, self.feature.max_length + 1) + \
-                '# ' + str(self.described_at)
+                '# ' + str(self.line)
 
         return s
 
@@ -380,11 +404,13 @@ class Tagged(Node):
 
 class Background(StepContainer):
     """The background of all :class:`Scenario` in a :class:`Feature`."""
-    pass
+    container_name = 'background'
 
 
 class Scenario(Tagged, StepContainer):
     """A scenario within a :class:`Feature`."""
+
+    container_name = 'scenario'
 
     def __init__(self, parsed, **kwargs):
         super().__init__(parsed, **kwargs)
@@ -470,19 +496,6 @@ class Scenario(Tagged, StepContainer):
 
             yield (outline, steps)
 
-    @memoizedproperty
-    def solved_steps(self):
-        """
-        DO NOT USE: Used only in the tests.
-        """
-
-        all_steps = []
-
-        for _, steps in self.evaluated:
-            all_steps += steps
-
-        return all_steps
-
 
 class Description(Node):
     """
@@ -519,7 +532,7 @@ class Description(Node):
         if annotate:
             s = strings.ljust(s, self.feature.max_length + 1) + \
                 '# {file}:{line}'.format(
-                    file=self.described_at.file,
+                    file=self.filename,
                     line=self.description_at[n])
 
         return s
@@ -558,29 +571,25 @@ class Feature(Tagged):
     :func:`from_string`.
     """
 
+    background_class = Background
+    scenario_class = Scenario
+
+    background = None
+
     def __init__(self, parsed, filename=None, **kwargs):
         super().__init__(parsed, filename=filename, **kwargs)
 
         self.description_node = Description(parsed, filename=filename)
 
         if 'background' in parsed:
-            self.background = Background(parsed['background'],
-                                         filename=filename,
-                                         feature=self)
+            self.background = self.background_class(parsed['background'],
+                                                    filename=filename,
+                                                    feature=self)
 
         self.scenarios = tuple(
-            Scenario(scenario, filename=filename, feature=self)
+            self.scenario_class(scenario, filename=filename, feature=self)
             for scenario in parsed['scenarioDefinitions']
         )
-
-    @classmethod
-    def parse(cls, language=None):
-        """Prepare a parser for a specific language."""
-
-        if language:
-            return Parser(token_matcher=TokenMatcher(dialect_name=language))
-        else:
-            return Parser()
 
     @classmethod
     def from_string(cls, string, filename=None, language=None):
@@ -591,7 +600,9 @@ class Feature(Tagged):
         # TODO: Memoize some of this
         parser = Parser()
         if language:
-            token_matcher = TokenMatcher(language)
+            if language == 'pt-br':
+                language = 'pt'
+            token_matcher = LanguageTokenMatcher(language)
         else:
             token_matcher = TokenMatcher()
         return cls(parser.parse(TokenScanner(string),
@@ -649,17 +660,3 @@ class Feature(Tagged):
             s += self.description_node.represented(annotate=annotate)
 
         return s
-
-
-class Gherkin(object):
-    """
-    Gherkin parser
-    """
-
-    # Objects that will be created as a result of parsing. These are meant to
-    # be overridden in subclasses.
-    step_class = Step
-    background_class = Background
-    scenario_class = Scenario
-    feature_class = Feature
-    description_class = Description

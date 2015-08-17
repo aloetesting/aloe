@@ -15,7 +15,6 @@ standard_library.install_aliases()
 
 from nose.tools import assert_equal
 
-from aloe.languages import Language
 from aloe.parser import Feature
 
 SCENARIO = u"""
@@ -84,31 +83,12 @@ Funcionalidade: parse_scenario
     return feature.scenarios[0]
 
 
-def test_language_portuguese():
-    """
-    Language: PT-BR -> Language class supports portuguese through code "pt-br"
-    """
-
-    lang = Language('pt-br')
-
-    assert_equal(lang.code, u'pt-br')
-    assert_equal(lang.name, u'Portuguese')
-    assert_equal(lang.native, u'Português')
-    assert_equal(lang.FEATURE, u'Funcionalidade')
-    assert_equal(str(lang.SCENARIO),
-                 '{"Cenário" ^ "Cenario" ^ "Esquema do Cenário" ^ '
-                 '"Esquema do Cenario" ^ "Delineação do Cenário" ^ '
-                 '"Delineacao do Cenario"}')
-    assert_equal(lang.EXAMPLES, u'Exemplos')
-
-
 def test_scenario_ptbr_from_string():
     """
     Language: PT-BR -> Scenario.from_string
     """
 
-    ptbr = Language('pt-br')
-    scenario = parse_scenario(SCENARIO, language=ptbr)
+    scenario = parse_scenario(SCENARIO, language='pt-br')
 
     assert_equal(
         scenario.name,
@@ -117,10 +97,10 @@ def test_scenario_ptbr_from_string():
     )
     assert_equal(
         scenario.steps[0].hashes,
-        [
+        (
             {'Nome': u'Ciência da Computação', u'Duração': '5 anos'},
             {'Nome': u'Nutrição', u'Duração': '4 anos'},
-        ]
+        )
     )
 
 
@@ -129,8 +109,7 @@ def test_scenario_outline1_ptbr_from_string():
     Language: PT-BR -> Scenario.from_string, with scenario outline, first case
     """
 
-    ptbr = Language('pt-br')
-    scenario = parse_scenario(SCENARIO_OUTLINE1, language=ptbr)
+    scenario = parse_scenario(SCENARIO_OUTLINE1, language='pt-br')
 
     assert_equal(
         scenario.name,
@@ -138,10 +117,10 @@ def test_scenario_outline1_ptbr_from_string():
     )
     assert_equal(
         scenario.outlines,
-        [
+        (
             {'nome': u'Gabriel', u'idade': '22'},
             {'nome': u'João', u'idade': '30'},
-        ]
+        )
     )
 
 
@@ -150,8 +129,7 @@ def test_scenario_outline2_ptbr_from_string():
     Language: PT-BR -> Scenario.from_string, with scenario outline, second case
     """
 
-    ptbr = Language('pt-br')
-    scenario = parse_scenario(SCENARIO_OUTLINE2, language=ptbr)
+    scenario = parse_scenario(SCENARIO_OUTLINE2, language='pt-br')
 
     assert_equal(
         scenario.name,
@@ -159,10 +137,10 @@ def test_scenario_outline2_ptbr_from_string():
     )
     assert_equal(
         scenario.outlines,
-        [
+        (
             {'nome': u'Gabriel', u'idade': '99'},
             {'nome': u'João', u'idade': '100'},
-        ]
+        )
     )
 
 
@@ -171,8 +149,7 @@ def test_feature_ptbr_from_string():
     Language: PT-BR -> Feature.from_string
     """
 
-    ptbr = Language('pt-br')
-    feature = Feature.from_string(FEATURE, language=ptbr)
+    feature = Feature.from_string(FEATURE, language='pt-br')
 
     assert_equal(
         feature.name,
@@ -195,9 +172,9 @@ def test_feature_ptbr_from_string():
 
     assert_equal(
         scenario.steps[-1].hashes,
-        [
+        (
             {'nome': u'João', u'valor devido': 'R$ 512,66'},
             {'nome': u'Maria', u'valor devido': 'R$ 998,41'},
             {'nome': u'Ana', u'valor devido': 'R$ 231,00'},
-        ]
+        )
     )

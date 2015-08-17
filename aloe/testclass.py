@@ -23,7 +23,12 @@ from nose.plugins.attrib import attr
 
 from aloe.codegen import make_function
 from aloe.fs import path_to_module_name
-from aloe.parser import Feature, Step, Gherkin
+from aloe.parser import (
+    Background,
+    Feature,
+    Scenario,
+    Step,
+)
 from aloe.registry import (
     CallbackDecorator,
     CALLBACK_REGISTRY,
@@ -31,9 +36,6 @@ from aloe.registry import (
     STEP_REGISTRY,
 )
 from aloe.utils import always_str
-
-# Pylint is thoroughly confused about members
-# pylint:disable=no-member
 
 
 class TestStep(Step):
@@ -74,9 +76,20 @@ class TestStep(Step):
         self.behave_as('Then ' + string)
 
 
-class TestGherkin(Gherkin):
-    """A Gherkin parser creating the objects suitable for testing."""
+class TestBackground(Background):
+    """A background creating steps for testing."""
     step_class = TestStep
+
+
+class TestScenario(Scenario):
+    """A background creating steps for testing."""
+    step_class = TestStep
+
+
+class TestFeature(Feature):
+    """A feature creating steps for testing."""
+    background_class = TestBackground
+    scenario_class = TestScenario
 
 
 class TestCase(unittest.TestCase):
@@ -104,10 +117,7 @@ class TestCase(unittest.TestCase):
         step.
         """
 
-        steps = context_step.parse_steps_from_string(
-            string,
-            parser_class=TestGherkin,
-        )
+        steps = context_step.parse_steps_from_string(string)
 
         # Copy necessary attributes onto new steps
         for step in steps:
@@ -125,7 +135,7 @@ class TestCase(unittest.TestCase):
     def __str__(self):
         return "%s (%s: %s)" % (
             self._testMethodName,
-            path_to_module_name(self.feature.described_at.file),
+            path_to_module_name(self.feature.filename),
             self.feature.name,
         )
 
@@ -137,10 +147,7 @@ class TestCase(unittest.TestCase):
         Construct a test class from a feature file.
         """
 
-        feature = Feature.from_file(
-            file_,
-            parser_class=TestGherkin,
-        )
+        feature = TestFeature.from_file(file_)
 
         background = cls.make_background(feature.background)
         scenarios = [
@@ -209,7 +216,7 @@ class TestCase(unittest.TestCase):
             result = make_function(
                 source=source,
                 context=context,
-                source_file=scenario.feature.described_at.file,
+                source_file=scenario.feature.filename,
                 name=scenario.name,
             )
         else:
@@ -273,7 +280,7 @@ class TestCase(unittest.TestCase):
         # Set locations of the steps
         for step, step_call in zip(steps, source.body[0].body[1:]):
             for node in ast.walk(step_call):
-                node.lineno = step.described_at.line
+                node.lineno = step.line
 
         # Supply all the step functions and arguments
         context = {
@@ -290,7 +297,7 @@ class TestCase(unittest.TestCase):
         run_steps = make_function(
             source=source,
             context=context,
-            source_file=step_container.described_at.file,
+            source_file=step_container.filename,
             name=func_name,
         )
 
