@@ -53,9 +53,9 @@ class CalculatorTest(FeatureTest):
         self.assertIn(error_header, output)
 
         feature_stack_frame = """
-  File "features/wrong_expectations.feature", line 11, in Add two numbers
+  File "{root}/tests/simple_app/features/wrong_expectations.feature", line 11, in Add two numbers
     Then the result should be 40 on the screen
-        """.strip()
+        """.strip().format(root=dirname(dirname(dirname(__file__))))
 
         self.assertIn(feature_stack_frame, output)
 
