@@ -218,3 +218,10 @@ t.color11(And I press [+])
 <t.move_up>t.bold_green(And I press [+])
 
 """.lstrip())  # noqa
+
+    def test_full_color_output_no_mocks(self):
+        """Test full color output with no mocks"""
+
+        self.assert_feature_success('--color',
+                                    'features/highlighting.feature',
+                                    verbosity=3)
