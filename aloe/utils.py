@@ -64,7 +64,7 @@ def str_io():
         from io import StringIO
         return StringIO()
     else:
-        from StringIO import StringIO
+        from StringIO import StringIO  # pylint:disable=import-error
         return StringIO()
 
 
