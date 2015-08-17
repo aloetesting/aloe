@@ -25,6 +25,8 @@ except NameError:
 def path_to_module_name(filename):
     """Convert a path to a file to a Python module name."""
 
+    filename = os.path.relpath(filename)
+
     dotted_path = []
     while True:
         filename, component = os.path.split(filename)
