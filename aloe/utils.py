@@ -27,7 +27,6 @@ standard_library.install_aliases()
 
 import re
 import sys
-from io import BytesIO, StringIO
 
 try:
     from functools import lru_cache  # pylint:disable=no-name-in-module
@@ -62,9 +61,11 @@ def str_io():
     """
 
     if PY3:
+        from io import StringIO
         return StringIO()
     else:
-        return BytesIO()
+        from StringIO import StringIO
+        return StringIO()
 
 
 def unwrap_function(func):
