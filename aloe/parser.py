@@ -13,6 +13,7 @@ from builtins import *
 from future import standard_library
 standard_library.install_aliases()
 
+import os
 from collections import OrderedDict
 from copy import deepcopy
 from warnings import warn
@@ -68,8 +69,10 @@ class Node(object):
 
         if annotate:
             s = strings.ljust(s, self.feature.max_length + 1) + \
-                '# {filename}:{line}'.format(filename=self.filename,
-                                             line=self.line)
+                '# {filename}:{line}'.format(
+                    filename=os.path.relpath(self.filename),
+                    line=self.line,
+                )
 
         return s
 
@@ -390,18 +393,12 @@ class Tagged(Node):
         """
         return self._tags
 
-    def represented(self, indent=0, annotate=True):
-        """
-        Render a tagged block.
-        """
+    @property
+    def text(self):
+        """The text for this block."""
 
-        s = ' ' * indent + '{keyword}: {name}'.format(keyword=self.keyword,
-                                                      name=self.name)
-        if annotate:
-            s = strings.ljust(s, self.feature.max_length + 1) + \
-                '# ' + str(self.line)
-
-        return s
+        return '{keyword}: {name}'.format(keyword=self.keyword,
+                                          name=self.name)
 
     def represent_tags(self, indent=0):
         """
@@ -414,6 +411,8 @@ class Tagged(Node):
 class Background(StepContainer):
     """The background of all :class:`Scenario` in a :class:`Feature`."""
     container_name = 'background'
+
+    text = 'Background:'
 
 
 class Scenario(Tagged, StepContainer):
