@@ -150,15 +150,24 @@ class Step(Node):
     def __repr__(self):
         return str(self)
 
-    @classmethod
-    def parse_steps_from_string(cls, string, **kwargs):
+    def parse_steps_from_string(self, string, **kwargs):
         """
         Parse a number of steps, returns a list of :class:`Step`.
 
         This is used by :func:`step.behave_as`.
         """
 
-        raise NotImplementedError
+        # TODO: Gherkin can't parse anything other than complete features
+        # TODO: This won't work with non-default languages
+        feature_string = """
+        Feature: feature
+
+        Scenario: scenario
+        """ + string
+
+        feature = self.feature.from_string(feature_string,
+                                           filename=self.filename)
+        return feature.scenarios[0].steps
 
     @property
     def feature(self):
@@ -604,8 +613,10 @@ class Feature(Tagged):
             token_matcher = LanguageTokenMatcher(language)
         else:
             token_matcher = TokenMatcher()
-        return cls(parser.parse(TokenScanner(string),
-                                token_matcher=token_matcher))
+        return cls(
+            parser.parse(TokenScanner(string), token_matcher=token_matcher),
+            filename=filename,
+        )
 
     @classmethod
     def from_file(cls, filename, language=None):
