@@ -70,10 +70,6 @@ class OutputterTest(FeatureTest):
             self.run_features('features/highlighting.feature',
                               verbosity=3, stream=stream)
 
-            print("--Output--")
-            print(stream.getvalue())
-            print("--END--")
-
             self.assertEqual(stream.getvalue(), """
 Feature: Highlighting
 
@@ -129,10 +125,6 @@ Feature: Highlighting
             self.run_features('features/highlighting.feature',
                               verbosity=3, stream=stream,
                               force_color=True)
-
-            print("--Output--")
-            print(stream.getvalue())
-            print("--END--")
 
             self.assertEqual(stream.getvalue(), """
 t.bold_white(Feature: Highlighting)
@@ -191,10 +183,6 @@ t.bold_green(Given I have a table:)
             self.run_features('-n', '1',
                               'features/highlighting.feature',
                               verbosity=3, stream=stream)
-
-            print("--Output--")
-            print(stream.getvalue())
-            print("--END--")
 
             # we are going to see the scenario written out 3 times
             # once in color 8 as a preview, then each line individually
