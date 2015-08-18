@@ -41,11 +41,12 @@ class LanguageTokenMatcher(TokenMatcher):
 
     def __init__(self, dialect_name='en'):
         self.actual_dialect_name = dialect_name
-        super().__init__(dialect_name=dialect_name)
+        TokenMatcher.__init__(self, dialect_name=dialect_name)
 
     def _change_dialect(self, dialect_name, location=None):
         """Force the dialect name given in the constructor."""
-        super()._change_dialect(self.actual_dialect_name, location=location)
+        TokenMatcher._change_dialect(
+            self, self.actual_dialect_name, location=location)
 
 
 class Node(object):
