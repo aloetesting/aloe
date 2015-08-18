@@ -55,7 +55,7 @@ class CalculatorTest(FeatureTest):
         feature_stack_frame = """
   File "{root}/tests/simple_app/features/wrong_expectations.feature", line 11, in Add two numbers
     Then the result should be 40 on the screen
-        """.strip().format(root=dirname(dirname(dirname(__file__))))
+        """.strip().format(root=dirname(dirname(dirname(__file__))))  # noqa
 
         self.assertIn(feature_stack_frame, output)
 

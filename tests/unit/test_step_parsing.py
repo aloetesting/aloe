@@ -46,12 +46,9 @@ Given I have a string like so:
 '''.strip()
 
 
-import warnings
-
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal
 
 from aloe.parser import Feature, Step
-from aloe.exceptions import LettuceSyntaxError
 
 
 def parse_steps(step):

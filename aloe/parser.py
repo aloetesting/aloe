@@ -6,24 +6,27 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-# pylint:disable=redefined-builtin
+# pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from builtins import *
-# pylint:enable=redefined-builtin
+# pylint:enable=redefined-builtin,wildcard-import,unused-wildcard-import
 from future import standard_library
 standard_library.install_aliases()
 
 import os
 from collections import OrderedDict
 from copy import deepcopy
-from warnings import warn
 
 from gherkin3.parser import Parser
 from gherkin3.token_matcher import TokenMatcher
 from gherkin3.token_scanner import TokenScanner
 
 from aloe import strings
-from aloe.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
+from aloe.exceptions import LettuceSyntaxError
 from aloe.utils import memoizedproperty
+
+# Pylint can't figure out methods vs. properties and which classes are
+# abstract
+# pylint:disable=abstract-method
 
 
 def cell_values(row):
@@ -56,6 +59,12 @@ class Node(object):
         self.filename = filename
 
     @property
+    def feature(self):
+        """The feature this node ultimately belongs to."""
+
+        raise NotImplementedError
+
+    @property
     def text(self):
         """The text for this node."""
 
@@ -64,16 +73,15 @@ class Node(object):
     def represented(self, indent=0, annotate=True):
         """A representation of the node."""
 
-        s = ' ' * indent + self.text.strip()
+        result = ' ' * indent + self.text.strip()
 
         if annotate:
-            s = strings.ljust(s, self.feature.max_length + 1) + \
+            result = strings.ljust(result, self.feature.max_length + 1) + \
                 '# {filename}:{line}'.format(
                     filename=os.path.relpath(self.filename),
-                    line=self.line,
-                )
+                    line=self.line)
 
-        return s
+        return result
 
 
 class Step(Node):
@@ -528,21 +536,21 @@ class Description(Node):
             for n, _ in enumerate(self.lines)
         )
 
-    def represent_line(self, n, indent=2, annotate=True):
+    def represent_line(self, idx, indent=2, annotate=True):
         """
         Render the nth line in the description.
         """
 
-        line = self.lines[n]
-        s = ' ' * indent + line
+        line = self.lines[idx]
+        result = ' ' * indent + line
 
         if annotate:
-            s = strings.ljust(s, self.feature.max_length + 1) + \
+            result = strings.ljust(result, self.feature.max_length + 1) + \
                 '# {file}:{line}'.format(
-                    file=self.filename,
-                    line=self.description_at[n])
+                    file=os.path.relpath(self.filename),
+                    line=self.description_at[idx])
 
-        return s
+        return result
 
     @memoizedproperty
     def description_at(self):
@@ -660,12 +668,12 @@ class Feature(Tagged):
 
     # pylint:disable=arguments-differ
     def represented(self, indent=0, annotate=True, description=True):
-        s = super().represented(indent=indent, annotate=annotate)
+        result = super().represented(indent=indent, annotate=annotate)
 
         # FIXME: indent here is description default indent + feature
         # requested indent
         if description and self.description != '':
-            s += '\n'
-            s += self.description_node.represented(annotate=annotate)
+            result += '\n'
+            result += self.description_node.represented(annotate=annotate)
 
-        return s
+        return result
