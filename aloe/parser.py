@@ -16,10 +16,12 @@ standard_library.install_aliases()
 import os
 from collections import OrderedDict
 from copy import deepcopy
+from io import StringIO
 
+from gherkin3.gherkin_line import GherkinLine
 from gherkin3.parser import Parser
+from gherkin3.token import Token
 from gherkin3.token_matcher import TokenMatcher
-from gherkin3.token_scanner import TokenScanner
 
 from aloe import strings
 from aloe.exceptions import LettuceSyntaxError
@@ -30,10 +32,30 @@ from aloe.utils import memoizedproperty
 # pylint:disable=abstract-method
 
 
-def cell_values(row):
-    """Extract cell values from a table header or row."""
+class TokenScanner(object):
+    """Reimplementation of Gherkin 3 token scanner."""
 
-    return tuple(cell['value'] for cell in row['cells'])
+    def __init__(self, string=None, filename=None):
+        if string:
+            if filename:
+                raise ValueError(
+                    "Cannot provide string and filename together.")
+            self.io = StringIO(string)
+        elif filename:
+            self.io = open(filename, 'r')
+        else:
+            raise ValueError("Must provide either string or filename.")
+
+        self.line_number = 0
+
+    def read(self):
+        self.line_number += 1
+        location = {'line': self.line_number}
+        line = self.io.readline()
+        return Token(
+            (GherkinLine(line, self.line_number) if line else line),
+            location
+        )
 
 
 class LanguageTokenMatcher(TokenMatcher):
@@ -47,6 +69,12 @@ class LanguageTokenMatcher(TokenMatcher):
         """Force the dialect name given in the constructor."""
         TokenMatcher._change_dialect(
             self, self.actual_dialect_name, location=location)
+
+
+def cell_values(row):
+    """Extract cell values from a table header or row."""
+
+    return tuple(cell['value'] for cell in row['cells'])
 
 
 class Node(object):
@@ -178,8 +206,8 @@ class Step(Node):
         Scenario: scenario
         """ + string
 
-        feature = self.feature.from_string(feature_string,
-                                           filename=self.filename)
+        feature = self.feature.parse(string=feature_string,
+                                     filename=self.filename)
         return feature.scenarios[0].steps
 
     @property
@@ -613,9 +641,9 @@ class Feature(Tagged):
         )
 
     @classmethod
-    def from_string(cls, string, filename=None, language=None):
+    def parse(cls, string=None, filename=None, language=None):
         """
-        Parse a string into a :class:`Feature`.
+        Parse either a string or a file.
         """
 
         # TODO: Memoize some of this
@@ -626,10 +654,24 @@ class Feature(Tagged):
             token_matcher = LanguageTokenMatcher(language)
         else:
             token_matcher = TokenMatcher()
+
+        if string:
+            token_scanner = TokenScanner(string=string)
+        else:
+            token_scanner = TokenScanner(filename=filename)
+
         return cls(
-            parser.parse(TokenScanner(string), token_matcher=token_matcher),
+            parser.parse(token_scanner, token_matcher=token_matcher),
             filename=filename,
         )
+
+    @classmethod
+    def from_string(cls, string, language=None):
+        """
+        Parse a string into a :class:`Feature`.
+        """
+
+        return cls.parse(string=string, language=language)
 
     @classmethod
     def from_file(cls, filename, language=None):
@@ -637,8 +679,7 @@ class Feature(Tagged):
         Parse a file or filename into a :class:`Feature`.
         """
 
-        # FIXME: Don't rely on gherkin's "filename as string" feature
-        return cls.from_string(filename, filename=filename, language=language)
+        return cls.parse(filename=filename, language=language)
 
     @property
     def description(self):
