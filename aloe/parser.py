@@ -334,10 +334,14 @@ class StepContainer(Node):
 
     container_name = 'container'  # override in subclasses
 
+    @property
+    def feature(self):
+        return self._feature
+
     def __init__(self, parsed, feature=None, filename=None, **kwargs):
         super().__init__(parsed, filename=filename, **kwargs)
 
-        self.feature = feature
+        self._feature = feature
 
         # Put a reference to the parent node into all the steps
         parent_ref = {self.container_name: self}
