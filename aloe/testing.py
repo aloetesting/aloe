@@ -269,7 +269,9 @@ class FeatureTest(unittest.TestCase):
 
         argv += list(features)
 
-        return TestRunner(exit=False, argv=argv, stream=stream)
+        result = TestRunner(exit=False, argv=argv, stream=stream)
+        result.captured_stream = stream
+        return result
 
     def assert_feature_success(self, *features, **kwargs):
         """
@@ -277,8 +279,15 @@ class FeatureTest(unittest.TestCase):
         """
 
         result = self.run_features(*features, **kwargs)
-        assert result.success
-        return result
+        try:
+            assert result.success
+            return result
+        except AssertionError:
+            if isinstance(result.captured_stream, CAPTURED_OUTPUTS):
+                print("--Output--")
+                print(result.captured_stream.getvalue())
+                print("--END--")
+            raise
 
     def assert_feature_fail(self, *features, **kwargs):
         """
@@ -286,5 +295,12 @@ class FeatureTest(unittest.TestCase):
         """
 
         result = self.run_features(*features, **kwargs)
-        assert not result.success
-        return result
+        try:
+            assert not result.success
+            return result
+        except AssertionError:
+            if isinstance(result.captured_stream, CAPTURED_OUTPUTS):
+                print("--Output--")
+                print(result.captured_stream.getvalue())
+                print("--END--")
+            raise
