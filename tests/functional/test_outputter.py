@@ -87,7 +87,7 @@ Feature: Highlighting
       | 30     |
 
     Given I have a table
-    Given I have entered <number> into the calculator
+    Given I have entered 30 into the calculator
     And I press add
 
   Scenario Outline: Scenario outlines                  features/highlighting.feature:17
@@ -95,7 +95,7 @@ Feature: Highlighting
       | 40     |
 
     Given I have a table
-    Given I have entered <number> into the calculator
+    Given I have entered 40 into the calculator
     And I press add
 
   Scenario: Scenario with table                        features/highlighting.feature:26
@@ -143,7 +143,7 @@ t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.
       | t.white(30) |
 
 t.bold_green(Given I have a table)
-t.bold_green(Given I have entered <number> into the calculator)
+t.bold_green(Given I have entered 30 into the calculator)
 t.bold_green(And I press add)
 
 t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.feature:17)
@@ -151,7 +151,7 @@ t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.
       | t.white(40) |
 
 t.bold_green(Given I have a table)
-t.bold_green(Given I have entered <number> into the calculator)
+t.bold_green(Given I have entered 40 into the calculator)
 t.bold_green(And I press add)
 
 t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:26)
