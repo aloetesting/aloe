@@ -102,6 +102,7 @@ Feature: Highlighting
     Given I have entered <number> into the calculator
     And I press add
 
+  @tables
   Scenario: Scenario with table                        features/highlighting.feature:26
     Given I have a table
     Given I have a table:
@@ -110,7 +111,7 @@ Feature: Highlighting
       | 1     |
       | 2     |
 
-  Scenario: Scenario with a multiline                  features/highlighting.feature:33
+  Scenario: Scenario with a multiline                  features/highlighting.feature:34
     Given I have a table
     Given I have a table:
       \"\"\"
@@ -162,6 +163,7 @@ t.bold_green(Given I have a table)
 t.bold_green(Given I have entered <number> into the calculator)
 t.bold_green(And I press add)
 
+t.cyan(@tables)
 t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:26)
 t.bold_green(Given I have a table)
 t.bold_green(Given I have a table:)
@@ -170,7 +172,7 @@ t.bold_green(Given I have a table:)
       | t.bold_green(1) |
       | t.bold_green(2) |
 
-t.bold_white(Scenario: Scenario with a multiline)t.color8(features/highlighting.feature:33)
+t.bold_white(Scenario: Scenario with a multiline)t.color8(features/highlighting.feature:34)
 t.bold_green(Given I have a table)
 t.bold_green(Given I have a table:)
       \"\"\"
