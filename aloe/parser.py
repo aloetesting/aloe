@@ -40,7 +40,7 @@ class TokenScanner(object):
             if filename:
                 raise ValueError(
                     "Cannot provide string and filename together.")
-            self.io = StringIO(string)
+            self.io = StringIO(string)  # pylint:disable=invalid-name
         elif filename:
             self.io = open(filename, 'r')
         else:
@@ -49,6 +49,7 @@ class TokenScanner(object):
         self.line_number = 0
 
     def read(self):
+        """Read the next token from the source."""
         self.line_number += 1
         location = {'line': self.line_number}
         line = self.io.readline()
