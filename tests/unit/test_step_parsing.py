@@ -219,12 +219,12 @@ def test_table_escaping():
 
     step, = steps
 
-    assert_equal(step.table, [
-        [r'Column 1'],
-        [r'This is a column'],
-        [r'This is | also a column'],
-        [r'This is \ a backslash'],
-    ])
+    assert_equal(step.table, (
+        (r'Column 1',),
+        (r'This is a column',),
+        (r'This is | also a column',),
+        (r'This is \ a backslash',),
+    ))
 
 
 def test_multiline_is_parsed():
