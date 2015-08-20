@@ -23,6 +23,7 @@ Feature: Highlighting
       | 30     |
       | 40     |
 
+  @tables
   Scenario: Scenario with table
     Given I have a table:
       | value |
