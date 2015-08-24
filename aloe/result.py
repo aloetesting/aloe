@@ -139,7 +139,7 @@ def example_wrapper(term, scenario, outline, steps):
         if scenario.tags:
             term.writeln(term.cyan(scenario.represent_tags()))
 
-        start, end = scenario.represented().rsplit('#')
+        start, end = scenario.represented().rsplit('#', 1)
         term.write(term.bold_white(start))
         term.writeln(term.color(8)(end))
 
