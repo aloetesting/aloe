@@ -21,7 +21,7 @@ from aloe.registry import (
     CALLBACK_REGISTRY,
     PriorityClass,
 )
-from aloe.strings import represent_table
+from aloe.strings import ljust, represent_table
 from aloe.tools import hook_not_reentrant
 from nose.result import TextTestResult
 
@@ -102,7 +102,7 @@ def feature_wrapper(term, feature):
         if feature.tags:
             term.writeln(term.cyan(feature.represent_tags()))
 
-        lines = feature.represented(annotate=False).splitlines()
+        lines = feature.represented().splitlines()
         term.writeln(term.bold_white(lines[0]))
         term.writeln()
         term.writeln(term.white('\n'.join(lines[1:])))
@@ -123,9 +123,11 @@ def example_wrapper(term, scenario, outline, steps):
         if scenario.tags:
             term.writeln(term.cyan(scenario.represent_tags()))
 
-        start, end = scenario.represented().rsplit('#')
-        term.write(term.bold_white(start))
-        term.writeln(term.color(8)(end))
+        represented = scenario.represented()
+        represented = ljust(represented, scenario.feature.max_length + 2)
+
+        term.write(term.bold_white(represented))
+        term.writeln(term.color(8)(scenario.location))
 
         if outline:
             term.writeln(represent_table([outline.keys(),
@@ -145,7 +147,7 @@ def example_wrapper(term, scenario, outline, steps):
 
             term.writeln(
                 term.color(8)('\n'.join(
-                    step.represented(annotate=False)
+                    step.represented()
                     for step in steps_
                 ) + '\n'),
                 return_=True
@@ -166,7 +168,7 @@ def step_wrapper(term, step):
     try:
         if term.is_a_tty:
             term.writeln(
-                step.represented(annotate=False, color=term.color(11)),
+                step.represented(color=term.color(11)),
                 return_=True)
 
         yield
@@ -179,7 +181,7 @@ def step_wrapper(term, step):
             color = term.yellow
 
         term.writeln(
-            step.represented(annotate=False, color=color)
+            step.represented(color=color)
         )
 
 
