@@ -119,7 +119,7 @@ class Step(Node):
 
     table = None
     """
-    A Gherkin table as a list of lists.
+    A Gherkin table as an iterable of rows, themselves iterables of cells.
 
     e.g.:
 
@@ -133,7 +133,7 @@ class Step(Node):
 
     .. code-block:: python
 
-        [['apples', 'oranges', '0', '2']]
+        (('apples', 'oranges'), ('0', '2'))
     """
 
     multiline = None
@@ -188,7 +188,7 @@ class Step(Node):
 
     def parse_steps_from_string(self, string, **kwargs):
         """
-        Parse a number of steps, returns a list of :class:`Step`.
+        Parse a number of steps, returns an iterable of :class:`Step`.
 
         This is used by :func:`step.behave_as`.
         """
@@ -244,8 +244,8 @@ class Step(Node):
     @memoizedproperty
     def hashes(self):
         """
-        Return the table attached to the step as a list of hashes, where the
-        first row is the column headings.
+        Return the table attached to the step as an iterable of hashes, where
+        the first row - the column headings - supplies keys for all the others.
 
         e.g.:
 
@@ -259,10 +259,10 @@ class Step(Node):
 
         .. code-block:: python
 
-            [{
+            ({
                 'apples': '0',
                 'oranges': '2',
-            }]
+            },)
         """
 
         if not self.table:
@@ -394,7 +394,7 @@ class StepContainer(Node):
 
 class HeaderNode(Node):
     """
-    Nodes with a header consisting of a keyword, name and a list of tags.
+    Nodes with a header consisting of a keyword, name and a number of tags.
     """
 
     def __init__(self, parsed, **kwargs):
