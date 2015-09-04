@@ -98,6 +98,7 @@ Feature: Highlighting
     Given I have entered 40 into the calculator
     And I press add
 
+  @tables
   Scenario: Scenario with table                        features/highlighting.feature:26
     Given I have a table
     Given I have a table:
@@ -106,7 +107,7 @@ Feature: Highlighting
       | 1     |
       | 2     |
 
-  Scenario: Scenario with a multiline                  features/highlighting.feature:33
+  Scenario: Scenario with a multiline                  features/highlighting.feature:34
     Given I have a table
     Given I have a table:
       \"\"\"
@@ -154,6 +155,7 @@ t.bold_green(Given I have a table)
 t.bold_green(Given I have entered 40 into the calculator)
 t.bold_green(And I press add)
 
+t.cyan(@tables)
 t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:26)
 t.bold_green(Given I have a table)
 t.bold_green(Given I have a table:)
@@ -162,7 +164,7 @@ t.bold_green(Given I have a table:)
       | t.bold_green(1) |
       | t.bold_green(2) |
 
-t.bold_white(Scenario: Scenario with a multiline)t.color8(features/highlighting.feature:33)
+t.bold_white(Scenario: Scenario with a multiline)t.color8(features/highlighting.feature:34)
 t.bold_green(Given I have a table)
 t.bold_green(Given I have a table:)
       \"\"\"
@@ -206,3 +208,10 @@ t.color11(And I press [+])
 <t.move_up>t.bold_green(And I press [+])
 
 """.lstrip())  # noqa
+
+    def test_full_color_output_no_mocks(self):
+        """Test full color output with no mocks"""
+
+        self.assert_feature_success('--color',
+                                    'features/highlighting.feature',
+                                    verbosity=3)

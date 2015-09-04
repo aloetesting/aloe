@@ -482,6 +482,9 @@ class Scenario(Tagged, StepContainer):
     def represented(self, indent=2, **kwargs):
         return super().represented(indent=indent, **kwargs)
 
+    def represent_tags(self, indent=2):
+        return super().represent_tags(indent=indent)
+
     def represent_outlines(self, indent=4):
         """
         Render the outlines table.
