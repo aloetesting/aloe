@@ -64,9 +64,9 @@ class OutputterTest(FeatureTest):
     def test_uncolored_output(self):
         """Test streamed output"""
 
-        with \
-                StringIO() as stream, \
-                patch('aloe.result.AloeTestResult.printSummary'):
+        stream = StringIO()
+
+        with patch('aloe.result.AloeTestResult.printSummary'):
             self.run_features('features/highlighting.feature',
                               verbosity=3, stream=stream)
 
@@ -119,10 +119,11 @@ Feature: Highlighting
     def test_color_output(self):
         """Test streamed output with color"""
 
+        stream = StringIO()
+
         with \
                 patch('aloe.result.Terminal', new=MockTerminal), \
-                patch('aloe.result.AloeTestResult.printSummary'), \
-                StringIO() as stream:
+                patch('aloe.result.AloeTestResult.printSummary'):
             self.run_features('features/highlighting.feature',
                               verbosity=3, stream=stream,
                               force_color=True)
@@ -176,10 +177,11 @@ t.bold_green(Given I have a table:)
     def test_tty_output(self):
         """Test streamed output with tty control codes"""
 
+        stream = StringIO()
+
         with \
                 patch('aloe.result.Terminal', new=MockTerminal) as mock_term, \
-                patch('aloe.result.AloeTestResult.printSummary'), \
-                StringIO() as stream:
+                patch('aloe.result.AloeTestResult.printSummary'):
 
             mock_term.is_a_tty = True
             self.run_features('-n', '1',
