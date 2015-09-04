@@ -85,21 +85,24 @@ class Node(object):
         raise NotImplementedError
 
     @property
+    def location(self):
+        """Location as 'filename:line'"""
+
+        return '{filename}:{line}'.format(
+            filename=os.path.relpath(self.filename),
+            line=self.line,
+        )
+
+    @property
     def text(self):
         """The text for this node."""
 
         raise NotImplementedError
 
-    def represented(self, indent=0, annotate=True):
+    def represented(self, indent=0):
         """A representation of the node."""
 
         result = ' ' * indent + self.text.strip()
-
-        if annotate:
-            result = strings.ljust(result, self.feature.max_length + 1) + \
-                '# {filename}:{line}'.format(
-                    filename=os.path.relpath(self.filename),
-                    line=self.line)
 
         return result
 
@@ -278,22 +281,19 @@ class Step(Node):
 
         return max(
             0,
-            strings.get_terminal_width(self.represented(annotate=False,
-                                                        table=False,
+            strings.get_terminal_width(self.represented(table=False,
                                                         multiline=False)),
             *[strings.get_terminal_width(line)
               for line in self.represent_table().splitlines()]
         )
 
-    # pylint:disable=too-many-arguments,arguments-differ
-    def represented(self, indent=4, annotate=True,
-                    table=True, multiline=True,
-                    color=str):
+    # pylint:disable=arguments-differ
+    def represented(self, indent=4, table=True, multiline=True, color=str):
         """
         Render the line.
         """
 
-        lines = [color(super().represented(indent=indent, annotate=annotate))]
+        lines = [color(super().represented(indent=indent))]
 
         if table and self.table:
             lines.append(self.represent_table(indent=indent + 2,
@@ -304,7 +304,7 @@ class Step(Node):
                                                   string_wrap=color))
 
         return '\n'.join(lines)
-    # pylint:enable=too-many-arguments,arguments-differ
+    # pylint:enable=arguments-differ
 
     def represent_table(self, indent=6, **kwargs):
         """
@@ -384,12 +384,12 @@ class StepContainer(Node):
             for step in parsed['steps']
         )
 
-    def represented(self, indent=2, annotate=True):
+    def represented(self, indent=2):
         """
         Include block indents.
         """
 
-        return super().represented(indent=indent, annotate=annotate)
+        return super().represented(indent=indent)
 
 
 class HeaderNode(Node):
@@ -503,7 +503,7 @@ class Scenario(HeaderNode, StepContainer):
 
         return max(
             0,
-            strings.get_terminal_width(self.represented(annotate=False)),
+            strings.get_terminal_width(self.represented()),
             *([step.max_length for step in self.steps] +
               [strings.get_terminal_width(line)
                for line in self.represent_outlines().splitlines()])
@@ -569,25 +569,19 @@ class Description(Node):
     def __repr__(self):
         return str(self)
 
-    def represented(self, indent=2, annotate=True):
+    def represented(self, indent=2):
         return '\n'.join(
-            self.represent_line(n, annotate=annotate)
+            self.represent_line(n)
             for n, _ in enumerate(self.lines)
         )
 
-    def represent_line(self, idx, indent=2, annotate=True):
+    def represent_line(self, idx, indent=2):
         """
         Render the nth line in the description.
         """
 
         line = self.lines[idx]
         result = ' ' * indent + line
-
-        if annotate:
-            result = strings.ljust(result, self.feature.max_length + 1) + \
-                '# {file}:{line}'.format(
-                    file=os.path.relpath(self.filename),
-                    line=self.description_at[idx])
 
         return result
 
@@ -609,8 +603,7 @@ class Description(Node):
         """
         try:
             return max(
-                strings.get_terminal_width(
-                    self.represent_line(n, annotate=False))
+                strings.get_terminal_width(self.represent_line(n))
                 for n, _ in enumerate(self.lines)
             )
         except ValueError:
@@ -712,19 +705,19 @@ class Feature(HeaderNode):
         return max(
             0,
             strings.get_terminal_width(
-                self.represented(annotate=False, description=False)),
+                self.represented(description=False)),
             self.description_node.max_length,
             *[scenario.max_length for scenario in self.scenarios]
         )
 
     # pylint:disable=arguments-differ
-    def represented(self, indent=0, annotate=True, description=True):
-        result = super().represented(indent=indent, annotate=annotate)
+    def represented(self, indent=0, description=True):
+        result = super().represented(indent=indent)
 
         # FIXME: indent here is description default indent + feature
         # requested indent
         if description and self.description != '':
             result += '\n'
-            result += self.description_node.represented(annotate=annotate)
+            result += self.description_node.represented()
 
         return result
