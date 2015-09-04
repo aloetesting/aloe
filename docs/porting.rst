@@ -22,5 +22,7 @@ sense. However, there are following incompatible changes:
  * ``terrain.py`` has no particular significance. It will be imported but only
    if it exists at the same directory with the other step definition files, and
    not above it.
+ * Scenario outlines must be declared with "Scenario Outline", and scenarios
+   without examples must use "Scenario" - Lettuce allowed using either.
 
 .. include:: links.rst
