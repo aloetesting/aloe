@@ -100,10 +100,12 @@ class Node(object):
 
         raise NotImplementedError
 
-    def represented(self, indent=0):
+    indent = 0  # The indent to use when printing the node
+
+    def represented(self):
         """A representation of the node."""
 
-        result = ' ' * indent + self.text.strip()
+        result = ' ' * self.indent + self.text.strip()
 
         return result
 
@@ -288,40 +290,43 @@ class Step(Node):
               for line in self.represent_table().splitlines()]
         )
 
+    indent = 4
+
     # pylint:disable=arguments-differ
-    def represented(self, indent=4, table=True, multiline=True, color=str):
+    def represented(self, table=True, multiline=True, color=str):
         """
         Render the line.
         """
 
-        lines = [color(super().represented(indent=indent))]
+        lines = [color(super().represented())]
 
         if table and self.table:
-            lines.append(self.represent_table(indent=indent + 2,
-                                              cell_wrap=color))
+            lines.append(self.represent_table(cell_wrap=color))
 
         if multiline and self.multiline:
-            lines.append(self.represent_multiline(indent=indent + 2,
-                                                  string_wrap=color))
+            lines.append(self.represent_multiline(string_wrap=color))
 
         return '\n'.join(lines)
     # pylint:enable=arguments-differ
 
-    def represent_table(self, indent=6, **kwargs):
+    def represent_table(self, **kwargs):
         """
         Render the table.
 
         :param cell_wrap: color to use inside the table cells
         """
 
-        return strings.represent_table(self.table, indent=indent, **kwargs)
+        return strings.represent_table(
+            self.table, indent=self.indent + 2, **kwargs)
 
-    def represent_multiline(self, indent=6, string_wrap=str):
+    def represent_multiline(self, string_wrap=str):
         """
         Render the multiline.
 
         :param string_wrap: color to use inside the string
         """
+
+        indent = self.indent + 2
 
         lines = [' ' * indent + '"""']
         lines += [' ' * indent + string_wrap(line)
@@ -385,12 +390,7 @@ class StepContainer(Node):
             for step in parsed['steps']
         )
 
-    def represented(self, indent=2):
-        """
-        Include block indents.
-        """
-
-        return super().represented(indent=indent)
+    indent = 2
 
 
 class HeaderNode(Node):
@@ -445,12 +445,12 @@ class HeaderNode(Node):
         return '{keyword}: {name}'.format(keyword=self.keyword,
                                           name=self.name)
 
-    def represent_tags(self, indent=0):
+    def represent_tags(self):
         """
         Render the tags of a tagged block.
         """
 
-        return ' ' * indent + '  '.join('@%s' % tag for tag in self.tags)
+        return ' ' * self.indent + '  '.join('@%s' % tag for tag in self.tags)
 
 
 class Background(StepContainer):
@@ -483,18 +483,15 @@ class Scenario(HeaderNode, StepContainer):
                 for row in example_table['tableBody']
             )
 
-    def represented(self, indent=2, **kwargs):
-        return super().represented(indent=indent, **kwargs)
+    indent = 2
 
-    def represent_tags(self, indent=2):
-        return super().represent_tags(indent=indent)
-
-    def represent_outlines(self, indent=4):
+    def represent_outlines(self):
         """
         Render the outlines table.
         """
 
-        return strings.represent_table(self.outlines_table, indent=indent)
+        return strings.represent_table(
+            self.outlines_table, indent=self.indent + 2)
 
     @memoizedproperty
     def max_length(self):
@@ -570,19 +567,21 @@ class Description(Node):
     def __repr__(self):
         return str(self)
 
-    def represented(self, indent=2):
+    indent = 2
+
+    def represented(self):
         return '\n'.join(
             self.represent_line(n)
             for n, _ in enumerate(self.lines)
         )
 
-    def represent_line(self, idx, indent=2):
+    def represent_line(self, idx):
         """
         Render the nth line in the description.
         """
 
         line = self.lines[idx]
-        result = ' ' * indent + line
+        result = ' ' * self.indent + line
 
         return result
 
@@ -712,11 +711,9 @@ class Feature(HeaderNode):
         )
 
     # pylint:disable=arguments-differ
-    def represented(self, indent=0, description=True):
-        result = super().represented(indent=indent)
+    def represented(self, description=True):
+        result = super().represented()
 
-        # FIXME: indent here is description default indent + feature
-        # requested indent
         if description and self.description != '':
             result += '\n'
             result += self.description_node.represented()
