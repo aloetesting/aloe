@@ -189,17 +189,32 @@ class Step(Node):
         This is used by :func:`step.behave_as`.
         """
 
-        # TODO: Gherkin can't parse anything other than complete features
-        # TODO: This won't work with non-default languages
-        feature_string = """
-        Feature: feature
+        try:
+            container = self.scenario
+            is_scenario = True
+        except AttributeError:
+            container = self.background
+            is_scenario = False
 
-        Scenario: scenario
-        """ + string
+        # Gherkin can't parse anything other than complete features
+        feature_string = """
+        {feature.keyword}: feature
+
+        {container.keyword}: scenario
+        {string}
+        """.format(
+            feature=self.feature,
+            container=container,
+            string=string,
+        )
 
         feature = self.feature.parse(string=feature_string,
                                      filename=self.filename)
-        return feature.scenarios[0].steps
+
+        if is_scenario:
+            return feature.scenarios[0].steps
+        else:
+            return feature.background.steps
 
     @property
     def feature(self):
