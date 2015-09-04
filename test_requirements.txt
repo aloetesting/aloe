@@ -4,4 +4,3 @@ mock
 pep8
 pylint
 pylint-mccabe
-Sphinx
