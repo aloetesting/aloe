@@ -393,9 +393,9 @@ class StepContainer(Node):
         return super().represented(indent=indent, annotate=annotate)
 
 
-class Tagged(Node):
+class HeaderNode(Node):
     """
-    Tagged blocks contain type-specific child content as well as tags.
+    Nodes with a header consisting of a keyword, name and a list of tags.
     """
 
     def __init__(self, parsed, **kwargs):
@@ -404,9 +404,7 @@ class Tagged(Node):
         self._tags = tuple(
             tag['name'][1:] for tag in parsed['tags']
         )
-        # TODO: Why is this here?
         self.keyword = parsed['keyword']
-        # TODO: And this
         self.name = parsed['name'].strip()
 
         if self.name == '':
@@ -462,7 +460,7 @@ class Background(StepContainer):
     text = 'Background:'
 
 
-class Scenario(Tagged, StepContainer):
+class Scenario(HeaderNode, StepContainer):
     """A scenario within a :class:`Feature`."""
 
     container_name = 'scenario'
@@ -563,7 +561,6 @@ class Description(Node):
     def __init__(self, parsed, **kwargs):
         super().__init__(parsed, **kwargs)
 
-        # TODO: Should be None
         description = parsed.get('description', '')
         self.lines = tuple(line.strip() for line in description.split('\n'))
 
@@ -621,7 +618,7 @@ class Description(Node):
             return 0
 
 
-class Feature(Tagged):
+class Feature(HeaderNode):
     """
     A complete Gherkin feature.
 
@@ -655,7 +652,6 @@ class Feature(Tagged):
         Parse either a string or a file.
         """
 
-        # TODO: Memoize some of this
         parser = Parser()
         if language:
             if language == 'pt-br':
