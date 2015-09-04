@@ -18,10 +18,9 @@ from collections import OrderedDict
 from copy import deepcopy
 from io import StringIO
 
-from gherkin3.gherkin_line import GherkinLine
 from gherkin3.parser import Parser
-from gherkin3.token import Token
 from gherkin3.token_matcher import TokenMatcher
+from gherkin3.token_scanner import TokenScanner as BaseTokenScanner
 
 from aloe import strings
 from aloe.exceptions import LettuceSyntaxError
@@ -32,9 +31,10 @@ from aloe.utils import memoizedproperty
 # pylint:disable=abstract-method
 
 
-class TokenScanner(object):
-    """Reimplementation of Gherkin 3 token scanner."""
+class TokenScanner(BaseTokenScanner):
+    """Gherkin 3 token scanner that explicitly takes a string or a filename."""
 
+    # pylint:disable=super-init-not-called
     def __init__(self, string=None, filename=None):
         if string:
             if filename:
@@ -47,29 +47,19 @@ class TokenScanner(object):
             raise ValueError("Must provide either string or filename.")
 
         self.line_number = 0
-
-    def read(self):
-        """Read the next token from the source."""
-        self.line_number += 1
-        location = {'line': self.line_number}
-        line = self.io.readline()
-        return Token(
-            (GherkinLine(line, self.line_number) if line else line),
-            location
-        )
+    # pylint:enable=super-init-not-called
 
 
 class LanguageTokenMatcher(TokenMatcher):
-    """A token matcher that actually remembers the language it's set to."""
+    """Gherkin 3 token matcher that always uses the given language."""
 
     def __init__(self, dialect_name='en'):
         self.actual_dialect_name = dialect_name
-        TokenMatcher.__init__(self, dialect_name=dialect_name)
+        super().__init__(dialect_name=dialect_name)
 
     def _change_dialect(self, dialect_name, location=None):
         """Force the dialect name given in the constructor."""
-        TokenMatcher._change_dialect(
-            self, self.actual_dialect_name, location=location)
+        super()._change_dialect(self.actual_dialect_name, location=location)
 
 
 def cell_values(row):
