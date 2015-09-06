@@ -23,14 +23,14 @@ from aloe.utils import str_io
 
 
 @in_directory('tests/simple_app')
-class CalculatorTest(FeatureTest):
+class SimpleScenarioTest(FeatureTest):
     """
-    Test that calculator feature works as expected.
+    Test that basic feature running works as expected.
     """
 
-    def test_calculator(self):
+    def test_success(self):
         """
-        Test running the calculator feature.
+        Test running a simple feature.
         """
 
         self.assert_feature_success('features/calculator.feature')
