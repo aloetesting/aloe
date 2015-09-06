@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Steps for testing the basic Gherkin test functionality.
 """
@@ -28,12 +29,14 @@ def clear(*args):
 
 
 @step(r'I have entered (\d+) into the calculator')
+@step(r'我输入(\d+)')
 def enter_number(self, number):
     """Store the entered number."""
     world.numbers.append(float(number))
 
 
 @step(r'I press add')
+@step(r'我按添加')
 def press_add(self):
     """Sum up the numbers."""
     world.result = sum(world.numbers)
@@ -55,6 +58,7 @@ def have_table(self):
 
 
 @step(r'The result should be (\d+) on the screen')
+@step(r'结果应该是(\d+)')
 def assert_result(self, result):
     """Assert the result is correct."""
     assert world.result == float(result)
