@@ -6,9 +6,13 @@ from __future__ import print_function
 from __future__ import unicode_literals
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin, unused-wildcard-import, wildcard-import
+from builtins import *
+# pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
 from future import standard_library
 standard_library.install_aliases()
 
+import io
 import re
 import sys
 
@@ -28,28 +32,45 @@ def dummy_cm():
 PY3 = sys.version_info >= (3, 0)
 
 
-def always_str(value):
+def identifier(value):
     """
-    Make an str on either Python 2 or Python 3.
+    Make a valid identifier from a string on either Python 2 or Python 3.
+
+    Python 2 limits identifiers to ASCII characters, so unicode must be
+    encoded.
     """
 
     if PY3:
         return value
     else:
-        return value.encode()
+        return value.encode('unicode_escape')
 
 
-def str_io():
-    """
-    A stream that can be written to by Nose.
-    """
+if PY3:
+    TestWrapperIO = io.StringIO  # pylint:disable=invalid-name
+else:
+    class TestWrapperIO(io.StringIO):
+        """A wrapper for capturing Nose output in tests."""
 
-    if PY3:
-        from io import StringIO
-        return StringIO()
-    else:
-        from StringIO import StringIO  # pylint:disable=import-error
-        return StringIO()
+        def write(self, str_):
+            """
+            Write a string to the stream. In case of Python 2, accept both str
+            and unicode.
+            """
+
+            try:
+                super().write(str_)
+            except TypeError:
+                super().write(str_.decode('utf-8'))
+
+        # The following methods are added only so Pylint can infer them
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+
+        def getvalue(self):
+            """Get the captured string."""
+            return super().getvalue()
 
 
 def unwrap_function(func):

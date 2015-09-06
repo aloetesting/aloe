@@ -17,6 +17,7 @@ from collections import OrderedDict
 from copy import deepcopy
 from io import StringIO
 
+from gherkin3.dialect import Dialect
 from gherkin3.parser import Parser
 from gherkin3.token_matcher import TokenMatcher
 from gherkin3.token_scanner import TokenScanner as BaseTokenScanner
@@ -205,6 +206,7 @@ class Step(Node):
 
         # Gherkin can't parse anything other than complete features
         feature_string = """
+        # language: {feature.language}
         {feature.keyword}: feature
 
         {container.keyword}: scenario
@@ -366,6 +368,26 @@ class Step(Node):
             )
 
         return replaced
+
+    def step_keyword(self, kind):
+        """
+        An appropriate keyword for a particular kind of step
+        (Given, When, Then) for the language the current step is written in.
+        """
+
+        dialect = self.feature.dialect
+        keywords = {
+            'given': dialect.given_keywords,
+            'when': dialect.when_keywords,
+            'then': dialect.then_keywords,
+        }[kind]()
+
+        # Gherkin allows '*' as a keyword; skip it to be sure the keyword is
+        # specifically for the given kind
+        return next(
+            keyword for keyword in keywords
+            if not keyword.startswith('*')
+        )
 
 
 class StepContainer(Node):
@@ -628,6 +650,8 @@ class Feature(HeaderNode):
     def __init__(self, parsed, filename=None, **kwargs):
         super().__init__(parsed, filename=filename, **kwargs)
 
+        self.language = parsed['language']
+
         self.description_node = Description(parsed, filename=filename)
 
         if 'background' in parsed:
@@ -687,6 +711,14 @@ class Feature(HeaderNode):
         the feature).
         """
         return str(self.description_node)
+
+    @property
+    def dialect(self):
+        """
+        The Gherkin dialect for the feature.
+        """
+
+        return Dialect.for_name(self.language)
 
     @property
     def feature(self):

@@ -186,6 +186,13 @@ class CallbackTest(FeatureTest):
 
         self.assert_feature_success('features/behave_as.feature')
 
+    def test_behave_as_ru(self):
+        """
+        Test 'behave_as' on a non-English feature.
+        """
+
+        self.assert_feature_success('features/behave_as_ru.feature')
+
     def test_step_failed(self):
         """
         Test the value of step.failed.

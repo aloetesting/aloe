@@ -35,7 +35,7 @@ from aloe.registry import (
     PriorityClass,
     STEP_REGISTRY,
 )
-from aloe.utils import always_str
+from aloe.utils import identifier
 
 # Pylint can't figure out methods vs. properties and which classes are
 # abstract
@@ -69,15 +69,15 @@ class TestStep(Step):
 
     def given(self, string):
         """Run the specified 'Given' step in the current context."""
-        self.behave_as('Given ' + string)
+        self.behave_as(self.step_keyword('given') + string)
 
     def when(self, string):
         """Run the specified 'When' step in the current context."""
-        self.behave_as('When ' + string)
+        self.behave_as(self.step_keyword('when') + string)
 
     def then(self, string):
         """Run the specified 'Then' step in the current context."""
-        self.behave_as('Then ' + string)
+        self.behave_as(self.step_keyword('then') + string)
 
 
 class TestBackground(Background):
@@ -150,9 +150,13 @@ class TestCase(unittest.TestCase):
                                *definition['args'],
                                **definition['kwargs'])
 
+    def shortDescription(self):
+        return str(self)
+
     def __str__(self):
+        test_method = getattr(self, self._testMethodName)
         return "%s (%s: %s)" % (
-            self._testMethodName,
+            test_method.scenario.name,
             path_to_module_name(self.feature.filename),
             self.feature.name,
         )
@@ -188,7 +192,7 @@ class TestCase(unittest.TestCase):
             for scenario in scenarios
         })
 
-        class_name = always_str(feature.name)
+        class_name = identifier(feature.name)
 
         return type(class_name, (cls,), members)
 
@@ -243,6 +247,7 @@ class TestCase(unittest.TestCase):
                                     is_background=False)
 
         result.is_scenario = True
+        result.scenario = scenario
         result.scenario_index = index
 
         return result

@@ -12,6 +12,7 @@ from builtins import super
 # pylint:enable=redefined-builtin
 standard_library.install_aliases()
 
+import io
 import os
 import sys
 import tempfile
@@ -28,16 +29,20 @@ from aloe.registry import (
     STEP_REGISTRY,
 )
 from aloe.runner import Runner
-from aloe.utils import str_io
+from aloe.utils import PY3, TestWrapperIO
 
 # When the outer Nose captures output, it's a different type between Python 2
 # and 3.
-try:
-    import StringIO
-    CAPTURED_OUTPUTS = (StringIO.StringIO,)
-except ImportError:
-    import io
+if PY3:
     CAPTURED_OUTPUTS = (io.StringIO,)
+else:
+    # io.StringIO is an alias to cStringIO.StringIO, which is a function and
+    # not a type
+    import StringIO  # pylint:disable=import-error
+    CAPTURED_OUTPUTS = (
+        type(io.StringIO()),
+        StringIO.StringIO,
+    )
 
 
 @contextmanager
@@ -253,7 +258,7 @@ class FeatureTest(unittest.TestCase):
         if stream is None and isinstance(sys.stdout, CAPTURED_OUTPUTS):
             # Don't show results of running the inner tests if the outer Nose
             # redirects output
-            stream = str_io()
+            stream = TestWrapperIO()
 
         CALLBACK_REGISTRY.clear(priority_class=PriorityClass.USER)
         STEP_REGISTRY.clear()
