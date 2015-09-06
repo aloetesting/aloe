@@ -64,15 +64,11 @@ class OutputterTest(FeatureTest):
     def test_uncolored_output(self):
         """Test streamed output"""
 
-        with \
-                StringIO() as stream, \
-                patch('aloe.result.AloeTestResult.printSummary'):
+        stream = StringIO()
+
+        with patch('aloe.result.AloeTestResult.printSummary'):
             self.run_features('features/highlighting.feature',
                               verbosity=3, stream=stream)
-
-            print("--Output--")
-            print(stream.getvalue())
-            print("--END--")
 
             self.assertEqual(stream.getvalue(), """
 Feature: Highlighting
@@ -91,7 +87,7 @@ Feature: Highlighting
       | 30     |
 
     Given I have a table
-    Given I have entered <number> into the calculator
+    Given I have entered 30 into the calculator
     And I press add
 
   Scenario Outline: Scenario outlines                  features/highlighting.feature:17
@@ -99,11 +95,11 @@ Feature: Highlighting
       | 40     |
 
     Given I have a table
-    Given I have entered <number> into the calculator
+    Given I have entered 40 into the calculator
     And I press add
 
   @tables
-  Scenario: Scenario with table                        features/highlighting.feature:26
+  Scenario: Scenario with table                        features/highlighting.feature:27
     Given I have a table
     Given I have a table:
       | value |
@@ -123,17 +119,14 @@ Feature: Highlighting
     def test_color_output(self):
         """Test streamed output with color"""
 
+        stream = StringIO()
+
         with \
                 patch('aloe.result.Terminal', new=MockTerminal), \
-                patch('aloe.result.AloeTestResult.printSummary'), \
-                StringIO() as stream:
+                patch('aloe.result.AloeTestResult.printSummary'):
             self.run_features('features/highlighting.feature',
                               verbosity=3, stream=stream,
                               force_color=True)
-
-            print("--Output--")
-            print(stream.getvalue())
-            print("--END--")
 
             self.assertEqual(stream.getvalue(), """
 t.bold_white(Feature: Highlighting)
@@ -152,7 +145,7 @@ t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.
       | t.white(30) |
 
 t.bold_green(Given I have a table)
-t.bold_green(Given I have entered <number> into the calculator)
+t.bold_green(Given I have entered 30 into the calculator)
 t.bold_green(And I press add)
 
 t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.feature:17)
@@ -160,11 +153,11 @@ t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.
       | t.white(40) |
 
 t.bold_green(Given I have a table)
-t.bold_green(Given I have entered <number> into the calculator)
+t.bold_green(Given I have entered 40 into the calculator)
 t.bold_green(And I press add)
 
 t.cyan(@tables)
-t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:26)
+t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:27)
 t.bold_green(Given I have a table)
 t.bold_green(Given I have a table:)
       | t.bold_green(value) |
@@ -184,19 +177,16 @@ t.bold_green(Given I have a table:)
     def test_tty_output(self):
         """Test streamed output with tty control codes"""
 
+        stream = StringIO()
+
         with \
                 patch('aloe.result.Terminal', new=MockTerminal) as mock_term, \
-                patch('aloe.result.AloeTestResult.printSummary'), \
-                StringIO() as stream:
+                patch('aloe.result.AloeTestResult.printSummary'):
 
             mock_term.is_a_tty = True
             self.run_features('-n', '1',
                               'features/highlighting.feature',
                               verbosity=3, stream=stream)
-
-            print("--Output--")
-            print(stream.getvalue())
-            print("--END--")
 
             # we are going to see the scenario written out 3 times
             # once in color 8 as a preview, then each line individually
