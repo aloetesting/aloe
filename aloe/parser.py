@@ -156,8 +156,11 @@ class Step(Node):
 
         if background:
             self.background = background
-        if scenario:
+        elif scenario:
             self.scenario = scenario
+        else:
+            raise ValueError(
+                "Step must belong to either a scenario or a background.")
 
         self.sentence = parsed['keyword'] + parsed['text']
         """The sentence parsed for this step."""
