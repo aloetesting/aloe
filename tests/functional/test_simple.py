@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Basic scenario tests.
 """
@@ -35,6 +36,13 @@ class SimpleScenarioTest(FeatureTest):
 
         self.assert_feature_success('features/calculator.feature')
 
+    def test_success_zh(self):
+        """
+        Test running a simple feature in Chinese.
+        """
+
+        self.assert_feature_success('features/calculator_zh.feature')
+
     def test_failure(self):
         """
         Test that a failing feature fails tests.
@@ -65,7 +73,44 @@ class SimpleScenarioTest(FeatureTest):
         step_file = getsourcefile(sys.modules['features.steps'])
 
         step_stack_frame = """
-  File "{step_file}", line 60, in assert_result
+  File "{step_file}", line 64, in assert_result
+    assert world.result == float(result)
+AssertionError
+        """.strip().format(step_file=step_file)
+
+        self.assertIn(step_stack_frame, output)
+
+    def test_failure_zh(self):
+        """
+        Test that a failing feature in Chinese fails tests.
+        """
+
+        stream = str_io()
+
+        failing_feature = 'features/wrong_expectations_zh.feature'
+
+        self.assert_feature_fail(failing_feature, stream=stream)
+
+        # Check that the appropriate error messages were printed
+
+        output = stream.getvalue()
+
+        error_header = "FAIL: 添加两个数值 " + \
+            "(features.wrong_expectations_zh: 不对的预期)"
+
+        self.assertIn(error_header, output)
+
+        feature_stack_frame = """
+  File "{feature}", line 12, in 添加两个数值
+    那么结果应该是40
+        """.strip().format(feature=os.path.abspath(failing_feature))
+
+        self.assertIn(feature_stack_frame, output)
+
+        step_file = getsourcefile(sys.modules['features.steps'])
+
+        step_stack_frame = """
+  File "{step_file}", line 64, in assert_result
     assert world.result == float(result)
 AssertionError
         """.strip().format(step_file=step_file)
