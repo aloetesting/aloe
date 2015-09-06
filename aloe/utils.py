@@ -28,15 +28,18 @@ def dummy_cm():
 PY3 = sys.version_info >= (3, 0)
 
 
-def always_str(value):
+def identifier(value):
     """
-    Make an str on either Python 2 or Python 3.
+    Make a valid identifier from a string on either Python 2 or Python 3.
+
+    Python 2 limits identifiers to ASCII characters, so unicode must be
+    encoded.
     """
 
     if PY3:
         return value
     else:
-        return value.encode()
+        return value.encode('unicode_escape')
 
 
 def str_io():
