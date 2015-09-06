@@ -98,7 +98,7 @@ Feature: Highlighting
     And I press add
 
   @tables
-  Scenario: Scenario with table                        features/highlighting.feature:26
+  Scenario: Scenario with table                        features/highlighting.feature:27
     Given I have a table
     Given I have a table:
       | value |
@@ -156,7 +156,7 @@ t.bold_green(Given I have entered 40 into the calculator)
 t.bold_green(And I press add)
 
 t.cyan(@tables)
-t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:26)
+t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:27)
 t.bold_green(Given I have a table)
 t.bold_green(Given I have a table:)
       | t.bold_green(value) |
