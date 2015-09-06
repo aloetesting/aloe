@@ -20,7 +20,7 @@ from aloe.testing import (
     FeatureTest,
     in_directory,
 )
-from aloe.utils import str_io
+from aloe.utils import PY3, TestWrapperIO
 
 
 @in_directory('tests/simple_app')
@@ -48,7 +48,7 @@ class SimpleScenarioTest(FeatureTest):
         Test that a failing feature fails tests.
         """
 
-        stream = str_io()
+        stream = TestWrapperIO()
 
         failing_feature = 'features/wrong_expectations.feature'
 
@@ -85,7 +85,7 @@ AssertionError
         Test that a failing feature in Chinese fails tests.
         """
 
-        stream = str_io()
+        stream = TestWrapperIO()
 
         failing_feature = 'features/wrong_expectations_zh.feature'
 
@@ -100,12 +100,23 @@ AssertionError
 
         self.assertIn(error_header, output)
 
-        feature_stack_frame = """
+        if PY3:
+            feature_stack_frame = """
   File "{feature}", line 12, in 添加两个数值
     那么结果应该是40
-        """.strip().format(feature=os.path.abspath(failing_feature))
+            """.strip().format(feature=os.path.abspath(failing_feature))
 
-        self.assertIn(feature_stack_frame, output)
+            self.assertIn(feature_stack_frame, output)
+        else:
+            # Cannot use non-ASCII method names in Python 2
+            feature_stack_frame = """
+  File "{feature}", line 12, in
+            """.strip().format(feature=os.path.abspath(failing_feature))
+
+            self.assertIn(feature_stack_frame, output)
+
+            feature_code_line = "那么结果应该是40"
+            self.assertIn(feature_code_line, output)
 
         step_file = getsourcefile(sys.modules['features.steps'])
 

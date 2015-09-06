@@ -10,13 +10,12 @@ from builtins import *
 from future import standard_library
 standard_library.install_aliases()
 
-from io import StringIO
-
 from aloe.testing import (
     FeatureTest,
     in_directory,
 )
 from aloe.result import Terminal
+from aloe.utils import TestWrapperIO
 from mock import patch
 
 
@@ -64,7 +63,7 @@ class OutputterTest(FeatureTest):
     def test_uncolored_output(self):
         """Test streamed output"""
 
-        stream = StringIO()
+        stream = TestWrapperIO()
 
         with patch('aloe.result.AloeTestResult.printSummary'):
             self.run_features('features/highlighting.feature',
@@ -119,7 +118,7 @@ Feature: Highlighting
     def test_color_output(self):
         """Test streamed output with color"""
 
-        stream = StringIO()
+        stream = TestWrapperIO()
 
         with \
                 patch('aloe.result.Terminal', new=MockTerminal), \
@@ -177,7 +176,7 @@ t.bold_green(Given I have a table:)
     def test_tty_output(self):
         """Test streamed output with tty control codes"""
 
-        stream = StringIO()
+        stream = TestWrapperIO()
 
         with \
                 patch('aloe.result.Terminal', new=MockTerminal) as mock_term, \
