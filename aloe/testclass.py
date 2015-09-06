@@ -150,9 +150,13 @@ class TestCase(unittest.TestCase):
                                *definition['args'],
                                **definition['kwargs'])
 
+    def shortDescription(self):
+        return str(self)
+
     def __str__(self):
+        test_method = getattr(self, self._testMethodName)
         return "%s (%s: %s)" % (
-            self._testMethodName,
+            test_method.scenario.name,
             path_to_module_name(self.feature.filename),
             self.feature.name,
         )
@@ -243,6 +247,7 @@ class TestCase(unittest.TestCase):
                                     is_background=False)
 
         result.is_scenario = True
+        result.scenario = scenario
         result.scenario_index = index
 
         return result
