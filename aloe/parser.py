@@ -6,121 +6,107 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-# pylint:disable=redefined-builtin
-from builtins import range
-from builtins import super
-from builtins import open
-from builtins import chr
-from builtins import dict
-from builtins import str
-from builtins import map
-from builtins import zip
-# pylint:enable=redefined-builtin
+# pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
+from builtins import *
+# pylint:enable=redefined-builtin,wildcard-import,unused-wildcard-import
 from future import standard_library
 standard_library.install_aliases()
 
 import os
-
-from codecs import open
-from copy import deepcopy
 from collections import OrderedDict
-from warnings import warn
+from copy import deepcopy
+from io import StringIO
 
-import pyparsing
-from pyparsing import (CharsNotIn,
-                       col,
-                       Group,
-                       Keyword,
-                       lineEnd,
-                       lineno,
-                       OneOrMore,
-                       Optional,
-                       ParseException,
-                       ParseResults,
-                       QuotedString,  # function
-                       quotedString,  # token
-                       restOfLine,
-                       stringEnd,
-                       Suppress,
-                       Token,
-                       Word,
-                       ZeroOrMore)
+from gherkin3.parser import Parser
+from gherkin3.token_matcher import TokenMatcher
+from gherkin3.token_scanner import TokenScanner as BaseTokenScanner
 
-from aloe import languages, strings
-from aloe.exceptions import LettuceSyntaxError, LettuceSyntaxWarning
+from aloe import strings
+from aloe.exceptions import LettuceSyntaxError
 from aloe.utils import memoizedproperty
 
-# Pyparsing has strange naming guidelines
-# pylint:disable=invalid-name,unused-argument
-
-# Pylint is thoroughly confused about members
-# pylint:disable=no-member
+# Pylint can't figure out methods vs. properties and which classes are
+# abstract
+# pylint:disable=abstract-method
 
 
-unicodePrintables = ''.join(chr(c) for c in range(65536)
-                            if not chr(c).isspace())
+class TokenScanner(BaseTokenScanner):
+    """Gherkin 3 token scanner that explicitly takes a string or a filename."""
 
-
-class ParseLocation(object):
-    """
-    The location of a parsed node within the stream.
-    """
-
-    def __init__(self, parent, s, loc, filename=None):
-        self.parent = parent
-        self._file = filename
-        self.line = lineno(loc, s)
-        self.col = col(loc, s)
-
-    def __str__(self):
-        return u'{file}:{line}'.format(file=self.file,
-                                       line=self.line)
-
-    def __repr__(self):
-        return str(self)
-
-    @property
-    def file(self):
-        """
-        Return the relative path to the file.
-        """
-
-        if self._file:
-            return os.path.relpath(self._file)
-        elif self.parent:
-            if self.parent.feature.described_at is self:
-                return None
-            return self.parent.feature.described_at.file
+    # pylint:disable=super-init-not-called
+    def __init__(self, string=None, filename=None):
+        if string:
+            if filename:
+                raise ValueError(
+                    "Cannot provide string and filename together.")
+            self.io = StringIO(string)  # pylint:disable=invalid-name
+        elif filename:
+            self.io = open(filename, 'r')
         else:
-            return None
+            raise ValueError("Must provide either string or filename.")
 
-    @file.setter
-    def file(self, value):
-        """Set the file."""
-        self._file = value
+        self.line_number = 0
+    # pylint:enable=super-init-not-called
+
+
+class LanguageTokenMatcher(TokenMatcher):
+    """Gherkin 3 token matcher that always uses the given language."""
+
+    def __init__(self, dialect_name='en'):
+        self.actual_dialect_name = dialect_name
+        super().__init__(dialect_name=dialect_name)
+
+    def _change_dialect(self, dialect_name, location=None):
+        """Force the dialect name given in the constructor."""
+        super()._change_dialect(self.actual_dialect_name, location=location)
+
+
+def cell_values(row):
+    """Extract cell values from a table header or row."""
+
+    return tuple(cell['value'] for cell in row['cells'])
 
 
 class Node(object):
     """
-    A parse node
+    A base parse node.
     """
 
-    def __init__(self, s, loc, tokens):
-        self.described_at = ParseLocation(self, s, loc)
-        self.text = pyparsing.line(loc, s)
+    def __init__(self, parsed, filename=None):
+        """Construct the node from Gherkin parse results."""
+        self.line = parsed['location']['line']
+        self.col = parsed['location']['column']
+        self.filename = filename
 
-    def represented(self, indent=0, annotate=True):
-        """
-        Return a representation of the node.
-        """
+    @property
+    def feature(self):
+        """The feature this node ultimately belongs to."""
 
-        s = u' ' * indent + self.text.strip()
+        raise NotImplementedError
 
-        if annotate:
-            s = strings.ljust(s, self.feature.max_length + 1) + \
-                u'# ' + str(self.described_at)
+    @property
+    def location(self):
+        """Location as 'filename:line'"""
 
-        return s
+        return '{filename}:{line}'.format(
+            filename=os.path.relpath(self.filename),
+            line=self.line,
+        )
+
+    @property
+    def text(self):
+        """The text for this node."""
+
+        raise NotImplementedError
+
+    indent = 0  # The indent to use when printing the node
+
+    def represented(self):
+        """A representation of the node."""
+
+        result = ' ' * self.indent + self.text.strip()
+
+        return result
 
 
 class Step(Node):
@@ -131,49 +117,71 @@ class Step(Node):
     :class:`Step`.
     """
 
-    def __init__(self, s, loc, tokens):
+    table = None
+    """
+    A Gherkin table as an iterable of rows, themselves iterables of cells.
 
-        super().__init__(s, loc, tokens)
+    e.g.:
 
-        # statements are made up of a statement sentence + optional data
-        # the optional data can either be a table or a multiline string
-        token = tokens[0]
+    .. code-block:: gherkin
 
-        self.sentence = u' '.join(token.sentence)
+        Then I have fruit:
+            | apples | oranges |
+            | 0      | 2       |
+
+    Becomes:
+
+    .. code-block:: python
+
+        (('apples', 'oranges'), ('0', '2'))
+    """
+
+    multiline = None
+    """
+    A Gherkin multiline string with the appropriate indenting removed.
+
+    .. code-block:: gherkin
+
+        Then I have poem:
+            \"\"\"
+            Glittering-Minded deathless Aphrodite,
+            I beg you, Zeus’s daughter, weaver of snares,
+            Don’t shatter my heart with fierce
+            Pain, goddess,
+            \"\"\"
+    """
+
+    def __init__(self, parsed, background=None, scenario=None, **kwargs):
+        super().__init__(parsed, **kwargs)
+
+        if background:
+            self.background = background
+        elif scenario:
+            self.scenario = scenario
+        else:
+            raise ValueError(
+                "Step must belong to either a scenario or a background.")
+
+        self.sentence = parsed['keyword'] + parsed['text']
         """The sentence parsed for this step."""
-        self.table = list(map(list, token.table)) \
-            if token.table else None
-        """
-        A Gherkin table as a list of lists.
 
-        e.g.:
+        try:
+            argument_type = parsed['argument']['type']
+        except KeyError:
+            argument_type = None
 
-        .. code-block:: gherkin
+        if argument_type == 'DataTable':
+            self.table = tuple(
+                cell_values(row)
+                for row in parsed['argument']['rows']
+            )
 
-            Then I have fruit:
-                | apples | oranges |
-                | 0      | 2       |
+        elif argument_type == 'DocString':
+            self.multiline = parsed['argument']['content']
 
-        Becomes:
-
-        .. code-block:: python
-
-            [['apples', 'oranges', '0', '2']]
-        """
-        self.multiline = token.multiline
-        """
-        A Gherkin multiline string with the appropriate indenting removed.
-
-        .. code-block:: gherkin
-
-            Then I have poem:
-                \"\"\"
-                Glittering-Minded deathless Aphrodite,
-                I beg you, Zeus’s daughter, weaver of snares,
-                Don’t shatter my heart with fierce
-                Pain, goddess,
-                \"\"\"
-        """
+    @property
+    def text(self):
+        return self.sentence
 
     def __str__(self):
         return '<Step: "%s">' % self.sentence
@@ -181,17 +189,39 @@ class Step(Node):
     def __repr__(self):
         return str(self)
 
-    @classmethod
-    def parse_steps_from_string(cls, string, **kwargs):
+    def parse_steps_from_string(self, string, **kwargs):
         """
-        Parse a number of steps, returns a list of :class:`Step`.
+        Parse a number of steps, returns an iterable of :class:`Step`.
 
         This is used by :func:`step.behave_as`.
         """
 
-        tokens = parse(string=string, token='statements', **kwargs)
+        try:
+            container = self.scenario
+            is_scenario = True
+        except AttributeError:
+            container = self.background
+            is_scenario = False
 
-        return list(tokens[0])
+        # Gherkin can't parse anything other than complete features
+        feature_string = """
+        {feature.keyword}: feature
+
+        {container.keyword}: scenario
+        {string}
+        """.format(
+            feature=self.feature,
+            container=container,
+            string=string,
+        )
+
+        feature = self.feature.parse(string=feature_string,
+                                     filename=self.filename)
+
+        if is_scenario:
+            return feature.scenarios[0].steps
+        else:
+            return feature.background.steps
 
     @property
     def feature(self):
@@ -212,13 +242,13 @@ class Step(Node):
         if self.table:
             return tuple(self.table[0])
         else:
-            return []
+            return ()
 
     @memoizedproperty
     def hashes(self):
         """
-        Return the table attached to the step as a list of hashes, where the
-        first row is the column headings.
+        Return the table attached to the step as an iterable of hashes, where
+        the first row - the column headings - supplies keys for all the others.
 
         e.g.:
 
@@ -232,21 +262,21 @@ class Step(Node):
 
         .. code-block:: python
 
-            [{
+            ({
                 'apples': '0',
                 'oranges': '2',
-            }]
+            },)
         """
 
         if not self.table:
-            return []
+            return ()
 
         keys = self.keys
 
-        return [
+        return tuple(
             dict(zip(keys, row))
             for row in self.table[1:]
-        ]
+        )
 
     @memoizedproperty
     def max_length(self):
@@ -256,49 +286,49 @@ class Step(Node):
 
         return max(
             0,
-            strings.get_terminal_width(self.represented(annotate=False,
-                                                        table=False,
+            strings.get_terminal_width(self.represented(table=False,
                                                         multiline=False)),
             *[strings.get_terminal_width(line)
               for line in self.represent_table().splitlines()]
         )
 
-    # pylint:disable=too-many-arguments,arguments-differ
-    def represented(self, indent=4, annotate=True,
-                    table=True, multiline=True,
-                    color=str):
+    indent = 4
+
+    # pylint:disable=arguments-differ
+    def represented(self, table=True, multiline=True, color=str):
         """
         Render the line.
         """
 
-        lines = [color(super().represented(indent=indent, annotate=annotate))]
+        lines = [color(super().represented())]
 
         if table and self.table:
-            lines.append(self.represent_table(indent=indent + 2,
-                                              cell_wrap=color))
+            lines.append(self.represent_table(cell_wrap=color))
 
         if multiline and self.multiline:
-            lines.append(self.represent_multiline(indent=indent + 2,
-                                                  string_wrap=color))
+            lines.append(self.represent_multiline(string_wrap=color))
 
         return '\n'.join(lines)
-    # pylint:enable=too-many-arguments,arguments-differ
+    # pylint:enable=arguments-differ
 
-    def represent_table(self, indent=6, **kwargs):
+    def represent_table(self, **kwargs):
         """
         Render the table.
 
         :param cell_wrap: color to use inside the table cells
         """
 
-        return strings.represent_table(self.table, indent=indent, **kwargs)
+        return strings.represent_table(
+            self.table, indent=self.indent + 2, **kwargs)
 
-    def represent_multiline(self, indent=6, string_wrap=str):
+    def represent_multiline(self, string_wrap=str):
         """
         Render the multiline.
 
         :param string_wrap: color to use inside the string
         """
+
+        indent = self.indent + 2
 
         lines = [' ' * indent + '"""']
         lines += [' ' * indent + string_wrap(line)
@@ -312,83 +342,79 @@ class Step(Node):
         Creates a copy of the step with any <variables> resolved.
         """
 
-        self = deepcopy(self)
+        replaced = deepcopy(self)
 
-        for key, value in outline.items():
-            key = u'<{key}>'.format(key=key)
+        def replace_vars(string):
+            """Replace all the variables in a string."""
+            for key, value in outline.items():
+                key = '<{key}>'.format(key=key)
+                string = string.replace(key, value)
+            return string
 
-            self.sentence = self.sentence.replace(key, value)
+        replaced.sentence = replace_vars(self.sentence)
 
-            if self.multiline:
-                self.multiline = self.multiline.replace(key, value)
+        if self.multiline:
+            replaced.multiline = replace_vars(self.multiline)
 
-            if self.table:
-                for i, row in enumerate(self.table):
-                    for j, cell in enumerate(row):
-                        self.table[i][j] = cell.replace(key, value)
+        if self.table:
+            replaced.table = tuple(
+                tuple(
+                    replace_vars(cell)
+                    for cell in row
+                )
+                for row in self.table
+            )
 
-        return self
+        return replaced
 
 
-class Block(Node):
+class StepContainer(Node):
+    """A node containing steps, e.g. Feature:, Scenario:"""
+
+    step_class = Step
+
+    container_name = 'container'  # override in subclasses
+
+    @property
+    def feature(self):
+        return self._feature
+
+    def __init__(self, parsed, feature=None, filename=None, **kwargs):
+        super().__init__(parsed, filename=filename, **kwargs)
+
+        self._feature = feature
+
+        # Put a reference to the parent node into all the steps
+        parent_ref = {self.container_name: self}
+
+        self.steps = tuple(
+            self.step_class(step, filename=filename, **parent_ref)
+            for step in parsed['steps']
+        )
+
+    indent = 2
+
+
+class HeaderNode(Node):
     """
-    A generic block, e.g. Feature:, Scenario:
-
-    Blocks contain a number of statements.
+    Nodes with a header consisting of a keyword, name and a number of tags.
     """
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, parsed, **kwargs):
+        super().__init__(parsed, **kwargs)
 
-        self.statements = []
-
-    @classmethod
-    def add_statements(cls, tokens):
-        """
-        Consume the statements to add to this block.
-        """
-
-        token = tokens[0]
-
-        self = token.node
-        self.steps = list(token.statements)
-
-        # add a backreference
-        for step in self.steps:
-            setattr(step, self.__class__.__name__.lower(), self)
-
-        assert all(isinstance(statement, Step)
-                   for statement in self.steps)
-
-        return self
-
-    def represented(self, indent=2, annotate=True):
-        """
-        Include block indents.
-        """
-
-        return super().represented(indent=indent, annotate=annotate)
-
-
-class TaggedBlock(Block):
-    """
-    Tagged blocks contain type-specific child content as well as tags.
-    """
-    def __init__(self, s, loc, tokens):
-        super().__init__(s, loc, tokens)
-
-        token = tokens[0]
-
-        self._tags = list(token.tags)
-        self.keyword = token.keyword
-        self.name = token.name.strip()
+        self._tags = tuple(
+            tag['name'][1:] for tag in parsed['tags']
+        )
+        self.keyword = parsed['keyword']
+        self.name = parsed['name'].strip()
 
         if self.name == '':
             raise LettuceSyntaxError(
                 None,
                 "{line}:{col} {klass} must have a name".format(
-                    line=lineno(loc, s),
-                    col=col(loc, s),
+                    line=self.line,
+                    col=self.col,
                     klass=self.__class__.__name__))
 
     def __str__(self):
@@ -414,71 +440,60 @@ class TaggedBlock(Block):
         """
         return self._tags
 
-    def represented(self, indent=0, annotate=True):
-        """
-        Render a tagged block.
-        """
+    @property
+    def text(self):
+        """The text for this block."""
 
-        s = u' ' * indent + u'{keyword}: {name}'.format(keyword=self.keyword,
-                                                        name=self.name)
-        if annotate:
-            s = strings.ljust(s, self.feature.max_length + 1) + \
-                u'# ' + str(self.described_at)
+        return '{keyword}: {name}'.format(keyword=self.keyword,
+                                          name=self.name)
 
-        return s
-
-    def represent_tags(self, indent=0):
+    def represent_tags(self):
         """
         Render the tags of a tagged block.
         """
 
-        return u' ' * indent + u'  '.join(u'@%s' % tag for tag in self.tags)
+        return ' ' * self.indent + '  '.join('@%s' % tag for tag in self.tags)
 
 
-class Background(Block):
+class Background(StepContainer):
     """The background of all :class:`Scenario` in a :class:`Feature`."""
-    pass
+    container_name = 'background'
+
+    text = 'Background:'
 
 
-class Scenario(TaggedBlock):
+class Scenario(HeaderNode, StepContainer):
     """A scenario within a :class:`Feature`."""
 
-    @classmethod
-    def add_statements(cls, tokens):
-        token = tokens[0]
+    container_name = 'scenario'
 
-        self = super().add_statements(tokens)
+    def __init__(self, parsed, **kwargs):
+        super().__init__(parsed, **kwargs)
 
         # Build a list of outline hashes
         # A single scenario can have multiple example blocks, the returned
         # token is a list of table tokens
-        self.outlines = []
+        self.outlines = ()
 
-        for outline in token.outlines:
-            outlines = list(map(list, outline))
-
+        for example_table in parsed.get('examples', ()):
             # the first row of the table is the column headings
-            keys = outlines[0]
+            keys = cell_values(example_table['tableHeader'])
 
-            self.outlines += [
-                OrderedDict(zip(keys, row))
-                for row in outlines[1:]
-            ]
+            # TODO: store line information here
+            self.outlines += tuple(
+                OrderedDict(zip(keys, cell_values(row)))
+                for row in example_table['tableBody']
+            )
 
-        return self
+    indent = 2
 
-    def represented(self, indent=2, **kwargs):
-        return super().represented(indent=indent, **kwargs)
-
-    def represent_tags(self, indent=2):
-        return super().represent_tags(indent=indent)
-
-    def represent_outlines(self, indent=4):
+    def represent_outlines(self):
         """
         Render the outlines table.
         """
 
-        return strings.represent_table(self.outlines_table, indent=indent)
+        return strings.represent_table(
+            self.outlines_table, indent=self.indent + 2)
 
     @memoizedproperty
     def max_length(self):
@@ -488,7 +503,7 @@ class Scenario(TaggedBlock):
 
         return max(
             0,
-            strings.get_terminal_width(self.represented(annotate=False)),
+            strings.get_terminal_width(self.represented()),
             *([step.max_length for step in self.steps] +
               [strings.get_terminal_width(line)
                for line in self.represent_outlines().splitlines()])
@@ -536,60 +551,41 @@ class Scenario(TaggedBlock):
 
             yield (outline, steps)
 
-    @memoizedproperty
-    def solved_steps(self):
-        """
-        DO NOT USE: Used only in the tests.
-        """
-
-        all_steps = []
-
-        for _, steps in self.evaluated:
-            all_steps += steps
-
-        return all_steps
-
 
 class Description(Node):
     """
     The description block of a feature.
     """
 
-    def __init__(self, s, loc, tokens):
+    def __init__(self, parsed, **kwargs):
+        super().__init__(parsed, **kwargs)
 
-        super().__init__(s, loc, tokens)
-
-        token = tokens[0]
-
-        self.lines = [u' '.join(line).strip() for line in token]
+        description = parsed.get('description', '')
+        self.lines = tuple(line.strip() for line in description.split('\n'))
 
     def __str__(self):
-        return u'\n'.join(self.lines)
+        return '\n'.join(self.lines)
 
     def __repr__(self):
         return str(self)
 
-    def represented(self, indent=2, annotate=True):
-        return u'\n'.join(
-            self.represent_line(n, annotate=annotate)
+    indent = 2
+
+    def represented(self):
+        return '\n'.join(
+            self.represent_line(n)
             for n, _ in enumerate(self.lines)
         )
 
-    def represent_line(self, n, indent=2, annotate=True):
+    def represent_line(self, idx):
         """
         Render the nth line in the description.
         """
 
-        line = self.lines[n]
-        s = u' ' * indent + line
+        line = self.lines[idx]
+        result = ' ' * self.indent + line
 
-        if annotate:
-            s = strings.ljust(s, self.feature.max_length + 1) + \
-                u'# {file}:{line}'.format(
-                    file=self.described_at.file,
-                    line=self.description_at[n])
-
-        return s
+        return result
 
     @memoizedproperty
     def description_at(self):
@@ -597,7 +593,7 @@ class Description(Node):
         Return a tuple of lines in the string containing the description.
         """
 
-        offset = self.described_at.line
+        offset = self.line
 
         return tuple(offset + lineno for lineno, _
                      in enumerate(self.lines))
@@ -609,15 +605,14 @@ class Description(Node):
         """
         try:
             return max(
-                strings.get_terminal_width(
-                    self.represent_line(n, annotate=False))
+                strings.get_terminal_width(self.represent_line(n))
                 for n, _ in enumerate(self.lines)
             )
         except ValueError:
             return 0
 
 
-class Feature(TaggedBlock):
+class Feature(HeaderNode):
     """
     A complete Gherkin feature.
 
@@ -625,51 +620,65 @@ class Feature(TaggedBlock):
     :func:`from_string`.
     """
 
+    background_class = Background
+    scenario_class = Scenario
+
+    background = None
+
+    def __init__(self, parsed, filename=None, **kwargs):
+        super().__init__(parsed, filename=filename, **kwargs)
+
+        self.description_node = Description(parsed, filename=filename)
+
+        if 'background' in parsed:
+            self.background = self.background_class(parsed['background'],
+                                                    filename=filename,
+                                                    feature=self)
+
+        self.scenarios = tuple(
+            self.scenario_class(scenario, filename=filename, feature=self)
+            for scenario in parsed['scenarioDefinitions']
+        )
+
     @classmethod
-    def from_string(cls, string, **kwargs):
+    def parse(cls, string=None, filename=None, language=None):
+        """
+        Parse either a string or a file.
+        """
+
+        parser = Parser()
+        if language:
+            if language == 'pt-br':
+                language = 'pt'
+            token_matcher = LanguageTokenMatcher(language)
+        else:
+            token_matcher = TokenMatcher()
+
+        if string:
+            token_scanner = TokenScanner(string=string)
+        else:
+            token_scanner = TokenScanner(filename=filename)
+
+        return cls(
+            parser.parse(token_scanner, token_matcher=token_matcher),
+            filename=filename,
+        )
+
+    @classmethod
+    def from_string(cls, string, language=None):
         """
         Parse a string into a :class:`Feature`.
         """
 
-        return parse(string=string, token='feature', **kwargs)[0]
+        return cls.parse(string=string, language=language)
 
     @classmethod
-    def from_file(cls, filename, **kwargs):
+    def from_file(cls, filename, language=None):
         """
         Parse a file or filename into a :class:`Feature`.
         """
 
-        self = parse(filename=filename, token='feature', **kwargs)[0]
-        self.described_at.file = filename
-        return self
-
-    @classmethod
-    def add_blocks(cls, tokens):
-        """
-        Add the background and other blocks to the feature.
-        """
-
-        token = tokens[0]
-
-        self = token.node
-        self.description_node = token.description
-        # this is here for legacy compatability
-        self.described_at.description_at = token.description.description_at
-
-        self.background = token.background \
-            if isinstance(token.background, Background) else None
-        self.scenarios = list(token.scenarios)
-
-        # add the back references
-        self.description_node.feature = self
-
-        if self.background:
-            self.background.feature = self
-
-        for scenario in self.scenarios:
-            scenario.feature = self
-
-        return self
+        return cls.parse(filename=filename, language=language)
 
     @property
     def description(self):
@@ -698,362 +707,17 @@ class Feature(TaggedBlock):
         return max(
             0,
             strings.get_terminal_width(
-                self.represented(annotate=False, description=False)),
+                self.represented(description=False)),
             self.description_node.max_length,
             *[scenario.max_length for scenario in self.scenarios]
         )
 
     # pylint:disable=arguments-differ
-    def represented(self, indent=0, annotate=True, description=True):
-        s = super().represented(indent=indent, annotate=annotate)
+    def represented(self, description=True):
+        result = super().represented()
 
-        # FIXME: indent here is description default indent + feature
-        # requested indent
         if description and self.description != '':
-            s += u'\n'
-            s += self.description_node.represented(annotate=annotate)
+            result += '\n'
+            result += self.description_node.represented()
 
-        return s
-
-
-def guess_language(string=None, filename=None):
-    """
-    Attempt to guess the language.
-
-    Do this by parsing the comments at the top of the file for the
-
-        # language: fr
-
-    phrase.
-    """
-
-    # Default
-    code = 'en'
-
-    LANG_PARSER = ZeroOrMore(
-        Suppress('#') + (
-            ((Suppress(Keyword('language')) + Suppress(':') +
-              Word(unicodePrintables)('language')) |
-             Suppress(restOfLine))
-        )
-    )
-
-    try:
-        if string:
-            tokens = LANG_PARSER.parseString(string)
-        elif filename:
-            with open(filename, 'r', 'utf-8') as fp:
-                tokens = LANG_PARSER.parseFile(fp)
-        else:
-            raise RuntimeError("Must pass string or filename")
-
-        if tokens.language != '':
-            code = tokens.language
-
-    except ParseException:
-        pass
-
-    return languages.Language(code=code)
-
-
-class GherkinComment(Token):
-    """Matches a comment on an otherwise blank line."""
-
-    errmsg = "Expected a Gherkin comment."
-
-    def parseImpl(self, instring, loc, doActions=True):
-        """Check if the comment is on a line by itself."""
-
-        # TODO: Pyparsing calls this (via .ignore()) with loc pointing to the
-        # first non-whitespace character on a line, so a naive Regex with ^
-        # doesn't work (and Python doesn't support variable-length
-        # lookbehind).
-
-        line_start = instring.rfind('\n', 0, loc)
-        if line_start == -1:
-            line_start = 0
-        else:
-            line_start += 1
-
-        if instring[line_start:loc].strip() == '' and instring[loc] == '#':
-            # Return the found comment and its end position
-            line_end = instring.find('\n', loc)
-            if line_end == -1:
-                line_end = len(instring)
-
-            comment = instring[loc:line_end]
-
-            return (line_end, ParseResults([comment]))
-        else:
-            raise ParseException(instring, loc, self.errmsg, self)
-
-    def __str__(self):
-        return 'GherkinComment()'
-
-
-def clean_multiline_string(s, loc, tokens):
-    """
-    Clean a multiline string.
-
-    The indent level of a multiline string is the indent level of the
-    triple-". We have to derive this by walking backwards from the
-    location of the quoted string token to the newline before it.
-
-    We also want to remove the leading and trailing newline if they exist.
-
-    FIXME: assumes UNIX newlines
-    """
-
-    def remove_indent(multiline, indent):
-        """
-        Generate the lines removing the indent
-        """
-
-        for ln in multiline.splitlines():
-            if ln and not ln[:indent].isspace():
-                warn("%s: %s: under-indented multiline string "
-                     "truncated: '%s'" %
-                     (lineno(loc, s), col(loc, s), ln),
-                     LettuceSyntaxWarning)
-
-            # for those who are surprised by this, slicing a string
-            # shorter than indent will yield empty string, not IndexError
-            yield ln[indent:]
-
-    # determine the indentation offset
-    indent = loc - s.rfind('\n', 0, loc) - 1
-
-    multiline = '\n'.join(remove_indent(tokens[0], indent))
-
-    # remove leading and trailing newlines
-    if multiline[0] == '\n':
-        multiline = multiline[1:]
-
-    if multiline[-1] == '\n':
-        multiline = multiline[:-1]
-
-    return multiline
-
-
-def handle_esc_char(tokens):
-    """Handle escaped tokens, such as \\| and \\n, in table cells."""
-    token = tokens[0]
-
-    if token == r'\|':
-        return u'|'
-    elif token == r'\n':
-        return u'\n'
-    elif token == r'\\':
-        return u'\\'
-
-    raise NotImplementedError(u"Unknown token: %s" % token)
-
-
-class Gherkin(object):
-    """
-    Gherkin parser
-    """
-
-    def __init__(self, language):
-        self.language = language
-
-    # Objects that will be created as a result of parsing. These are meant to
-    # be overridden in subclasses.
-    step_class = Step
-    background_class = Background
-    scenario_class = Scenario
-    feature_class = Feature
-    description_class = Description
-
-    # The rest of the class describes Gherkin grammar
-
-    eol = Suppress(lineEnd)
-    utfword = Word(unicodePrintables).setWhitespaceChars(' \t')
-
-    # @tag
-    tag = Suppress('@') + utfword
-
-    #
-    # A table
-    #
-    # A table is made up of rows of cells, e.g.
-    #
-    #   | column 1 | column 2 |
-    #
-    # Table cells need to be able to handle escaped tokens such as \| and \n
-    #
-    esc_char = Word(initChars=r'\\', bodyChars=unicodePrintables, exact=2)
-    esc_char.setParseAction(handle_esc_char)
-
-    #
-    # A cell can contain anything except a cell marker, new line or the
-    # beginning of a cell marker, we then handle escape characters separately
-    # and recombine the cell afterwards
-    #
-    cell = OneOrMore(CharsNotIn('|\n\\') + Optional(esc_char))
-    cell.setParseAction(''.join)
-
-    table_row = Suppress('|') + OneOrMore(cell + Suppress('|')) + eol
-    table_row.setParseAction(lambda tokens: [v.strip() for v in tokens])
-    table = Group(OneOrMore(Group(table_row)))
-
-    multiline = QuotedString('"""', multiline=True)\
-        .setParseAction(clean_multiline_string)
-
-    # The following are properties that return functions, which confuses
-    # Pylint.
-    # pylint:disable=too-many-function-args
-
-    # A Step
-    #
-    # Steps begin with a keyword such as Given, When, Then or And.
-    # After the step sentence they can contain a table or a multiline 'Python'
-    # string.
-    #
-    # <variables> are not parsed as part of the grammar as it's not easy to
-    # distinguish between a variable and XML. Instead scenarios will replace
-    # instances in the steps based on the outline keys.
-    #
-    @memoizedproperty
-    def statements(self):
-        """A sequence of steps."""
-        statement_sentence = Group(
-            self.language.STATEMENT +  # Given, When, Then, And
-            OneOrMore(self.utfword |
-                      quotedString.setWhitespaceChars(' \t')) +
-            self.eol
-        )
-
-        statement = Group(
-            statement_sentence('sentence') +
-            Optional(self.table('table') | self.multiline('multiline'))
-        )
-        statement.setParseAction(self.step_class)
-
-        return Group(ZeroOrMore(statement))
-
-    # Background
-    @memoizedproperty
-    def background_defn(self):
-        """'Background: '"""
-        defn = self.language.BACKGROUND('keyword') + Suppress(':') + self.eol
-        defn.setParseAction(self.background_class)
-        return defn
-
-    @memoizedproperty
-    def background(self):
-        """Background definition."""
-        return Group(
-            self.background_defn('node') + self.statements('statements')
-        ).setParseAction(self.background_class.add_statements)
-
-    @memoizedproperty
-    def scenario_defn(self):
-        """'Scenario: description'"""
-        defn = Group(
-            Group(ZeroOrMore(self.tag))('tags') +
-            self.language.SCENARIO('keyword') + Suppress(':') +
-            restOfLine('name') +
-            self.eol
-        )
-        defn.setParseAction(self.scenario_class)
-        return defn
-
-    @memoizedproperty
-    def scenario(self):
-        """Scenario definition."""
-        return Group(
-            self.scenario_defn('node') +
-            self.statements('statements') +
-            Group(ZeroOrMore(
-                Suppress(self.language.EXAMPLES + ':') + self.eol + self.table
-            ))('outlines')
-        ).setParseAction(self.scenario_class.add_statements)
-
-    @memoizedproperty
-    def feature_defn(self):
-        """'Feature: description'"""
-        return Group(
-            Group(ZeroOrMore(self.tag))('tags') +
-            self.language.FEATURE('keyword') + Suppress(':') +
-            restOfLine('name') +
-            self.eol
-        ).setParseAction(self.feature_class)
-
-    @memoizedproperty
-    def description(self):
-        """
-        A description composed of zero or more lines, before the
-        Background/Scenario block.
-        """
-        description_line = Group(
-            ~self.background_defn + ~self.scenario_defn +
-            OneOrMore(self.utfword) +
-            self.eol
-        )
-        description = Group(ZeroOrMore(description_line | self.eol))
-        description.setParseAction(self.description_class)
-        return description
-
-    @memoizedproperty
-    def feature(self):
-        """Complete feature file definition."""
-        result = Group(
-            self.feature_defn('node') +
-            self.description('description') +
-            Optional(self.background('background')) +
-            Group(OneOrMore(self.scenario))('scenarios') +
-            stringEnd
-        )
-        result.ignore(GherkinComment())
-        result.setParseAction(self.feature_class.add_blocks)
         return result
-
-
-def parse(string=None,
-          filename=None,
-          token='feature',
-          language=None,
-          parser_class=Gherkin):
-    """
-    Parse a token stream from or raise a SyntaxError.
-    """
-
-    if not language:
-        language = guess_language(string, filename)
-
-    parser = parser_class(language)
-
-    #
-    # Try parsing the string
-    #
-
-    token = getattr(parser, token)
-
-    try:
-        if string:
-            tokens = token.parseString(string)
-        elif filename:
-            with open(filename, 'r', 'utf-8') as fp:
-                tokens = token.parseFile(fp)
-        else:
-            raise RuntimeError("Must pass string or filename")
-
-        return tokens
-    except ParseException as e:
-        if e.parserElement == stringEnd:
-            msg = "Expected EOF (max one feature per file)"
-        else:
-            msg = e.msg
-
-        raise LettuceSyntaxError(
-            filename,
-            u"{lineno}:{col} Syntax Error: {msg}\n{line}\n{space}^".format(
-                msg=msg,
-                lineno=e.lineno,
-                col=e.col,
-                line=e.line,
-                space=' ' * (e.col - 1)))
-    except LettuceSyntaxError as e:
-        # reraise the exception with the filename
-        raise LettuceSyntaxError(filename, e.string)

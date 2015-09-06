@@ -11,7 +11,6 @@ from future import standard_library
 standard_library.install_aliases()
 
 from nose.tools import assert_equal
-from aloe.languages import Language
 from aloe.parser import Feature
 
 SCENARIO = u"""
@@ -116,28 +115,12 @@ def parse_scenario(string, language=None):
     return feature.scenarios[0]
 
 
-def test_language_french():
-    """
-    Language: FR -> Language class supports french through code "fr"
-    """
-
-    lang = Language('fr')
-
-    assert_equal(lang.code, u'fr')
-    assert_equal(lang.name, u'French')
-    assert_equal(lang.native, u'Français')
-    assert_equal(lang.FEATURE, u'Fonctionnalité')
-    assert_equal(lang.SCENARIO, u'Scénario')
-    assert_equal(lang.EXAMPLES, u'Exemples')
-
-
 def test_scenario_fr_from_string():
     """
     Language: FR -> Scenario.from_string
     """
 
-    lang = Language('fr')
-    scenario = parse_scenario(SCENARIO, language=lang)
+    scenario = parse_scenario(SCENARIO, language='fr')
 
     assert_equal(
         scenario.name,
@@ -145,10 +128,10 @@ def test_scenario_fr_from_string():
     )
     assert_equal(
         scenario.steps[0].hashes,
-        [
+        (
             {'Nom': u"Science de l'Informatique", u'Durée': '5 ans'},
             {'Nom': u'Nutrition', u'Durée': '4 ans'},
-        ]
+        )
     )
 
 
@@ -157,8 +140,7 @@ def test_scenario_outline1_fr_from_string():
     Language: FR -> Scenario.from_string, with scenario outline, first case
     """
 
-    lang = Language('fr')
-    scenario = parse_scenario(OUTLINED_SCENARIO, language=lang)
+    scenario = parse_scenario(OUTLINED_SCENARIO, language='fr')
 
     assert_equal(
         scenario.name,
@@ -166,14 +148,14 @@ def test_scenario_outline1_fr_from_string():
     )
     assert_equal(
         scenario.outlines,
-        [
+        (
             {u'input_1': u'20', u'input_2': u'30',
              u'bouton': u'add', u'output': u'50'},
             {u'input_1': u'2', u'input_2': u'5',
              u'bouton': u'add', u'output': u'7'},
             {u'input_1': u'0', u'input_2': u'40',
              u'bouton': u'add', u'output': u'40'},
-        ]
+        )
     )
 
 
@@ -182,8 +164,7 @@ def test_scenario_outline2_fr_from_string():
     Language: FR -> Scenario.from_string, with scenario outline, second case
     """
 
-    lang = Language('fr')
-    scenario = parse_scenario(OUTLINED_SCENARIO2, language=lang)
+    scenario = parse_scenario(OUTLINED_SCENARIO2, language='fr')
 
     assert_equal(
         scenario.name,
@@ -191,14 +172,14 @@ def test_scenario_outline2_fr_from_string():
     )
     assert_equal(
         scenario.outlines,
-        [
+        (
             {u'input_1': u'20', u'input_2': u'30',
              u'bouton': u'add', u'output': u'50'},
             {u'input_1': u'2', u'input_2': u'5',
              u'bouton': u'add', u'output': u'7'},
             {u'input_1': u'0', u'input_2': u'40',
              u'bouton': u'add', u'output': u'40'},
-        ]
+        )
     )
 
 
@@ -207,8 +188,7 @@ def test_scenario_outline3_fr_from_string():
     Language: FR -> Scenario.from_string, with scenario outline, third case
     """
 
-    lang = Language('fr')
-    scenario = parse_scenario(OUTLINED_SCENARIO2, language=lang)
+    scenario = parse_scenario(OUTLINED_SCENARIO2, language='fr')
 
     assert_equal(
         scenario.name,
@@ -216,14 +196,14 @@ def test_scenario_outline3_fr_from_string():
     )
     assert_equal(
         scenario.outlines,
-        [
+        (
             {u'input_1': u'20', u'input_2': u'30',
              u'bouton': u'add', u'output': u'50'},
             {u'input_1': u'2', u'input_2': u'5',
              u'bouton': u'add', u'output': u'7'},
             {u'input_1': u'0', u'input_2': u'40',
              u'bouton': u'add', u'output': u'40'},
-        ]
+        )
     )
 
 
@@ -232,9 +212,7 @@ def test_feature_fr_from_string():
     Language: FR -> Feature.from_string
     """
 
-    lang = Language('fr')
-
-    feature = Feature.from_string(OUTLINED_FEATURE, language=lang)
+    feature = Feature.from_string(OUTLINED_FEATURE, language='fr')
 
     assert_equal(
         feature.name,
@@ -257,14 +235,14 @@ def test_feature_fr_from_string():
 
     assert_equal(
         scenario.outlines,
-        [
+        (
             {u'input_1': u'20', u'input_2': u'30',
              u'bouton': u'add', u'output': u'50'},
             {u'input_1': u'2', u'input_2': u'5',
              u'bouton': u'add', u'output': u'7'},
             {u'input_1': u'0', u'input_2': u'40',
              u'bouton': u'add', u'output': u'40'},
-        ]
+        )
     )
 
 
@@ -273,9 +251,7 @@ def test_feature_fr_from_string2():
     Language: FR -> Feature.from_string, alternate name
     """
 
-    lang = Language('fr')
-
-    feature = Feature.from_string(OUTLINED_FEATURE2, language=lang)
+    feature = Feature.from_string(OUTLINED_FEATURE2, language='fr')
 
     assert_equal(
         feature.name,
@@ -298,12 +274,12 @@ def test_feature_fr_from_string2():
 
     assert_equal(
         scenario.outlines,
-        [
+        (
             {u'input_1': u'20', u'input_2': u'30',
              u'bouton': u'add', u'output': u'50'},
             {u'input_1': u'2', u'input_2': u'5',
              u'bouton': u'add', u'output': u'7'},
             {u'input_1': u'0', u'input_2': u'40',
              u'bouton': u'add', u'output': u'40'},
-        ]
+        )
     )

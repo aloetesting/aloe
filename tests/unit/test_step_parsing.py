@@ -45,33 +45,10 @@ Given I have a string like so:
   """
 '''.strip()
 
-MULTI_LINE_WHITESPACE = '''
-Given I have a string like so:
-  """
-  This is line one
-  and this is line two
-  and this is line three
- "  and this is line four,
- "
- "  with spaces at the beginning
-  and spaces at the end   "
-  """
-'''.strip()
 
-
-INVALID_MULTI_LINE = '''
-  """
-  invalid one...
-  """
-'''.strip()
-
-
-import warnings
-
-from nose.tools import assert_equal, assert_raises
+from nose.tools import assert_equal
 
 from aloe.parser import Feature, Step
-from aloe.exceptions import LettuceSyntaxError
 
 
 def parse_steps(step):
@@ -135,24 +112,18 @@ def test_can_parse_tables():
 
     step, = parse_steps(I_HAVE_TASTY_BEVERAGES)
 
-    assert isinstance(step.hashes, list)
-    assert_equal(len(step.hashes), 2)
-    assert_equal(
-        step.hashes[0],
+    assert_equal(step.hashes, (
         {
             'Name': 'Skol',
             'Type': 'Beer',
             'Price': '3.80'
-        }
-    )
-    assert_equal(
-        step.hashes[1],
+        },
         {
             'Name': 'Nestea',
             'Type': 'Ice-tea',
             'Price': '2.10'
-        }
-    )
+        },
+    ))
 
 
 def test_can_parse_a_unary_array_from_single_step():
@@ -218,14 +189,6 @@ def test_can_parse_two_ordinary_steps():
     assert_equal(steps[1].sentence, first_line_of(I_LIKE_VEGETABLES))
 
 
-def test_cannot_start_with_multiline():
-    """
-    It should raise an error when a step starts with a multiline string
-    """
-
-    assert_raises(LettuceSyntaxError, lambda: parse_steps(INVALID_MULTI_LINE))
-
-
 def test_multiline_is_part_of_previous_step():
     """
     It should correctly parse a multi-line string as part of the preceding step
@@ -254,12 +217,12 @@ def test_table_escaping():
 
     step, = steps
 
-    assert_equal(step.table, [
-        [r'Column 1'],
-        [r'This is a column'],
-        [r'This is | also a column'],
-        [r'This is \ a backslash'],
-    ])
+    assert_equal(step.table, (
+        (r'Column 1',),
+        (r'This is a column',),
+        (r'This is | also a column',),
+        (r'This is \ a backslash',),
+    ))
 
 
 def test_multiline_is_parsed():
@@ -272,40 +235,6 @@ and this is line three
   and this is line four,
 
   with spaces at the beginning""")
-
-
-def test_multiline_with_whitespace():
-    """Test parsing a multiline string with whitespace in a step."""
-    with warnings.catch_warnings(record=True) as warn:
-        step, = parse_steps(MULTI_LINE_WHITESPACE)
-        assert len(warn) == 3
-
-    assert_equal(step.sentence, 'Given I have a string like so:')
-    assert_equal(step.multiline, u"""This is line one
-and this is line two
-and this is line three
-  and this is line four,
-
-  with spaces at the beginning
-and spaces at the end   \"""")
-
-
-def test_multiline_larger_indents():
-    """Test parsing a multiline string with varying indents in a step."""
-    with warnings.catch_warnings(record=True) as warn:
-        step, = parse_steps('''
-    Given I have a string line so:
-    """
-        Extra indented to start with
-    And back
-And under indented
-    """
-    ''')
-        assert len(warn) == 1
-
-    assert_equal(step.multiline, u"""    Extra indented to start with
-And back
-under indented""")
 
 
 def test_step_with_hash():

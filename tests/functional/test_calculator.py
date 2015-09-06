@@ -9,7 +9,9 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
-from os.path import dirname
+import sys
+import os
+from inspect import getsourcefile
 
 from aloe import world
 
@@ -40,8 +42,9 @@ class CalculatorTest(FeatureTest):
 
         stream = str_io()
 
-        self.assert_feature_fail('features/wrong_expectations.feature',
-                                 stream=stream)
+        failing_feature = 'features/wrong_expectations.feature'
+
+        self.assert_feature_fail(failing_feature, stream=stream)
 
         # Check that the appropriate error messages were printed
 
@@ -53,17 +56,19 @@ class CalculatorTest(FeatureTest):
         self.assertIn(error_header, output)
 
         feature_stack_frame = """
-  File "features/wrong_expectations.feature", line 11, in Add two numbers
+  File "{feature}", line 11, in Add two numbers
     Then the result should be 40 on the screen
-        """.strip()
+        """.strip().format(feature=os.path.abspath(failing_feature))
 
         self.assertIn(feature_stack_frame, output)
 
+        step_file = getsourcefile(sys.modules['features.steps'])
+
         step_stack_frame = """
-  File "{root}/tests/simple_app/features/steps.py", line 60, in assert_result
+  File "{step_file}", line 60, in assert_result
     assert world.result == float(result)
 AssertionError
-        """.strip().format(root=dirname(dirname(dirname(__file__))))
+        """.strip().format(step_file=step_file)
 
         self.assertIn(step_stack_frame, output)
 

@@ -88,7 +88,7 @@ Feature: Big table
 
 FEATURE6 = """
 Feature: Big scenario outline
-  Scenario: Regular numbers
+  Scenario Outline: Regular numbers
     Given I do fill 'description' with '<value_two>'
   Examples:
     | value_two                                                               |
@@ -108,7 +108,7 @@ Feature: Big table
 
 FEATURE8 = """
 Feature: Big scenario outline
-  Scenario: big scenario outlines
+  Scenario Outline: big scenario outlines
     Given I do fill 'description' with '<value_two>'
 
   Examples:
@@ -119,7 +119,7 @@ Feature: Big scenario outline
 
 FEATURE9 = """
 Feature: Big scenario outline
-  Scenario: big scenario outlines
+  Scenario Outline: big scenario outlines
     Given I do fill 'description' with '<value_two>'
 
   Examples:
@@ -477,7 +477,7 @@ def test_feature_has_scenarios():
 
     feature = Feature.from_string(FEATURE1)
 
-    assert isinstance(feature.scenarios, list)
+    assert isinstance(feature.scenarios, tuple)
     assert len(feature.scenarios) == 3
 
     expected_names = [
@@ -490,8 +490,10 @@ def test_feature_has_scenarios():
         assert isinstance(scenario, Scenario)
         assert scenario.name == expected_name
 
-    assert feature.scenarios[1].steps[0].keys == \
+    assert_equal(
+        feature.scenarios[1].steps[0].keys,
         ('Name', 'Rating', 'New', 'Available')
+    )
 
     assert list(feature.scenarios[1].steps[0].hashes) == [
         {
@@ -664,20 +666,20 @@ def test_single_scenario_single_scenario():
 
     first_scenario = feature.scenarios[0]
 
-    assert first_scenario.tags == [
+    assert_equal(first_scenario.tags, (
         'many', 'other', 'basic', 'tags', 'here', ':)'
-    ]
+    ))
 
 
 def test_single_feature_single_tag():
     "All scenarios within a feature inherit the feature's tags"
     feature = Feature.from_string(FEATURE18)
 
-    assert feature.scenarios[0].tags == ['runme1', 'feature_runme']
+    assert feature.scenarios[0].tags == ('runme1', 'feature_runme')
 
-    assert feature.scenarios[1].tags == ['runme2', 'feature_runme']
+    assert feature.scenarios[1].tags == ('runme2', 'feature_runme')
 
-    assert feature.scenarios[2].tags == ['runme3', 'feature_runme']
+    assert feature.scenarios[2].tags == ('runme3', 'feature_runme')
 
 
 def test_single_scenario_many_scenarios():
@@ -686,23 +688,23 @@ def test_single_scenario_many_scenarios():
     feature = Feature.from_string(FEATURE13)
 
     first_scenario = feature.scenarios[0]
-    assert first_scenario.tags == ['runme']
+    assert first_scenario.tags == ('runme',)
 
     second_scenario = feature.scenarios[1]
-    assert second_scenario.tags == []
+    assert second_scenario.tags == ()
 
     third_scenario = feature.scenarios[2]
-    assert third_scenario.tags == ['slow']
+    assert third_scenario.tags == ('slow',)
 
     last_scenario = feature.scenarios[3]
-    assert last_scenario.tags == []
+    assert last_scenario.tags == ()
 
 
 def test_scenarios_with_extra_whitespace():
     "Make sure that extra leading whitespace is ignored"
     feature = Feature.from_string(FEATURE14)
 
-    assert_equal(type(feature.scenarios), list)
+    assert_equal(type(feature.scenarios), tuple)
     assert_equal(len(feature.scenarios), 1, "It should have 1 scenario")
     assert_equal(feature.name, "Extra whitespace feature")
 
@@ -716,34 +718,34 @@ def test_scenarios_parsing():
     feature = Feature.from_string(FEATURE15)
     scenarios_and_tags = [(s.name, s.tags) for s in feature.scenarios]
 
-    assert scenarios_and_tags == [
-        ('Bootstraping Redis role', []),
-        ('Restart scalarizr', []),
-        ('Rebundle server', [u'rebundle']),
-        ('Use new role', [u'rebundle']),
-        ('Restart scalarizr after bundling', [u'rebundle']),
-        ('Bundling data', []),
-        ('Modifying data', []),
-        ('Reboot server', []),
-        ('Backuping data on Master', []),
-        ('Setup replication', []),
-        ('Restart scalarizr in slave', []),
-        ('Slave force termination', []),
-        ('Slave delete EBS', [u'ec2']),
-        ('Setup replication for EBS test', [u'ec2']),
-        ('Writing on Master, reading on Slave', []),
-        ('Slave -> Master promotion', []),
-        ('Restart farm', [u'restart_farm']),
-    ]
+    assert_equal(scenarios_and_tags, [
+        ('Bootstraping Redis role', ()),
+        ('Restart scalarizr', ()),
+        ('Rebundle server', ('rebundle',)),
+        ('Use new role', ('rebundle',)),
+        ('Restart scalarizr after bundling', ('rebundle',)),
+        ('Bundling data', ()),
+        ('Modifying data', ()),
+        ('Reboot server', ()),
+        ('Backuping data on Master', ()),
+        ('Setup replication', ()),
+        ('Restart scalarizr in slave', ()),
+        ('Slave force termination', ()),
+        ('Slave delete EBS', ('ec2',)),
+        ('Setup replication for EBS test', ('ec2',)),
+        ('Writing on Master, reading on Slave', ()),
+        ('Slave -> Master promotion', ()),
+        ('Restart farm', ('restart_farm',)),
+    ])
 
 
 def test_scenarios_with_special_characters():
     "Make sure that regex special characters in the scenario names are ignored"
     feature = Feature.from_string(FEATURE19)
 
-    assert feature.scenarios[0].tags == ['runme1']
+    assert feature.scenarios[0].tags == ('runme1',)
 
-    assert feature.scenarios[1].tags == ['runme2']
+    assert feature.scenarios[1].tags == ('runme2',)
 
 
 def test_background_parsing_with_mmf():
@@ -761,7 +763,7 @@ def test_background_parsing_with_mmf():
     step1, step2 = feature.background.steps
     assert step1.sentence == \
         'Given I have the following movies in my database:'
-    assert step1.hashes == [
+    assert_equal(step1.hashes, (
         {
             u'Available': u'6',
             u'Rating': u'4 stars',
@@ -774,14 +776,14 @@ def test_background_parsing_with_mmf():
             u'Name': u'Iron Man 2',
             u'New': u'yes',
         },
-    ]
+    ))
 
     assert step2.sentence == \
         'And the following clients:'
-    assert step2.hashes == [
+    assert_equal(step2.hashes, (
         {u'Name': u'John Doe'},
         {u'Name': u'Foo Bar'},
-    ]
+    ))
 
 
 def test_background_parsing_without_mmf():
@@ -796,7 +798,7 @@ def test_background_parsing_without_mmf():
     step1, step2 = feature.background.steps
     assert step1.sentence == \
         'Given I have the following movies in my database:'
-    assert step1.hashes == [
+    assert_equal(step1.hashes, (
         {
             u'Available': u'6',
             u'Rating': u'4 stars',
@@ -809,24 +811,24 @@ def test_background_parsing_without_mmf():
             u'Name': u'Iron Man 2',
             u'New': u'yes',
         },
-    ]
-    assert step1.table == [
-        ['Name', 'Rating', 'New', 'Available'],
-        ['Matrix Revolutions', '4 stars', 'no', '6'],
-        ['Iron Man 2', '5 stars', 'yes', '11'],
-    ]
+    ))
+    assert_equal(step1.table, (
+        ('Name', 'Rating', 'New', 'Available'),
+        ('Matrix Revolutions', '4 stars', 'no', '6'),
+        ('Iron Man 2', '5 stars', 'yes', '11'),
+    ))
 
     assert step2.sentence == \
         'And the following clients:'
-    assert step2.hashes == [
+    assert_equal(step2.hashes, (
         {u'Name': u'John Doe'},
         {u'Name': u'Foo Bar'},
-    ]
-    assert step2.table == [
-        ['Name'],
-        ['John Doe'],
-        ['Foo Bar'],
-    ]
+    ))
+    assert_equal(step2.table, (
+        ('Name',),
+        ('John Doe',),
+        ('Foo Bar',),
+    ))
 
 
 def test_syntax_error_for_scenarios_with_no_name():
@@ -848,8 +850,8 @@ def test_scenario_post_email():
     feature = Feature.from_string(FEATURE21)
     scenario1, scenario2 = feature.scenarios
 
-    assert scenario1.tags == []
-    assert scenario2.tags == ['tag']
+    assert scenario1.tags == ()
+    assert scenario2.tags == ('tag',)
 
 
 def test_feature_first_scenario_tag_extraction():
@@ -857,7 +859,7 @@ def test_feature_first_scenario_tag_extraction():
      "belonging to the first scenario")
     feature = Feature.from_string(FEATURE22)
 
-    assert feature.scenarios[0].tags == ['onetag']
+    assert feature.scenarios[0].tags == ('onetag',)
 
 
 def test_feature_first_scenario_tags_extraction():
@@ -866,4 +868,4 @@ def test_feature_first_scenario_tags_extraction():
     feature = Feature.from_string(FEATURE23)
 
     assert feature.scenarios[0].tags == \
-        ['onetag', 'another', '$%^&even-weird_chars']
+        ('onetag', 'another', '$%^&even-weird_chars')
