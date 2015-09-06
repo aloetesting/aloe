@@ -224,6 +224,13 @@ class TestCase(unittest.TestCase):
                 '    outline{i}(self)'.format(i=i)
                 for i in range(len(scenario.outlines))
             )
+            source = ast.parse(source)
+
+            # Set locations of the steps
+            for outline, outline_call in \
+                    zip(scenario.outlines, source.body[0].body):
+                for node in ast.walk(outline_call):
+                    node.lineno = outline.line
 
             context = {
                 'outline' + str(i): cls.make_steps(scenario,
