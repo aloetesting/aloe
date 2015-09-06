@@ -35,7 +35,7 @@ from aloe.registry import (
     PriorityClass,
     STEP_REGISTRY,
 )
-from aloe.utils import always_str
+from aloe.utils import identifier
 
 # Pylint can't figure out methods vs. properties and which classes are
 # abstract
@@ -188,7 +188,7 @@ class TestCase(unittest.TestCase):
             for scenario in scenarios
         })
 
-        class_name = always_str(feature.name)
+        class_name = identifier(feature.name)
 
         return type(class_name, (cls,), members)
 
