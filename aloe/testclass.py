@@ -69,15 +69,15 @@ class TestStep(Step):
 
     def given(self, string):
         """Run the specified 'Given' step in the current context."""
-        self.behave_as('Given ' + string)
+        self.behave_as(self.step_keyword('given') + string)
 
     def when(self, string):
         """Run the specified 'When' step in the current context."""
-        self.behave_as('When ' + string)
+        self.behave_as(self.step_keyword('when') + string)
 
     def then(self, string):
         """Run the specified 'Then' step in the current context."""
-        self.behave_as('Then ' + string)
+        self.behave_as(self.step_keyword('then') + string)
 
 
 class TestBackground(Background):
