@@ -450,6 +450,61 @@ Feature: three tags in the first scenario
 """
 
 
+F1 = """
+Feature: handle login to any page
+
+    As a QIPPS user
+    I want to be able to visit any link and log in if required and then be redirected to the link
+    So that I can log in from a bookmark, shared link or link in an email
+
+    Background:
+        Given I have users in the database:
+            | email                | first_name | last_name |
+            | kath.hanna@gmail.com | Kathleen   | Hanna     |
+        And I have users in the fake profile server:
+            | email                | subscribed |
+            | kath.hanna@gmail.com | true       |
+        And I have organisations in the database:
+            | name        |
+            | Bikini Kill |
+            | Le Tigre    |
+        And users have permissions:
+            | user                 | organisation | permission         |
+            | kath.hanna@gmail.com | Bikini Kill  | organisation_admin |
+            | kath.hanna@gmail.com | Le Tigre     | organisation_admin |
+        And organisation with name "Bikini Kill" has projects in the database:
+            | name                |
+            | Reject All American |
+        And project with name "Reject All American" has attachments in the database:
+            | model   | file                                         |
+            | project | Bikini Kill/Reject All American/Track 01.mp3 |
+
+    Scenario Outline: I am redirected to login
+        Given I have a fresh web browser
+
+        When I visit site page "<url>"
+
+        Then I should not see "<page_name>"
+        And the browser's URL should contain "next=/<url>"
+        And I should see an element with id of "login_frame"
+
+        Examples:
+            | page_name           | url                                    |
+            | My Projects         | my/projects                            |
+            | Project Summary     | admin                                  |
+            | Organisation Users  | organisation/1/admin/users             |
+            | Downdowns           | organisation/1/admin/dropdowns         |
+            | Projects            | organisation/1/projects                |
+            | Reject All American | project/1/overview                     |
+            | Goals               | project/1/goals                        |
+            | IGNORED             | project/1/file/1/download/Track_01.mp3 |
+            | IGNORED             | project/1/tasks/csv                    |"""
+
+
+def test_f1():
+    feature = Feature.from_string(F1)
+
+
 def test_feature_has_repr():
     """
     Feature implements __repr__ nicely
