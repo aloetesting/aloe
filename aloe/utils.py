@@ -113,6 +113,7 @@ class memoizedproperty(object):  # pylint:disable=invalid-name
     def __init__(self, func):
         self.func = func
         self.name = func.__name__
+        self.__doc__ = func.__doc__
 
     def __get__(self, instance, owner):
         """Compute the value and cache it in the class dict."""
