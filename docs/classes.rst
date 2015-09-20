@@ -10,7 +10,8 @@ Feature
 .. autoclass:: aloe.parser.Feature()
     :members:
     :inherited-members:
-    :exclude-members: add_blocks, add_statements, feature
+    :exclude-members: add_blocks, add_statements, feature, represent_tags,
+        background_class, scenario_class, text, max_length
 
 Background
 ----------
@@ -18,7 +19,7 @@ Background
 .. autoclass:: aloe.parser.Background()
     :members:
     :inherited-members:
-    :exclude-members: add_statements, represented
+    :exclude-members: add_statements, represented, step_class, text, max_length
 
     .. attribute:: feature
 
@@ -30,7 +31,8 @@ Scenario
 .. autoclass:: aloe.parser.Scenario()
     :members:
     :inherited-members:
-    :exclude-members: solved_steps
+    :exclude-members: solved_steps, represented, represent_tags,
+        represent_outlines, step_class, evaluated, text, max_length
 
     .. attribute:: name
 
@@ -40,13 +42,19 @@ Scenario
 
         The :class:`Feature` this scenario belongs to.
 
+    .. attribute:: outlines
+
+        The examples for this scenario outline as a list of dicts mapping
+        column name to value.
+
 Step
 ----
 
 .. autoclass:: aloe.parser.Step()
     :members:
     :inherited-members:
-    :exclude-members: represented
+    :exclude-members: represented, represent_multiline, represent_table,
+        resolve_substitutions, step_keyword, text, max_length
 
     .. attribute:: scenario
 

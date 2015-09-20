@@ -333,6 +333,18 @@ class StepDict(dict):
                 num_oranges = int(num_oranges)
 
                 ...
+
+        Steps can be passed a table of data.
+
+        .. code-block:: gherkin
+
+            Given the following users are registered:
+                | username | real name |
+                | danni    | Danni     |
+                | alexey   | Alexey    |
+
+        This is exposed in the step as :attr:`step.table` and
+        :attr:`step.hashes`.
         """
 
         if isinstance(step_func_or_sentence, bytes):
