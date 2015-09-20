@@ -6,6 +6,39 @@ Defining Steps
 
 .. autofunction:: aloe.step(sentence=None)
 
+Common regular expressions for capturing data
+---------------------------------------------
+
+**String**
+
+    .. code-block:: gherkin
+
+        Given I logged in as "alexey"
+
+    .. code-block:: python
+
+        @step(r'I logged in as "([^"]*)"')
+
+**Number**
+
+    .. code-block:: gherkin
+
+        Then the price should be $12.99
+
+    .. code-block:: python
+
+        @step(r'The price should be \$(\d+\.?\d*)')
+
+**Path/URI/etc.**
+
+    .. code-block:: gherkin
+
+        Given I visit /user/alexey/profile
+
+    .. code-block:: python
+
+        @step(r'I visit ([^\s]+)')
+
 Step Loading
 ------------
 
