@@ -12,6 +12,8 @@ from builtins import super
 from future import standard_library
 standard_library.install_aliases()
 
+from aloe.utils import PY3
+
 
 class LettuceSyntaxError(SyntaxError):
     """A syntax error in a feature file."""
@@ -38,3 +40,10 @@ class NoDefinitionFound(Exception):
     def __init__(self, step):
         self.step = step
         super().__init__('The step r"%s" is not defined' % self.step.sentence)
+
+
+# Step definitions can contain Unicode, and that will propagate to the
+# exception message. On Python 2, this makes handling such exceptions tricky,
+# so force encoding the message as Unicode.
+if not PY3:
+    NoDefinitionFound.__str__ = lambda self: self.message.encode('utf-8')
