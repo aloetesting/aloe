@@ -25,11 +25,6 @@ class LettuceSyntaxError(SyntaxError):
         super().__init__(msg)
 
 
-class LettuceSyntaxWarning(SyntaxWarning):
-    """A warning about syntax in a feature file."""
-    pass
-
-
 class StepLoadingError(Exception):
     """Raised when a step cannot be loaded."""
     pass

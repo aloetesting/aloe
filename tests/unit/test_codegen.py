@@ -13,10 +13,8 @@ import unittest
 from contextlib import contextmanager
 
 from aloe.codegen import (
-    indent,
     make_function,
     multi_manager,
-    remove_indent,
 )
 
 
@@ -48,61 +46,6 @@ class TestCodegen(unittest.TestCase):
         )
         self.assertEqual(adder(10, 3), 23)
         self.assertEqual(adder.__name__, 'adder')
-
-
-class TestIndent(unittest.TestCase):
-    """
-    Test indentation utilities.
-    """
-
-    def test_indent(self):
-        """Test indent()."""
-        original = '\n'.join((
-            'def one():',
-            '    pass',
-            '',
-            'def two():',
-            '    pass',
-            '',
-        ))
-
-        self.assertEqual(indent(original), '\n'.join((
-            '    def one():',
-            '        pass',
-            '',
-            '    def two():',
-            '        pass',
-            '',
-        )))
-
-        self.assertEqual(indent(original, 3), '\n'.join((
-            '            def one():',
-            '                pass',
-            '',
-            '            def two():',
-            '                pass',
-            '',
-        )))
-
-    def test_remove_indent(self):
-        """Test remove_indent()."""
-        original = '\n'.join((
-            '    def one():',
-            '        pass',
-            '',
-            '    def two():',
-            '        pass',
-            '    ',
-        ))
-
-        self.assertEqual(remove_indent(original), '\n'.join((
-            'def one():',
-            '    pass',
-            '',
-            'def two():',
-            '    pass',
-            '',
-        )))
 
 
 class TestMultiManager(unittest.TestCase):

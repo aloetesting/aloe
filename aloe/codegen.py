@@ -12,6 +12,7 @@ standard_library.install_aliases()
 import ast
 import re
 from contextlib import contextmanager
+from textwrap import dedent
 
 from aloe.utils import identifier
 
@@ -54,41 +55,6 @@ def make_function(source, context=None, source_file=None, name=None):
     return context[name]
 
 
-def indent(source, count=1):
-    """
-    Indent the source by count*4 spaces.
-    """
-
-    prepend = ' ' * 4 * count
-    return '\n'.join(
-        # Only indent the non-empty lines
-        prepend + line if line else line
-        for line in source.split('\n')
-    )
-
-
-NOT_SPACE = re.compile('[^ ]')
-
-
-def remove_indent(source):
-    """
-    Remove as much indentation as possible from the code.
-    """
-
-    lines = source.split('\n')
-    min_indent = min(
-        match.start() for match in (
-            NOT_SPACE.search(line)
-            for line in lines
-        ) if match
-    )
-
-    return '\n'.join(
-        line[min_indent:]
-        for line in lines
-    )
-
-
 def multi_manager(*managers):
     """
     A context manager invoking all the given context managers in order.
@@ -97,7 +63,7 @@ def multi_manager(*managers):
     """
 
     if len(managers) == 0:
-        source = remove_indent(
+        source = dedent(
             """
             def null_manager(*args, **kwargs):
                 yield ()
@@ -114,7 +80,7 @@ def multi_manager(*managers):
             for i in range(len(managers))
         ) + ')'
 
-        source = remove_indent(
+        source = dedent(
             """
             def multi_manager(*args, **kwargs):
                 with {with_stmt}:
