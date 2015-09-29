@@ -146,8 +146,8 @@ AssertionError
 
         output = stream.getvalue()
 
-        error_header = "ERROR: Failure: NoDefinitionFound " + \
-            "(The step r\"When I engage the warp drive\" is not defined)"
+        error_header = "NoDefinitionFound: " + \
+            "The step r\"When I engage the warp drive\" is not defined"
 
         self.assertIn(error_header, output)
 
@@ -164,8 +164,8 @@ AssertionError
 
         output = stream.getvalue()
 
-        error_header = "ERROR: Failure: NoDefinitionFound " + \
-            "(The step r\"当我开曲速引擎\" is not defined)"
+        error_header = "NoDefinitionFound: " + \
+            "The step r\"当我开曲速引擎\" is not defined"
 
         self.assertIn(error_header, output)
 
