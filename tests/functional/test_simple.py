@@ -133,6 +133,42 @@ AssertionError
 
         self.assertIn(step_stack_frame, output)
 
+    def test_step_not_found(self):
+        """
+        Check the behavior when a step is not defined.
+        """
+
+        stream = TestWrapperIO()
+
+        failing_feature = 'features/step_not_found.feature'
+
+        self.assert_feature_fail(failing_feature, stream=stream)
+
+        output = stream.getvalue()
+
+        error_header = "ERROR: Failure: NoDefinitionFound " + \
+            "(The step r\"When I engage the warp drive\" is not defined)"
+
+        self.assertIn(error_header, output)
+
+    def test_step_not_found_zh(self):
+        """
+        Check the behavior when a step is not defined with a Chinese feature.
+        """
+
+        stream = TestWrapperIO()
+
+        failing_feature = 'features/step_not_found_zh.feature'
+
+        self.assert_feature_fail(failing_feature, stream=stream)
+
+        output = stream.getvalue()
+
+        error_header = "ERROR: Failure: NoDefinitionFound " + \
+            "(The step r\"当我开曲速引擎\" is not defined)"
+
+        self.assertIn(error_header, output)
+
     def test_background(self):
         """
         Test running a scenario with a background.
