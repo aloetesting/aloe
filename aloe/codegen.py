@@ -10,7 +10,6 @@ from future import standard_library
 standard_library.install_aliases()
 
 import ast
-import re
 from contextlib import contextmanager
 from textwrap import dedent
 
