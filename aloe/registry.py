@@ -21,7 +21,7 @@ from functools import wraps, partial
 
 from aloe.codegen import multi_manager
 from aloe.exceptions import (
-    NoDefinitionFound,
+    undefined_step,
     StepLoadingError,
 )
 from aloe.utils import unwrap_function
@@ -290,7 +290,7 @@ class StepDict(dict):
                     args = matched.groups()
                     return (func, args, {})
 
-        raise NoDefinitionFound(step_)
+        return (undefined_step, (), {})
 
     def step(self, step_func_or_sentence):
         """

@@ -47,3 +47,12 @@ class NoDefinitionFound(Exception):
 # so force encoding the message as Unicode.
 if not PY3:
     NoDefinitionFound.__str__ = lambda self: self.message.encode('utf-8')
+
+
+def undefined_step(step, *args, **kwargs):
+    """
+    A fallback step used when no suitable step definition was found.
+
+    Raises a NoDefinitionFound exception when the scenario is run.
+    """
+    raise NoDefinitionFound(step)
