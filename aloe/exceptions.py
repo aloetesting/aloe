@@ -49,10 +49,10 @@ if not PY3:
     NoDefinitionFound.__str__ = lambda self: self.message.encode('utf-8')
 
 
-def not_defined_step(step, *args, **kwargs):
+def undefined_step(step, *args, **kwargs):
     """
-    Fallback used when no suitable step definition was found.
+    A fallback step used when no suitable step definition was found.
 
-    Forces the NoDefinitionFound to be raised at scenario run level.
+    Raises a NoDefinitionFound exception when the scenario is run.
     """
     raise NoDefinitionFound(step)
