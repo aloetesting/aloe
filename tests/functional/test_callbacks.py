@@ -21,6 +21,9 @@ from aloe.testing import (
     in_directory,
 )
 
+# Pylint cannot infer the attributes on world
+# pylint:disable=no-member
+
 
 @in_directory('tests/callbacks_app')
 class CallbackTest(FeatureTest):
@@ -49,17 +52,17 @@ class CallbackTest(FeatureTest):
 
         self.assert_feature_success('features/step_callbacks.feature')
 
-        self.assertEquals(world.step_names, self.name_sequence([
+        self.assertEqual(world.step_names, self.name_sequence([
             'Given I emit a step event of "A"',
             'And I emit a step event of "B"',
             'Then the step event sequence should be "{[A]}{[B]}{["',
         ]))
 
         # Check step.testclass
-        self.assertEquals(len(world.step_testclasses), 3)
+        self.assertEqual(len(world.step_testclasses), 3)
         for testclass in world.feature_testclasses:
             self.assertTrue(issubclass(testclass, TestCase))
-            self.assertEquals(testclass.__name__, "Step callbacks")
+            self.assertEqual(testclass.__name__, "Step callbacks")
 
     def test_example_callbacks(self):
         """
@@ -68,7 +71,7 @@ class CallbackTest(FeatureTest):
 
         self.assert_feature_success('features/example_callbacks.feature')
 
-        self.assertEquals(world.example_names, self.name_sequence([
+        self.assertEqual(world.example_names, self.name_sequence([
             'Scenario: Example callbacks in a simple scenario, steps=3',
             'Outline: Example callbacks in a scenario with examples ' +
             '(event=C), steps=2',
@@ -90,13 +93,13 @@ class CallbackTest(FeatureTest):
             'Feature callbacks (test)',
         )
 
-        self.assertEquals(world.feature_names, self.name_sequence(names))
+        self.assertEqual(world.feature_names, self.name_sequence(names))
 
         # Check feature.testclass
-        self.assertEquals(len(world.feature_testclasses), 2)
+        self.assertEqual(len(world.feature_testclasses), 2)
         for feature_name, testclass in zip(names, world.feature_testclasses):
             self.assertTrue(issubclass(testclass, TestCase))
-            self.assertEquals(testclass.__name__, feature_name)
+            self.assertEqual(testclass.__name__, feature_name)
 
     def test_all_callbacks(self):
         """
@@ -218,7 +221,7 @@ class MultipleDirectoriesCallbackTest(FeatureTest):
 
         self.assert_feature_success('one/features/check_started.feature')
 
-        self.assertEquals(world.started_callbacks_one, {
+        self.assertEqual(world.started_callbacks_one, {
             'one': True,
             'two': True,
         })
@@ -231,12 +234,12 @@ class MultipleDirectoriesCallbackTest(FeatureTest):
 
         self.assert_feature_success()
 
-        self.assertEquals(world.started_callbacks_one, {
+        self.assertEqual(world.started_callbacks_one, {
             'one': True,
             'two': True,
         })
 
-        self.assertEquals(world.started_callbacks_two, {
+        self.assertEqual(world.started_callbacks_two, {
             'one': True,
             'two': True,
         })

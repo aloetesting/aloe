@@ -3,12 +3,15 @@ language: python
 python:
     - "2.7"
     - "3.4"
+    - "3.5"
 
 install:
     - pip install -r requirements.txt
     - pip install -r test_requirements.txt
     - pip install coveralls
     - pip install Sphinx
+    - if (python --version | grep -q 3.5) && (pip freeze | grep -q 'pylint==1.4'); then pip uninstall -y pylint; pip install hg+https://bitbucket.org/logilab/pylint#egg=pylint; fi
+    - if (python --version | grep -q 3.5) && (pip freeze | grep -q 'astroid==1.3'); then pip uninstall -y astroid; pip install hg+https://bitbucket.org/logilab/astroid#egg=astroid; fi
 
 cache:
     directories:
@@ -37,5 +40,5 @@ deploy:
     on:
         tags: true
         all_branches: true
-        python: 3.4
+        python: 3.5
         condition: "\"$TRAVIS_TAG\" = \"v$(python setup.py --version)\""
