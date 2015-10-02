@@ -13,13 +13,13 @@ standard_library.install_aliases()
 import os
 import fnmatch
 
-from importlib import import_module
 try:
     reload
 except NameError:
     # pylint:disable=no-name-in-module,redefined-builtin
     from importlib import reload
     # pylint:enable=no-name-in-module,redefined-builtin
+from nose.importer import Importer
 
 
 def path_to_module_name(filename):
@@ -50,15 +50,16 @@ class FeatureLoader(object):
         """
         Load the steps from the specified directory.
         """
+        importer = Importer()
 
         for path, _, files in os.walk(dir_):
             for filename in fnmatch.filter(files, '*.py'):
                 # Import the module using its fully qualified name
                 filename = os.path.relpath(os.path.join(path, filename))
                 module_name = path_to_module_name(filename)
-
-                module = import_module(module_name)
+                module = importer.importFromPath(filename, module_name)
                 reload(module)  # Make sure steps and hooks are registered
+
 
     @classmethod
     def find_feature_directories(cls, dir_):
