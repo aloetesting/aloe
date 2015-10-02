@@ -17,9 +17,14 @@ Feature: Scenario tags
     And I press add
 
   @hana
-  Scenario: Another first scenario - surprise
-    Given I have entered 11 into the calculator
+  Scenario Outline: Another first scenario - surprise
+    Given I have entered <number> into the calculator
     And I press add
+
+    Examples:
+      | number |
+      | 11     |
+      | 22     |
 
   Scenario: Fourth scenario
     Given I have entered 4 into the calculator

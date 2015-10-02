@@ -257,6 +257,9 @@ class TestCase(unittest.TestCase):
         result.scenario = scenario
         result.scenario_index = index
 
+        for tag in scenario.tags:
+            result = attr(tag)(result)
+
         return result
 
     @classmethod
@@ -330,14 +333,6 @@ class TestCase(unittest.TestCase):
             source_file=step_container.filename,
             name=func_name,
         )
-
-        try:
-            tags = step_container.tags
-        except AttributeError:
-            tags = ()
-
-        for tag in tags:
-            run_steps = attr(tag)(run_steps)
 
         if not is_background:
             run_steps = CALLBACK_REGISTRY.wrap('example', run_steps,

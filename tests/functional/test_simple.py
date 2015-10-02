@@ -267,7 +267,7 @@ AssertionError
 
         # Run scenarios by tag
         self.assert_feature_success(feature_one, '-a', 'hana')
-        self.assertEqual(world.all_results, [1, 11])
+        self.assertEqual(world.all_results, [1, 11, 22])
 
         # Run scenarios with a tag that's not there
         self.assert_feature_success(feature_one, '-a', 'set')
@@ -283,7 +283,7 @@ AssertionError
 
         # Specify more than one tag to run
         self.assert_feature_success(feature_one, '-a', 'hana', '-a', 'dul')
-        self.assertEqual(world.all_results, [1, 2, 11])
+        self.assertEqual(world.all_results, [1, 2, 11, 22])
 
         # Specify more than one tag to exclude
         self.assert_feature_success(feature_dir, '-a', '!hana,!dul')
