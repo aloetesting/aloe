@@ -70,7 +70,7 @@ class FeatureLoader(object):
         """
 
         # A set of package directories discovered
-        packages = set(dir_)
+        packages = set()
 
         for path, dirs, files in os.walk(dir_):
             # Is this a package?
