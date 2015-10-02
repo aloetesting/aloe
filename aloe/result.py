@@ -67,6 +67,7 @@ class Terminal(blessings.Terminal):
 
     def color(self, color):  # pylint:disable=arguments-differ
         """Wrap Terminal.color() to work if styling is not set"""
+        # pylint:disable=too-many-function-args
         return super(Terminal, self).color(color) if self.does_styling else str
 
     @classmethod
