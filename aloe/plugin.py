@@ -131,6 +131,10 @@ class GherkinPlugin(Plugin):
     def wantDirectory(self, directory):
         """
         Collect features from 'features' directories.
+
+        This returns true for any directory either _above_ or _below_ any of
+        the features directories; above to ensure the search continues inside,
+        below to collect features from all the subdirectories.
         """
 
         directory = os.path.abspath(directory)
@@ -145,7 +149,12 @@ class GherkinPlugin(Plugin):
         Load features from feature files.
         """
 
-        if os.path.basename(file_).endswith('.feature'):
+        # Check that the feature is in one of the features directories
+        file_dir = os.path.abspath(os.path.dirname(file_))
+        if any(
+                file_dir.startswith(os.path.abspath(feature_dir))
+                for feature_dir in self.feature_dirs
+        ) and os.path.basename(file_).endswith('.feature'):
             return True
 
     def wantPython(self, _):

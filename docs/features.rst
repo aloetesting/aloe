@@ -14,10 +14,10 @@ Feature Loading
 ---------------
 
 If features are not specified on the command line, Aloe will look for features
-in directories that:
+in directories that are both:
 
- * Are named ``features``;
- * Are located in a directory containing packages, that is, all their parent
+ * Named ``features``;
+ * Located in a directory containing packages, that is, all their parent
    directories have an ``__init__.py`` file.
 
 For example, given the following directory structure, only
@@ -26,16 +26,21 @@ For example, given the following directory structure, only
 ::
 
     one/
-    __init__.py
-    features/
-        one.feature
-        two/
-        three.feature
-        four.feature
-    examples/
-        five.feature
+       __init__.py
+       features/
+           one.feature
+           two/
+              three.feature
+              four.feature
+       examples/
+           five.feature
     two/
-    features/
-        six.feature
+       features/
+           six.feature
+
+``five`` will not be run because it is not in a directory named ``features``.
+``six`` will not be run because its parent directory, ``two``, is not a
+package. This prevents discovering features of dependent packages if they are
+in a virtualenv inside the project directory.
 
 .. include:: links.rst
