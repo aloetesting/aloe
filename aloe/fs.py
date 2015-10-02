@@ -60,7 +60,6 @@ class FeatureLoader(object):
                 module = importer.importFromPath(filename, module_name)
                 reload(module)  # Make sure steps and hooks are registered
 
-
     @classmethod
     def find_feature_directories(cls, dir_):
         """
