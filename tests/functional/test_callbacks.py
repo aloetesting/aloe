@@ -21,6 +21,9 @@ from aloe.testing import (
     in_directory,
 )
 
+# Pylint cannot infer the attributes on world
+# pylint:disable=no-member
+
 
 @in_directory('tests/callbacks_app')
 class CallbackTest(FeatureTest):
