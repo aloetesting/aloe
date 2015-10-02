@@ -38,18 +38,20 @@ def record_event(kind, value):
 
 
 @before.each_step
-def before_step(step):
+def before_step(self):
+    """Record the "before step" event."""
     record_event('step', '{')
-    record_event('step_names', ('before', step.sentence))
-    record_event('step_testclasses', step.testclass)
+    record_event('step_names', ('before', self.sentence))
+    record_event('step_testclasses', self.testclass)
     record_event('types', 'before step')
 
 
 @around.each_step
 @contextmanager
-def around_step(step):
+def around_step(self):
+    """Record the "around step" event."""
     record_event('step', '[')
-    record_event('step_names', ('around', step.sentence))
+    record_event('step_names', ('around', self.sentence))
     record_event('types', 'around_before step')
     yield
     record_event('types', 'around_after step')
@@ -57,13 +59,15 @@ def around_step(step):
 
 
 @after.each_step
-def after_step(step):
+def after_step(self):
+    """Record the "after step" event."""
     record_event('types', 'after step')
     record_event('step', '}')
-    record_event('step_names', ('after', step.sentence))
+    record_event('step_names', ('after', self.sentence))
 
 
 def record_example_event(when, scenario, outline, steps):
+    """Record a scenario- or scenario outline-level event."""
     if outline:
         result = "Outline: " + scenario.name
         result += ' (' + \
@@ -78,6 +82,7 @@ def record_example_event(when, scenario, outline, steps):
 
 @before.each_example
 def before_example(scenario, outline, steps):
+    """Record the "before example" event."""
     record_event('example', '{')
     record_example_event('before', scenario, outline, steps)
     record_event('types', 'before example')
@@ -86,6 +91,7 @@ def before_example(scenario, outline, steps):
 @around.each_example
 @contextmanager
 def around_example(scenario, outline, steps):
+    """Record the "around example" event."""
     record_event('example', '[')
     record_example_event('around', scenario, outline, steps)
     record_event('types', 'around_before example')
@@ -96,6 +102,7 @@ def around_example(scenario, outline, steps):
 
 @after.each_example
 def after_example(scenario, outline, steps):
+    """Record the "after example" event."""
     record_event('types', 'after example')
     record_event('example', '}')
     record_example_event('after', scenario, outline, steps)
@@ -103,6 +110,7 @@ def after_example(scenario, outline, steps):
 
 @before.each_feature
 def before_feature(feature):
+    """Record the "before feature" event."""
     record_event('feature', '{')
     record_event('feature_names', ('before', feature.name))
     record_event('feature_testclasses', feature.testclass)
@@ -112,6 +120,7 @@ def before_feature(feature):
 @around.each_feature
 @contextmanager
 def around_feature(feature):
+    """Record the "around feature" event."""
     record_event('feature', '[')
     record_event('feature_names', ('around', feature.name))
     record_event('types', 'around_before feature')
@@ -122,6 +131,7 @@ def around_feature(feature):
 
 @after.each_feature
 def after_feature(feature):
+    """Record the "after feature" event."""
     record_event('types', 'after feature')
     record_event('feature', '}')
     record_event('feature_names', ('after', feature.name))
@@ -129,6 +139,7 @@ def after_feature(feature):
 
 @before.all
 def before_all():
+    """Record the "before all" event."""
     record_event('"all"', '{')
     record_event('types', 'before all')
 
@@ -136,6 +147,7 @@ def before_all():
 @around.all
 @contextmanager
 def around_all():
+    """Record the "around all" event."""
     record_event('"all"', '[')
     record_event('types', 'around_before all')
     yield
@@ -145,17 +157,25 @@ def around_all():
 
 @after.all
 def after_all():
+    """Record the "after all" event."""
     record_event('types', 'after all')
     record_event('"all"', '}')
 
 
 @step(r'I emit an? ([^ ]+) event of "([^"]+)"')
 def emit_event(self, kind, event):
+    """Record a user-defined event."""
     record_event(kind, event)
 
 
 @step(r'I emit an? ([^ ]+) event for each letter in "([^"]+)"')
 def emit_event_letters(self, kind, letters):
+    """
+    Record several user-defined events in succession.
+
+    Used to test behave_as.
+    """
+
     for letter in letters:
         self.when('I emit a {kind} event of "{letter}"'.format(
             kind=kind,
@@ -165,29 +185,34 @@ def emit_event_letters(self, kind, letters):
 
 @step(r'The ([^ ]+) event sequence should be "([^"]+)"')
 def check_events(self, kind, events):
+    """Check the recorded events of a particular type."""
     kind = kind.replace('"', '')
     assert_equal(''.join(getattr(world, kind)), events)
 
 
-@before.each_example
-def reset_failures_successes_count(scenario, outline, steps):
-    world.passing_steps = 0
-    world.failed_steps = 0
-
-
 @after.each_step
 def count_failures_successes(self):
+    """Count the number of passed and failed steps."""
     if self.failed:
         world.failed_steps += 1
     if self.passed:
         world.passing_steps += 1
 
 
+@before.each_example
+def reset_failures_successes_count(scenario, outline, steps):
+    """Reset the passed/failed step count for each scenario."""
+    world.passing_steps = 0
+    world.failed_steps = 0
+
+
 @step(r'I have a passing step')
 def good_step(self):
+    """A step that always passes."""
     pass
 
 
 @step(r'I have a failing step')
 def bad_step(self):
+    """A step that always fails."""
     assert False, "This step is meant to fail."
