@@ -547,7 +547,7 @@ class Scenario(HeaderNode, StepContainer):
     @memoizedproperty
     def outlines_table(self):
         """
-        Return the outlines as a table.
+        Return the scenario outline examples as a table.
         """
 
         # get the list of column headings

@@ -333,6 +333,41 @@ class StepDict(dict):
                 num_oranges = int(num_oranges)
 
                 ...
+
+        Steps can be passed a table of data.
+
+        .. code-block:: gherkin
+
+            Given the following users are registered:
+                | Username | Real name |
+                | danni    | Danni     |
+                | alexey   | Alexey    |
+
+        This is exposed in the step as :attr:`Step.table` and
+        :attr:`Step.hashes`.
+
+        .. code-block:: python
+
+            @step(r'Given the following users? (?:is|are) registered:')
+            def _register_users(self):
+                '''Register the given users'''
+
+                for user in guess_types(self.hashes):
+                    register(username=user['Username'],
+                             realname=user['Real name'])
+
+        Steps can be passed a multi-line "`Python string`".
+
+        .. code-block:: gherkin
+
+            Then I see a warning dialog:
+                \"\"\"
+                Changes could not be saved.
+
+                [Try Again]
+                \"\"\"
+
+        This is exposed in the step as :attr:`Step.multiline`.
         """
 
         if isinstance(step_func_or_sentence, bytes):
