@@ -27,7 +27,7 @@ Common regular expressions for capturing data
 
     .. code-block:: python
 
-        @step(r'The price should be \$(\d+\.?\d*)')
+        @step(r'The price should be \$(\d+(?:\.\d+)?)')
 
 **Path/URI/etc.**
 
@@ -69,13 +69,13 @@ using a pseudo-language. Doing so removes much of the point of using BDD
 testing in the first place, so here is some advice to help write better BDD
 steps.
 
-1.  **Be declarative not imperative**
+1.  **Avoid implementation details**
 
     If you find yourself specifying implementation details of your application
-    that aren't important to your behaviours, abstract them into a declarative
+    that aren't important to your behaviors, abstract them into another
     step.
 
-    Imperative:
+    Implementation:
 
     .. code-block:: gherkin
 
@@ -84,7 +84,7 @@ steps.
         And I press "Log on"
         And I wait for AJAX to finish
 
-    Declarative:
+    Behavioral:
 
     .. code-block:: gherkin
 
@@ -92,17 +92,6 @@ steps.
 
     You can use :meth:`Step.behave_as` to write a step that chains up several
     smaller steps.
-
-2.  **Avoid conjunctions in steps**
-
-    If you're writing a step that contains an `and` or other conjunction
-    consider breaking your step into two.
-
-    You can pass state between steps using :attr:`world`.
-
-3.  **Describe behaviours, not implementation**
-
-    This is especially true when setting up the initial state for a test.
 
     Implementation:
 
@@ -113,8 +102,7 @@ steps.
             | user_registration_disabled |
             | user_export_disabled       |
 
-
-    Behavioural:
+    Behavioral:
 
     .. code-block:: gherkin
 
@@ -136,7 +124,10 @@ steps.
 
                 set_flag(flag, enabled=False)
 
-    If you want to write reusable steps, you can sometimes mix behaviour
+    Furthermore, steps that are needed by all features can be moved to a
+    `before.each_example` callback.
+
+    If you want to write reusable steps, you can sometimes mix behavior
     and declaration.
 
     .. code-block:: gherkin
@@ -145,7 +136,27 @@ steps.
             | Business Name (primaryText) | Blurb (secondaryText) |
             | Pet Supplies.com            | An online store for…  |
 
-4.  **Support natural language**
+2.  **Avoid conjunctions in steps**
+
+    If you're writing a step that contains an `and` or other conjunction
+    consider breaking your step into two.
+
+    Bad:
+
+    .. code-block:: gherkin
+
+        When I log out and log back in as danni
+
+    Good:
+
+    .. code-block:: gherkin
+
+        When I log out
+        And I log in as danni
+
+    You can pass state between steps using :attr:`world`.
+
+3.  **Support natural language**
 
     It's easier to write tests if the language they support is natural,
     including things such as plurals.

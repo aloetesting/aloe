@@ -2,7 +2,7 @@
  Aloe: BDD testing via nose
 ============================
 
-Aloe is a Gherkin_-based Behaviour Driven Development tool for Python based
+Aloe is a Gherkin_-based Behavior Driven Development tool for Python based
 on Nose_.
 
 .. toctree::

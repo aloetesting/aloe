@@ -33,8 +33,7 @@ the feature_.
 
 A background does not have a name or tags.
 
-If a step fails during the background all the scenarios of this feature_ will
-fail.
+If a step fails during the background the scenario will fail.
 
 .. code-block:: gherkin
 
@@ -72,7 +71,7 @@ A scenario outline is a template for building scenarios from the rows of a
 table named ``Examples``. Parameters are written in the form ``<Parameter>``,
 where each named parameter must be present in the table.
 
-Scenario outlines have a name and my optionally have tags_.
+Scenario outlines have a name and may optionally have tags_.
 
 .. code-block:: gherkin
 

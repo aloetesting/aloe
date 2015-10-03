@@ -1,7 +1,7 @@
 """
 Aloe integration with `factory_boy`_ to create objects from factories.
 
-Remember when writing BDD tests to describe the behaviour you want and not just
+Remember when writing BDD tests to describe the behavior you want and not just
 use Aloe as a syntax for writing complex tests (that defeats the point of BDD).
 Hide the complexity of setting up the objects in your factory or write a
 custom step.

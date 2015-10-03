@@ -32,7 +32,8 @@ extensively documented here.
 
 .. option:: -a attr
 
-    Run features and scenarios with the given tag.
+    Run features and scenarios with the given tag. (This is a Nose flag, but
+    works the same for Gherkin tags.)
 
 .. option:: -a '!attr'
 
