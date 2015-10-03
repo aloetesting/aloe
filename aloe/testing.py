@@ -48,22 +48,21 @@ else:
 @contextmanager
 def _in_directory(directory):
     """
-    A context manager to run the payload in a specified directory, with it
-    added to the module search path and all modules from it removed from
-    sys.modules upon exit.
+    A context manager to run the payload in a specified directory.
+
+    On exit, all modules that were imported from this directory are removed
+    from sys.modules.
     """
 
     directory = os.path.abspath(directory)
     last_wd = os.getcwd()
 
-    sys.path.insert(0, directory)
     os.chdir(directory)
 
     try:
         yield
     finally:
         os.chdir(last_wd)
-        sys.path.remove(directory)
 
         # Unload modules which are loaded from the directory
         unload_modules = []
@@ -89,9 +88,9 @@ def _in_directory(directory):
             if not path.startswith(unload_path_prefix):
                 continue
 
-            # Does its name match what would it be if it was? Consider two
-            # directories, foo/ and foo/bar on sys.path, foo/bar/baz.py
-            # might have been loaded from either.
+            # Does its name match what would it be if the module was really
+            # imported from here? Consider two directories, 'foo' and 'foo/bar'
+            # on sys.path, foo/bar/baz.py might have been loaded from either.
             path = path[len(unload_path_prefix):]
             if module_name == path_to_module_name(path):
                 unload_modules.append(module_name)
