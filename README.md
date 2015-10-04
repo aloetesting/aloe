@@ -42,13 +42,8 @@ sense. However, there are following incompatible changes:
   above it.
 * Scenario outlines must be declared with "Scenario Outline", and scenarios
   without examples must use "Scenario" - Lettuce allowed using either.
-
-TODO
-====
-
-In no particular order:
-
-* Verbose output (all steps printed as they run) is missing.
+* By default, the steps run are output as dots, corresponding to Lettuce
+  verbosity 1. To get colored output with steps printed as they run, use `-v 3`.
 
 License
 =======
