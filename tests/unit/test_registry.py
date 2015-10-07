@@ -10,13 +10,10 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
-import re
 import unittest
 
 from nose.tools import (
     assert_equal,
-    assert_in,
-    assert_not_in,
     assert_raises,
 )
 
@@ -26,7 +23,10 @@ from aloe.registry import (
     PriorityClass,
     StepDict,
 )
-from aloe.exceptions import StepLoadingError
+from aloe.exceptions import (
+    StepLoadingError,
+    undefined_step,
+)
 
 from tests.utils import appender, before_after
 
@@ -36,6 +36,24 @@ class FakeStep(object):
 
     def __init__(self, sentence):
         self.sentence = sentence
+
+
+def assert_matches(step_dict, sentence, func_args):
+    """
+    Assert what a given sentence matches in a step dictionary.
+
+    :param StepDict step_dict: Step dictionary to check
+    :param sentence str: Sentence to match
+    :param func_args (callable, tuple, dict): Expected function and arguments
+    """
+
+    assert_equal(step_dict.match_step(FakeStep(sentence)), func_args)
+
+
+def assert_no_match(step_dict, sentence):
+    """Assert that no match is found for a sentence in a step dictionary."""
+
+    assert_matches(step_dict, sentence, (undefined_step, (), {}))
 
 
 def test_StepDict_raise_StepLoadingError_if_first_argument_is_not_a_regex():
@@ -61,9 +79,7 @@ def test_StepDict_can_load_a_step_composed_of_a_regex_and_a_function():
     step = "a step to test"
     steps.load(step, func)
 
-    step = re.compile(step, re.I | re.U)
-    assert_in(step, steps)
-    assert_equal(steps[step], func)
+    assert_matches(steps, step, (func, (), {}))
 
 
 def test_replacing_step():
@@ -97,10 +113,7 @@ def test_replacing_step():
 
     # func2 should have replaced func1 everywhere
     for num in range(step_count):
-        assert_equal(
-            steps.match_step(FakeStep(sentence(num))),
-            (func2, (), {})
-        )
+        assert_matches(steps, sentence(num), (func2, (), {}))
 
 
 def test_StepDict_load_a_step_return_the_given_function():
@@ -152,9 +165,7 @@ def test_StepDict_can_load_a_step_from_a_function():
 
     steps.load_func(a_step_to_test)
 
-    expected_sentence = re.compile("A step to test", re.I | re.U)
-    assert_in(expected_sentence, steps)
-    assert_equal(steps[expected_sentence], a_step_to_test)
+    assert_matches(steps, "A step to test", (a_step_to_test, (), {}))
 
 
 def test_StepDict_can_load_steps_from_an_object():
@@ -177,12 +188,8 @@ def test_StepDict_can_load_steps_from_an_object():
     step_list = LotsOfSteps()
     steps.load_steps(step_list)
 
-    expected_sentence1 = re.compile("Step 1", re.I | re.U)
-    expected_sentence2 = re.compile("Doing something", re.I | re.U)
-    assert_in(expected_sentence1, steps)
-    assert_in(expected_sentence2, steps)
-    assert_equal(steps[expected_sentence1], step_list.step_1)
-    assert_equal(steps[expected_sentence2], step_list.step_2)
+    assert_matches(steps, "Step 1", (step_list.step_1, (), {}))
+    assert_matches(steps, "Doing something", (step_list.step_2, (), {}))
 
 
 def test_StepDict_can_exclude_methods_when_load_steps():
@@ -206,10 +213,8 @@ def test_StepDict_can_exclude_methods_when_load_steps():
     step_list = LotsOfSteps()
     steps.load_steps(step_list)
 
-    expected_sentence1 = re.compile("Step 1", re.I | re.U)
-    expected_sentence2 = re.compile("Doing something", re.I | re.U)
-    assert_not_in(expected_sentence1, steps)
-    assert_in(expected_sentence2, steps)
+    assert_no_match(steps, "Step 1")
+    assert_matches(steps, "Doing something", (step_list.step_2, (), {}))
 
 
 def test_StepDict_can_exclude_callable_object_when_load_steps():
@@ -245,8 +250,7 @@ def test_unload_reload():
     # Load
     steps.step(r'My step (\d)')(step)
 
-    assert len(steps) == 1
-    assert steps.match_step(FakeStep("My step 1")) == (step, ('1',), {})
+    assert_matches(steps, "My step 1", (step, ('1',), {}))
 
     # Members added to step by registering it
     # pylint:disable=no-member
@@ -254,18 +258,17 @@ def test_unload_reload():
     # Unload
     step.unregister()
 
-    assert len(steps) == 0
+    assert_no_match(steps, "My step 1")
 
     # Should be a no-op
     step.unregister()
 
-    assert len(steps) == 0
+    assert_no_match(steps, "My step 1")
 
     # Reload
     steps.step(step.sentence)(step)
 
-    assert len(steps) == 1
-    assert steps.match_step(FakeStep("My step 1")) == (step, ('1',), {})
+    assert_matches(steps, "My step 1", (step, ('1',), {}))
 
 
 class CallbackDictTest(unittest.TestCase):

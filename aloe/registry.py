@@ -201,20 +201,23 @@ class CallbackDict(dict):
         return before_func, after_func
 
 
-class StepDict(dict):
+class StepDict(object):
     """
     A mapping of step sentences to their definitions.
     """
+
+    def __init__(self):
+        self.steps = dict()
 
     def load(self, sentence, func):
         """Add a mapping between a step sentence and a function."""
 
         step_re = self._assert_is_step(sentence, func)
-        self[step_re] = func
+        self.steps[step_re.pattern] = (step_re, func)
 
         try:
             func.sentence = sentence
-            func.unregister = partial(self.unload, step_re)
+            func.unregister = partial(self.unload, step_re.pattern)
         except AttributeError:
             # func might have been a bound method, no way to set attributes
             # on that
@@ -225,9 +228,17 @@ class StepDict(dict):
     def unload(self, sentence):
         """Remove a mapping for a given step sentence, if it exists."""
         try:
-            del self[sentence]
+            del self.steps[sentence]
         except KeyError:
             pass
+
+    def clear(self):
+        """Remove all registered steps."""
+        self.steps.clear()
+
+    def __len__(self):
+        """Number of registered step sentences."""
+        return len(self.steps)
 
     def load_func(self, func):
         """Load a step from a function."""
@@ -280,7 +291,7 @@ class StepDict(dict):
         Returns a tuple of (function, args, kwargs).
         """
 
-        for regex, func in self.items():
+        for regex, func in self.steps.values():
             matched = regex.search(step_.sentence)
             if matched:
                 kwargs = matched.groupdict()
