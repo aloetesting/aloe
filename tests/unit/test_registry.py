@@ -31,6 +31,13 @@ from aloe.exceptions import StepLoadingError
 from tests.utils import appender, before_after
 
 
+class FakeStep(object):
+    """A fake step object to use in matching."""
+
+    def __init__(self, sentence):
+        self.sentence = sentence
+
+
 def test_StepDict_raise_StepLoadingError_if_first_argument_is_not_a_regex():
     """
     aloe.STEP_REGISTRY.load(step, func) should raise an error if step is
@@ -57,6 +64,43 @@ def test_StepDict_can_load_a_step_composed_of_a_regex_and_a_function():
     step = re.compile(step, re.I | re.U)
     assert_in(step, steps)
     assert_equal(steps[step], func)
+
+
+def test_replacing_step():
+    """
+    Test registering a different step with the same sentence.
+    """
+
+    def func1():
+        """First function to register as a step."""
+        pass
+
+    def func2():
+        """Second function to register as a step."""
+        pass
+
+    steps = StepDict()
+
+    # This has to be more than re._MAXCACHE; currently 100 on Python 2.7 and
+    # 512 on Python 3.5
+    step_count = 1024
+
+    sentence = "sentence {0}".format
+
+    # Register some steps
+    for num in range(step_count):
+        steps.load(sentence(num), func1)
+
+    # Register the same steps again
+    for num in range(step_count):
+        steps.load(sentence(num), func2)
+
+    # func2 should have replaced func1 everywhere
+    for num in range(step_count):
+        assert_equal(
+            steps.match_step(FakeStep(sentence(num))),
+            (func2, (), {})
+        )
 
 
 def test_StepDict_load_a_step_return_the_given_function():
@@ -196,17 +240,13 @@ def test_unload_reload():
     def step():  # pylint:disable=missing-docstring
         pass
 
-    class StepDefinition(object):
-        """A step definition object to match."""
-        sentence = 'My step 1'
-
     steps = StepDict()
 
     # Load
     steps.step(r'My step (\d)')(step)
 
     assert len(steps) == 1
-    assert steps.match_step(StepDefinition) == (step, ('1',), {})
+    assert steps.match_step(FakeStep("My step 1")) == (step, ('1',), {})
 
     # Members added to step by registering it
     # pylint:disable=no-member
@@ -225,7 +265,7 @@ def test_unload_reload():
     steps.step(step.sentence)(step)
 
     assert len(steps) == 1
-    assert steps.match_step(StepDefinition) == (step, ('1',), {})
+    assert steps.match_step(FakeStep("My step 1")) == (step, ('1',), {})
 
 
 class CallbackDictTest(unittest.TestCase):
