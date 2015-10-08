@@ -10,16 +10,18 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
+import sys
 import os
 import fnmatch
 
-from importlib import import_module
 try:
     reload
 except NameError:
     # pylint:disable=no-name-in-module,redefined-builtin
     from importlib import reload
     # pylint:enable=no-name-in-module,redefined-builtin
+
+from nose.importer import Importer
 
 
 def path_to_module_name(filename):
@@ -45,6 +47,8 @@ class FeatureLoader(object):
     """Loader class responsible for findind features and step
     definitions along a given path on filesystem"""
 
+    importer = Importer()
+
     @classmethod
     def find_and_load_step_definitions(cls, dir_):
         """
@@ -57,8 +61,14 @@ class FeatureLoader(object):
                 filename = os.path.relpath(os.path.join(path, filename))
                 module_name = path_to_module_name(filename)
 
-                module = import_module(module_name)
-                reload(module)  # Make sure steps and hooks are registered
+                # Ensure the module is loaded anew, so that its steps and hooks
+                # are registered again
+                try:
+                    del sys.modules[module_name]
+                except KeyError:
+                    pass
+
+                cls.importer.importFromPath(filename, module_name)
 
     @classmethod
     def find_feature_directories(cls, dir_):
@@ -70,7 +80,7 @@ class FeatureLoader(object):
         """
 
         # A set of package directories discovered
-        packages = set(dir_)
+        packages = set()
 
         for path, dirs, files in os.walk(dir_):
             # Is this a package?

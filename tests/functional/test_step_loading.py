@@ -55,3 +55,19 @@ class StepLoadingTest(FeatureTest):
                 'submodule/features/third.feature',
             )
         ])
+
+
+@in_directory('tests/not_a_package')
+class NoRootPackageTest(FeatureTest):
+    """
+    Test running features from outside a package.
+    """
+
+    def test_no_package(self):
+        """
+        Test running features from outside a package.
+        """
+
+        # The only feature in this directory has steps but there are no
+        # definitions for them anywhere, so it will fail if found.
+        self.assert_feature_success()
