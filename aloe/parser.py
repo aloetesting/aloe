@@ -381,7 +381,7 @@ class Step(Node):
             'given': dialect.given_keywords,
             'when': dialect.when_keywords,
             'then': dialect.then_keywords,
-        }[kind]()
+        }[kind]
 
         # Gherkin allows '*' as a keyword; skip it to be sure the keyword is
         # specifically for the given kind
