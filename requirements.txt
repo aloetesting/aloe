@@ -1,5 +1,5 @@
 blessings
 future
-gherkin3
+gherkin3>=3.1.2
 nose
 repoze.lru
