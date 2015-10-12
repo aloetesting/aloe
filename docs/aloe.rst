@@ -30,6 +30,11 @@ extensively documented here.
 
     Run Python tests as well as Gherkin.
 
+.. option:: --feature-roots DIR[,DIR...]
+
+    Search for feature *directories* inside the specified paths. The actual
+    features still have to be inside a package directory under one of these.
+
 .. option:: -a attr
 
     Run features and scenarios with the given tag. (This is a Nose flag, but

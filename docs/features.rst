@@ -125,13 +125,20 @@ For example, given the following directory structure, only
               four.feature
        examples/
            five.feature
-    two/
-       features/
-           six.feature
+    six/
+       seven/
+           __init__.py
+           features/
+               eight.feature
 
 ``five`` will not be run because it is not in a directory named ``features``.
-``six`` will not be run because its parent directory, ``two``, is not a
+``eight`` will not be run because its parent directory, ``seven``, is not a
 package. This prevents discovering features of dependent packages if they are
 in a virtualenv inside the project directory.
+
+Using ``--feature-roots`` option will start the search for the feature
+directories in the specified paths, though they still have to be inside a
+``features`` directory inside a package. For example, given the above directory
+structure, adding ``--feature-roots six/seven`` will discover ``eight``.
 
 .. include:: links.rst
