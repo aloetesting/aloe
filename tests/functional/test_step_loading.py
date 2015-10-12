@@ -56,6 +56,18 @@ class StepLoadingTest(FeatureTest):
             )
         ])
 
+    def test_feature_roots(self):
+        """Test manually specifying the feature search directories."""
+
+        # The feature will fail
+        result = self.run_features('--feature-roots', 'python_inside/package')
+
+        self.assertEqual(result.tests_run, [
+            os.path.abspath(feature) for feature in (
+                'python_inside/package/features/wrong.feature',
+            )
+        ])
+
 
 @in_directory('tests/not_a_package')
 class NoRootPackageTest(FeatureTest):

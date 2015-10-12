@@ -59,7 +59,8 @@ class GherkinPlugin(Plugin):
 
         self.feature_dirs = [
             dir_
-            for dir_ in FeatureLoader.find_feature_directories('.')
+            for feature_root in self.feature_roots
+            for dir_ in FeatureLoader.find_feature_directories(feature_root)
         ]
         for feature_dir in self.feature_dirs:
             FeatureLoader.find_and_load_step_definitions(feature_dir)
@@ -90,6 +91,15 @@ class GherkinPlugin(Plugin):
             help='Run Python and Gherkin tests together',
         )
         parser.add_option(
+            '--feature-roots', action='store',
+            dest='feature_roots',
+            default=env.get('NOSE_FEATURE_ROOTS', '.'),
+            help=(
+                "Search for feature directories under these paths "
+                "(comma-separated)",
+            ),
+        )
+        parser.add_option(
             '-n', '--scenario-indices', action='store',
             dest='scenario_indices',
             default='',
@@ -117,6 +127,8 @@ class GherkinPlugin(Plugin):
         self.ignore_python = options.ignore_python
 
         conf.force_color = options.force_color
+
+        self.feature_roots = options.feature_roots.split(',')
 
         if options.scenario_indices:
             self.scenario_indices = tuple(
