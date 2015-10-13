@@ -112,25 +112,30 @@ in directories that are both:
    directories have an ``__init__.py`` file.
 
 For example, given the following directory structure, only
-``one``, ``three`` and ``four`` features will be run:
+``one``, ``three`` and ``seven`` features will be run:
 
 ::
 
     one/
-       __init__.py
-       features/
-           one.feature
-           two/
-              three.feature
-              four.feature
+        __init__.py
+        features/
+            one.feature
+            two/
+                three.feature
        examples/
-           five.feature
-    two/
-       features/
-           six.feature
+           four.feature
+    five/
+        __init__.py
+        six/
+            features/
+                seven.feature
+    eight/
+        nine/
+            features/
+                ten.feature
 
-``five`` will not be run because it is not in a directory named ``features``.
-``six`` will not be run because its parent directory, ``two``, is not a
+``four`` will not be run because it is not in a directory named ``features``.
+``ten`` will not be run because its parent directory, ``nine``, is not a
 package. This prevents discovering features of dependent packages if they are
 in a virtualenv inside the project directory.
 
