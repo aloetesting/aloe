@@ -2,7 +2,7 @@
 Setup script.
 """
 
-__version__ = '0.0.29'
+__version__ = '0.0.30'
 
 from setuptools import setup, find_packages
 
