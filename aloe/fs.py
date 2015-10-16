@@ -75,8 +75,9 @@ class FeatureLoader(object):
         """
         Locate directories to load features from.
 
-        The directories must be in a package directory (have '__init__.py' all
-        the way up) and be named 'features'.
+        The directories must be named 'features'; they must either reside
+        directly in the specified directory, or otherwise all their parents
+        must be packages (have __init__.py files).
         """
 
         # A set of package directories discovered
@@ -87,7 +88,7 @@ class FeatureLoader(object):
             if '__init__.py' in files:
                 packages.add(path)
 
-            if path in packages:
+            if path == dir_ or path in packages:
                 # Does this package have a feature directory?
                 if 'features' in dirs:
                     yield os.path.join(path, 'features')
