@@ -52,10 +52,7 @@ class TestStep(Step):
         """
         The test class containing this step (in a scenario or a background).
         """
-        try:
-            return self.scenario.feature.testclass
-        except AttributeError:
-            return self.background.feature.testclass
+        return self.feature.testclass
 
     def __init__(self, *args, **kwargs):
         """Initialize the step status."""

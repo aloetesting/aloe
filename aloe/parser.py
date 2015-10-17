@@ -191,6 +191,15 @@ class Step(Node):
     def __repr__(self):
         return str(self)
 
+    @property
+    def container(self):
+        """The background or scenario that contains this step."""
+
+        try:
+            return self.background
+        except AttributeError:
+            return self.scenario
+
     def parse_steps_from_string(self, string, **kwargs):
         """
         Parse a number of steps, returns an iterable of :class:`Step`.
@@ -232,10 +241,7 @@ class Step(Node):
         The :class:`Feature` this step is a part of.
         """
 
-        try:
-            return self.scenario.feature
-        except AttributeError:
-            return self.background.feature
+        return self.container.feature
 
     @memoizedproperty
     def keys(self):
