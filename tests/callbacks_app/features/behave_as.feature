@@ -4,9 +4,10 @@ Feature: behave_as
 
   Background:
     Given I emit a step event of "Z"
+    And I emit a step event for each letter in "BC"
 
   Scenario: Step callbacks
     Given I emit a step event of "A"
-    And I emit a step event for each letter in "BCDE"
-    # Last two brackets are from the current example
-    Then the step event sequence should be "{[Z]}{[A]}{[{[B]}{[C]}{[D]}{[E]}]}{["
+    And I emit a step event for each letter in "DE"
+    # Last two brackets are from the current step
+    Then the step event sequence should be "{[Z]}{[{[B]}{[C]}]}{[A]}{[{[D]}{[E]}]}{["

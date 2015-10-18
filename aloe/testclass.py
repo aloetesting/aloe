@@ -117,7 +117,6 @@ class TestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.feature.testclass = cls
         cls.before_feature(cls.feature)
 
     @classmethod
@@ -191,7 +190,9 @@ class TestCase(unittest.TestCase):
 
         class_name = identifier(feature.name)
 
-        return type(class_name, (cls,), members)
+        testclass = type(class_name, (cls,), members)
+        testclass.feature.testclass = testclass
+        return testclass
 
     @classmethod
     def make_background(cls, background):
