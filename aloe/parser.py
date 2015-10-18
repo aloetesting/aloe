@@ -219,7 +219,7 @@ class Step(Node):
         # language: {feature.language}
         {feature.keyword}: feature
 
-        {container.keyword}: scenario
+        {container.text}
         {string}
         """.format(
             feature=self.feature,
@@ -425,20 +425,17 @@ class StepContainer(Node):
 
 
 class HeaderNode(Node):
-    """
-    Nodes with a header consisting of a keyword, name and a number of tags.
-    """
+    """A node with a header consisting of a keyword and a name."""
+
+    name_required = True
 
     def __init__(self, parsed, **kwargs):
         super().__init__(parsed, **kwargs)
 
-        self._tags = tuple(
-            tag['name'][1:] for tag in parsed['tags']
-        )
         self.keyword = parsed['keyword']
         self.name = parsed['name'].strip()
 
-        if self.name == '':
+        if self.name_required and self.name == '':
             raise LettuceSyntaxError(
                 None,
                 "{line}:{col} {klass} must have a name".format(
@@ -448,12 +445,29 @@ class HeaderNode(Node):
 
     def __str__(self):
         return '<{klass}: "{name}">'.format(
-            # FIXME: use self.language
             klass=self.__class__.__name__,
             name=self.name)
 
     def __repr__(self):
         return str(self)
+
+    @property
+    def text(self):
+        """The text for this block."""
+
+        return '{keyword}: {name}'.format(keyword=self.keyword,
+                                          name=self.name).strip()
+
+
+class TaggedNode(Node):
+    """A node with attached tags."""
+
+    def __init__(self, parsed, **kwargs):
+        super().__init__(parsed, **kwargs)
+
+        self._tags = tuple(
+            tag['name'][1:] for tag in parsed['tags']
+        )
 
     @property
     def tags(self):
@@ -469,13 +483,6 @@ class HeaderNode(Node):
         """
         return self._tags
 
-    @property
-    def text(self):
-        """The text for this block."""
-
-        return '{keyword}: {name}'.format(keyword=self.keyword,
-                                          name=self.name)
-
     def represent_tags(self):
         """
         Render the tags of a tagged block.
@@ -484,11 +491,10 @@ class HeaderNode(Node):
         return ' ' * self.indent + '  '.join('@%s' % tag for tag in self.tags)
 
 
-class Background(StepContainer):
+class Background(HeaderNode, StepContainer):
     """The background of all :class:`Scenario` in a :class:`Feature`."""
     container_name = 'background'
-
-    text = 'Background:'
+    name_required = False
 
 
 class Outline(OrderedDict, Node):
@@ -504,7 +510,7 @@ class Outline(OrderedDict, Node):
         Node.__init__(self, table_row, filename=filename)
 
 
-class Scenario(HeaderNode, StepContainer):
+class Scenario(HeaderNode, TaggedNode, StepContainer):
     """A scenario within a :class:`Feature`."""
 
     container_name = 'scenario'
@@ -653,7 +659,7 @@ class Description(Node):
             return 0
 
 
-class Feature(HeaderNode):
+class Feature(HeaderNode, TaggedNode):
     """
     A complete Gherkin feature.
 
