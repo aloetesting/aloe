@@ -238,8 +238,6 @@ class TestCase(unittest.TestCase):
                 for i, (outline, steps) in enumerate(scenario.evaluated)
             }
 
-            # TODO: Line numbers of the outline lines aren't preserved, because
-            # the Outline tokens don't store the information
             result = make_function(
                 source=source,
                 context=context,
