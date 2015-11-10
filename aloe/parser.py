@@ -207,32 +207,26 @@ class Step(Node):
         This is used by :func:`step.behave_as`.
         """
 
-        try:
-            container = self.scenario
-            is_scenario = True
-        except AttributeError:
-            container = self.background
-            is_scenario = False
-
         # Gherkin can't parse anything other than complete features
+        # https://github.com/cucumber/gherkin3/issues/109
         feature_string = """
         # language: {feature.language}
         {feature.keyword}: feature
 
-        {container.text}
+        {scenario_keyword}: scenario
         {string}
         """.format(
             feature=self.feature,
-            container=container,
+            scenario_keyword=self.feature.dialect.scenario_keywords[0],
             string=string,
         )
 
         feature = self.feature.parse(string=feature_string,
                                      filename=self.filename)
 
-        if is_scenario:
+        try:
             return feature.scenarios[0].steps
-        else:
+        except AttributeError:
             return feature.background.steps
 
     @property
