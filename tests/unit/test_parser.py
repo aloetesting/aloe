@@ -13,10 +13,12 @@ from builtins import zip
 from future import standard_library
 standard_library.install_aliases()
 
+import tempfile
+
 from nose.tools import assert_equal, assert_raises
 
 from aloe.parser import Feature, Scenario, Background
-from aloe.exceptions import LettuceSyntaxError
+from aloe.exceptions import AloeSyntaxError
 
 FEATURE1 = """
 Feature: Rent movies
@@ -84,7 +86,7 @@ Feature: Big table
       | description                                                               |
       | this is such a huge description within a table, the maxlengh will be huge |
       | this is another description within a table                                |
-"""  # noqa
+"""
 
 FEATURE6 = """
 Feature: Big scenario outline
@@ -834,12 +836,54 @@ def test_background_parsing_without_mmf():
 def test_syntax_error_for_scenarios_with_no_name():
     ("Trying to parse features with unnamed "
      "scenarios will cause a syntax error")
-    with assert_raises(LettuceSyntaxError) as error:
+    with assert_raises(AloeSyntaxError) as error:
         Feature.from_string(FEATURE20)
 
-    assert error.exception.msg == \
-        'Syntax error at: None\n' \
-        '3:5 Scenario must have a name'
+    assert_equal(
+        error.exception.msg,
+        "Syntax error at: None\n"
+        "3:5 Scenario must have a name"
+    )
+
+
+def test_syntax_error_malformed_feature():
+    """Parsing a malformed feature causes a syntax error."""
+
+    with assert_raises(AloeSyntaxError) as error:
+        Feature.from_string("""
+PARSE ERROR
+""")
+
+    # pylint:disable=line-too-long
+    assert_equal(error.exception.msg, '\n'.join((
+        "Syntax error at: None",
+        "Parser errors:",
+        "(2:1): expected: #Language, #TagLine, #FeatureLine, #Comment, #Empty, got 'PARSE ERROR'",
+        "(3:0): unexpected end of file, expected: #Language, #TagLine, #FeatureLine, #Comment, #Empty",
+    )))
+    # pylint:enable=line-too-long
+
+
+def test_syntax_error_malformed_feature_from_file():
+    """Parsing a malformed feature in a filecauses a syntax error."""
+
+    with tempfile.NamedTemporaryFile() as feature_file:
+        feature_file.write(b"""
+PARSE ERROR
+""")
+        feature_file.flush()
+
+        with assert_raises(AloeSyntaxError) as error:
+            Feature.from_file(feature_file.name)
+
+        # pylint:disable=line-too-long
+        assert_equal(error.exception.msg, '\n'.join((
+            "Syntax error at: {filename}",
+            "Parser errors:",
+            "(2:1): expected: #Language, #TagLine, #FeatureLine, #Comment, #Empty, got 'PARSE ERROR'",
+            "(3:0): unexpected end of file, expected: #Language, #TagLine, #FeatureLine, #Comment, #Empty",
+        )).format(filename=feature_file.name))
+        # pylint:enable=line-too-long
 
 
 def test_scenario_post_email():

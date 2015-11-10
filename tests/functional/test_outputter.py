@@ -113,7 +113,7 @@ Feature: Highlighting
       Not actually a table :-P
       \"\"\"
 
-""".lstrip())  # noqa
+""".lstrip())
 
     def test_color_output(self):
         """Test streamed output with color"""
@@ -171,7 +171,7 @@ t.bold_green(Given I have a table:)
       t.bold_green(Not actually a table :-P)
       \"\"\"
 
-""".lstrip())  # noqa
+""".lstrip())
 
     def test_tty_output(self):
         """Test streamed output with tty control codes"""
@@ -208,7 +208,7 @@ t.color11(Given I have entered 10 into the calculator)
 t.color11(And I press [+])
 <t.move_up>t.bold_green(And I press [+])
 
-""".lstrip())  # noqa
+""".lstrip())
 
     def test_full_color_output_no_mocks(self):
         """Test full color output with no mocks"""

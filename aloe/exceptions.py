@@ -15,7 +15,7 @@ standard_library.install_aliases()
 from aloe.utils import PY3
 
 
-class LettuceSyntaxError(SyntaxError):
+class AloeSyntaxError(SyntaxError):
     """A syntax error in a feature file."""
     def __init__(self, filename, string):
         self.filename = filename

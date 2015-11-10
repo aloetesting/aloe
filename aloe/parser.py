@@ -19,12 +19,13 @@ from copy import copy
 from io import StringIO
 
 from gherkin3.dialect import Dialect
+from gherkin3.errors import ParserError
 from gherkin3.parser import Parser
 from gherkin3.token_matcher import TokenMatcher
 from gherkin3.token_scanner import TokenScanner as BaseTokenScanner
 
 from aloe import strings
-from aloe.exceptions import LettuceSyntaxError
+from aloe.exceptions import AloeSyntaxError
 from aloe.utils import memoizedproperty
 
 # Pylint can't figure out methods vs. properties and which classes are
@@ -439,8 +440,8 @@ class HeaderNode(Node):
         self.name = parsed['name'].strip()
 
         if self.name_required and self.name == '':
-            raise LettuceSyntaxError(
-                None,
+            raise AloeSyntaxError(
+                self.filename,
                 "{line}:{col} {klass} must have a name".format(
                     line=self.line,
                     col=self.col,
@@ -711,10 +712,13 @@ class Feature(HeaderNode, TaggedNode):
         else:
             token_scanner = TokenScanner(filename=filename)
 
-        return cls(
-            parser.parse(token_scanner, token_matcher=token_matcher),
-            filename=filename,
-        )
+        try:
+            return cls(
+                parser.parse(token_scanner, token_matcher=token_matcher),
+                filename=filename,
+            )
+        except ParserError as ex:
+            raise AloeSyntaxError(filename, str(ex))
 
     @classmethod
     def from_string(cls, string, language=None):
