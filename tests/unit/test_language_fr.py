@@ -22,7 +22,7 @@ Scénario: Ajout de plusieurs cursus dans la base de mon université
     Quand je consolide la base dans 'cursus.txt'
     Alors je vois que la 1er ligne de 'cursus.txt' contient 'Science de l'Informatique:5
     Et je vois que la 2em ligne de 'cursus.txt' contient 'Nutrition:4'
-"""  # noqa
+"""
 
 OUTLINED_SCENARIO = u"""
 Plan du Scénario: Ajouter 2 nombres

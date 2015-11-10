@@ -86,7 +86,7 @@ Feature: Big table
       | description                                                               |
       | this is such a huge description within a table, the maxlengh will be huge |
       | this is another description within a table                                |
-"""  # noqa
+"""
 
 FEATURE6 = """
 Feature: Big scenario outline
