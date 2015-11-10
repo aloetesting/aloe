@@ -16,7 +16,7 @@ standard_library.install_aliases()
 from unittest import skip
 
 from aloe.parser import Step, Scenario, Feature
-from aloe.exceptions import LettuceSyntaxError
+from aloe.exceptions import AloeSyntaxError
 
 from nose.tools import assert_equal
 from nose.tools import assert_raises
@@ -520,7 +520,7 @@ def test_full_featured_feature():
 def test_scenario_with_table_and_no_step_fails():
     "A step table imediately after the scenario line, without step line fails"
 
-    with assert_raises(LettuceSyntaxError):
+    with assert_raises(AloeSyntaxError):
         parse_scenario(SCENARIO_FAILED)
 
 

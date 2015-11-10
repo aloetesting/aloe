@@ -18,7 +18,7 @@ import tempfile
 from nose.tools import assert_equal, assert_raises
 
 from aloe.parser import Feature, Scenario, Background
-from aloe.exceptions import LettuceSyntaxError
+from aloe.exceptions import AloeSyntaxError
 
 FEATURE1 = """
 Feature: Rent movies
@@ -836,7 +836,7 @@ def test_background_parsing_without_mmf():
 def test_syntax_error_for_scenarios_with_no_name():
     ("Trying to parse features with unnamed "
      "scenarios will cause a syntax error")
-    with assert_raises(LettuceSyntaxError) as error:
+    with assert_raises(AloeSyntaxError) as error:
         Feature.from_string(FEATURE20)
 
     assert_equal(
@@ -849,7 +849,7 @@ def test_syntax_error_for_scenarios_with_no_name():
 def test_syntax_error_malformed_feature():
     """Parsing a malformed feature causes a syntax error."""
 
-    with assert_raises(LettuceSyntaxError) as error:
+    with assert_raises(AloeSyntaxError) as error:
         Feature.from_string("""
 PARSE ERROR
 """)
@@ -873,7 +873,7 @@ PARSE ERROR
 """)
         feature_file.flush()
 
-        with assert_raises(LettuceSyntaxError) as error:
+        with assert_raises(AloeSyntaxError) as error:
             Feature.from_file(feature_file.name)
 
         # pylint:disable=line-too-long
