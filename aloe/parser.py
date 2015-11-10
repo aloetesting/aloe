@@ -19,6 +19,7 @@ from copy import copy
 from io import StringIO
 
 from gherkin3.dialect import Dialect
+from gherkin3.errors import ParserError
 from gherkin3.parser import Parser
 from gherkin3.token_matcher import TokenMatcher
 from gherkin3.token_scanner import TokenScanner as BaseTokenScanner
@@ -437,7 +438,7 @@ class HeaderNode(Node):
 
         if self.name_required and self.name == '':
             raise LettuceSyntaxError(
-                None,
+                self.filename,
                 "{line}:{col} {klass} must have a name".format(
                     line=self.line,
                     col=self.col,
@@ -708,10 +709,13 @@ class Feature(HeaderNode, TaggedNode):
         else:
             token_scanner = TokenScanner(filename=filename)
 
-        return cls(
-            parser.parse(token_scanner, token_matcher=token_matcher),
-            filename=filename,
-        )
+        try:
+            return cls(
+                parser.parse(token_scanner, token_matcher=token_matcher),
+                filename=filename,
+            )
+        except ParserError as ex:
+            raise LettuceSyntaxError(filename, str(ex))
 
     @classmethod
     def from_string(cls, string, language=None):
