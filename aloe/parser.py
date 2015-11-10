@@ -208,10 +208,13 @@ class Step(Node):
         """
 
         try:
-            container = self.scenario
+            self.scenario  # pylint:disable=pointless-statement
+            container_text = \
+                '%s: scenario' % self.feature.dialect.scenario_keywords[0]
             is_scenario = True
         except AttributeError:
-            container = self.background
+            container_text = \
+                '%s: ' % self.feature.dialect.background_keywords[0]
             is_scenario = False
 
         # Gherkin can't parse anything other than complete features
@@ -219,11 +222,11 @@ class Step(Node):
         # language: {feature.language}
         {feature.keyword}: feature
 
-        {container.text}
+        {container_text}
         {string}
         """.format(
+            container_text=container_text,
             feature=self.feature,
-            container=container,
             string=string,
         )
 
