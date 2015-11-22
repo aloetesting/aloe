@@ -41,3 +41,10 @@ Feature: Test Factory Boy steps
             | jessie   | jessie@example.org |
             | jessie   | jessie@example.org |
             | jessie   | jessie@example.org |
+
+    Scenario: Types are interpretted
+        Given I have a weird object:
+            | string | int | none | bool | date       |
+            | string | 1   | null | true | 2015-02-28 |
+
+        Then my weird object has the right types
