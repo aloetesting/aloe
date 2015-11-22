@@ -102,7 +102,7 @@ class WeirdObjectFactory(factory.Factory):
 def check_types(self):
     """Check the types of MyWeirdObject"""
 
-    for attr, type_ in (('string', str),
+    for attr, type_ in (('string', type('')),  # get right type in Py2/3
                         ('int', int),
                         ('none', type(None)),
                         ('bool', bool),
