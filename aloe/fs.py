@@ -14,13 +14,6 @@ import sys
 import os
 import fnmatch
 
-try:
-    reload
-except NameError:
-    # pylint:disable=no-name-in-module,redefined-builtin
-    from importlib import reload
-    # pylint:enable=no-name-in-module,redefined-builtin
-
 from nose.importer import Importer
 
 

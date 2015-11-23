@@ -21,6 +21,7 @@ from builtins import *
 import re
 
 from aloe import before, step
+from aloe.tools import guess_types
 from aloe.utils import camel_case_to_spaces
 
 
@@ -35,7 +36,7 @@ def _run_factory(factory, self, count=None):
         headers = self.table[0]
         rows = tuple(
             dict(zip(headers, row))
-            for row in self.table[1:]
+            for row in guess_types(self.table[1:])
         )
     else:
         rows = ({},)

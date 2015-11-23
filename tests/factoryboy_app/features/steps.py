@@ -10,6 +10,8 @@ from builtins import *
 from future import standard_library
 standard_library.install_aliases()
 
+from datetime import date
+
 import factory
 
 from aloe import step, after
@@ -72,3 +74,37 @@ def check_users(self):
 def clear_user_list(scenario, outline, steps):
     """Clear the user list between tests"""
     User.users = []
+
+
+class MyWeirdObject(object):
+    """An object with different types"""
+
+    ref = None
+
+    def __init__(self, **kwargs):
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+        MyWeirdObject.ref = self
+
+
+@step_from_factory
+class WeirdObjectFactory(factory.Factory):
+    """Factory to create MyWeirdObject"""
+
+    class Meta(object):
+        """Meta"""
+
+        model = MyWeirdObject
+
+
+@step('my weird object has the right types')
+def check_types(self):
+    """Check the types of MyWeirdObject"""
+
+    for attr, type_ in (('string', type('')),  # get right type in Py2/3
+                        ('int', int),
+                        ('none', type(None)),
+                        ('bool', bool),
+                        ('date', date)):
+        assert_equal(type(getattr(MyWeirdObject.ref, attr)), type_)
