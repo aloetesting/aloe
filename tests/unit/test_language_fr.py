@@ -105,12 +105,12 @@ Fonctionnalité: Faire plusieur choses en même temps
 
 def parse_scenario(string, language=None):
     """Parse a scenario, prefixing it with a feature header."""
-    feature = u"""
+    feature_str = u"""
     Fonctionnalité: parse_scenario
     """
 
-    feature += string
-    feature = Feature.from_string(feature, language=language)
+    feature_str += string
+    feature = Feature.from_string(feature_str, language=language)
 
     return feature.scenarios[0]
 

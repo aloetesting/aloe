@@ -10,6 +10,10 @@ from __future__ import absolute_import
 from future import standard_library
 standard_library.install_aliases()
 
+from nose.tools import assert_equal
+
+from aloe.parser import Feature, Step
+
 
 I_LIKE_VEGETABLES = '''
 Given I hold a special love for green vegetables
@@ -46,11 +50,6 @@ Given I have a string like so:
     with spaces at the beginning
   """
 '''.strip()
-
-
-from nose.tools import assert_equal
-
-from aloe.parser import Feature, Step
 
 
 def parse_steps(step):
