@@ -22,9 +22,6 @@ from aloe.testing import (
 )
 from aloe.utils import PY3, TestWrapperIO
 
-# Pylint cannot infer the attributes on world
-# pylint:disable=no-member
-
 
 @in_directory('tests/simple_app')
 class SimpleScenarioTest(FeatureTest):

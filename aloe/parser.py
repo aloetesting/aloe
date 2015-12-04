@@ -42,7 +42,7 @@ class TokenScanner(BaseTokenScanner):
             if filename:
                 raise ValueError(
                     "Cannot provide string and filename together.")
-            self.io = StringIO(string)  # pylint:disable=invalid-name
+            self.io = StringIO(string)
         elif filename:
             self.io = open(filename, 'r')
         else:

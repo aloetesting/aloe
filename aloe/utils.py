@@ -17,7 +17,7 @@ import re
 import sys
 
 try:
-    from functools import lru_cache  # pylint:disable=no-name-in-module
+    from functools import lru_cache
 except ImportError:
     from repoze.lru import lru_cache
 from contextlib import contextmanager
