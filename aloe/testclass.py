@@ -37,10 +37,6 @@ from aloe.registry import (
 )
 from aloe.utils import identifier
 
-# Pylint can't figure out methods vs. properties and which classes are
-# abstract
-# pylint:disable=abstract-method
-
 
 class TestStep(Step):
     """

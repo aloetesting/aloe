@@ -42,7 +42,7 @@ class TokenScanner(BaseTokenScanner):
             if filename:
                 raise ValueError(
                     "Cannot provide string and filename together.")
-            self.io = StringIO(string)  # pylint:disable=invalid-name
+            self.io = StringIO(string)
         elif filename:
             self.io = open(filename, 'r')
         else:
@@ -567,12 +567,12 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
         """
 
         # get the list of column headings
-        headings = OrderedDict()
+        headings_dict = OrderedDict()
 
         for outline in self.outlines:
-            headings.update(outline)
+            headings_dict.update(outline)
 
-        headings = list(headings.keys())
+        headings = list(headings_dict.keys())
         table = [headings]
 
         # append the data to the table
@@ -700,12 +700,15 @@ class Feature(HeaderNode, TaggedNode):
         """
 
         parser = Parser()
+        # pylint:disable=redefined-variable-type
+        # https://bitbucket.org/logilab/pylint/issues/710
         if language:
             if language == 'pt-br':
                 language = 'pt'
             token_matcher = LanguageTokenMatcher(language)
         else:
             token_matcher = TokenMatcher()
+        # pylint:enable=redefined-variable-type
 
         if string:
             token_scanner = TokenScanner(string=string)
