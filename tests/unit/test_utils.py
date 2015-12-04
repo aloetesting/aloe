@@ -110,7 +110,10 @@ class MemoizedTest(unittest.TestCase):
                 """
 
                 self.value = value
-                type(self).counter += 1  # pylint:disable=no-member
+                # pylint:disable=no-member
+                # https://bitbucket.org/logilab/pylint/issues/707
+                type(self).counter += 1
+                # pylint:enable=no-member
 
         first = Memoized(5)
         second = Memoized(10)
