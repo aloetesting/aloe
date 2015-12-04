@@ -58,19 +58,13 @@ else:
             and unicode.
             """
 
+            # pylint:disable=super-on-old-class
+            # https://bitbucket.org/logilab/pylint/issues/721
             try:
                 super().write(str_)
             except TypeError:
                 super().write(str_.decode('utf-8'))
-
-        # The following methods are added only so Pylint can infer them
-
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-
-        def getvalue(self):
-            """Get the captured string."""
-            return super().getvalue()
+            # pylint:enable=super-on-old-class
 
 
 def unwrap_function(func):
