@@ -567,12 +567,12 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
         """
 
         # get the list of column headings
-        headings = OrderedDict()
+        headings_dict = OrderedDict()
 
         for outline in self.outlines:
-            headings.update(outline)
+            headings_dict.update(outline)
 
-        headings = list(headings.keys())
+        headings = list(headings_dict.keys())
         table = [headings]
 
         # append the data to the table
@@ -705,7 +705,7 @@ class Feature(HeaderNode, TaggedNode):
                 language = 'pt'
             token_matcher = LanguageTokenMatcher(language)
         else:
-            token_matcher = TokenMatcher()
+            token_matcher = TokenMatcher()  # pylint:disable=redefined-variable-type
 
         if string:
             token_scanner = TokenScanner(string=string)

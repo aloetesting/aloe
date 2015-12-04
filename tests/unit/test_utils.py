@@ -110,7 +110,7 @@ class MemoizedTest(unittest.TestCase):
                 """
 
                 self.value = value
-                type(self).counter += 1
+                type(self).counter += 1  # pylint:disable=no-member
 
         first = Memoized(5)
         second = Memoized(10)

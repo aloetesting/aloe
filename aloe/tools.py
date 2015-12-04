@@ -48,6 +48,7 @@ def guess_types(data):  # pylint:disable=too-complex
         data = data.decode()
 
     if isinstance(data, str):
+        # pylint:disable=redefined-variable-type
         if data == "true":
             data = True
         elif data == "false":
@@ -63,6 +64,7 @@ def guess_types(data):  # pylint:disable=too-complex
             pass
 
         return data
+        # pylint:enable=redefined-variable-type
 
     # if it's a dict, recurse as a dict
     if isinstance(data, dict):
