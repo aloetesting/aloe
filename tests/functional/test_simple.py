@@ -7,8 +7,6 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-from future import standard_library
-standard_library.install_aliases()
 
 import sys
 import os
@@ -81,7 +79,7 @@ class SimpleScenarioTest(FeatureTest):
         step_file = getsourcefile(sys.modules['features.steps'])
 
         step_stack_frame = """
-  File "{step_file}", line 64, in assert_result
+  File "{step_file}", line 62, in assert_result
     assert world.result == float(result)
 AssertionError
         """.strip().format(step_file=step_file)
@@ -129,7 +127,7 @@ AssertionError
         step_file = getsourcefile(sys.modules['features.steps'])
 
         step_stack_frame = """
-  File "{step_file}", line 64, in assert_result
+  File "{step_file}", line 62, in assert_result
     assert world.result == float(result)
 AssertionError
         """.strip().format(step_file=step_file)
@@ -223,7 +221,7 @@ AssertionError
         step_file = getsourcefile(sys.modules['features.steps'])
 
         step_stack_frame = """
-  File "{step_file}", line 64, in assert_result
+  File "{step_file}", line 62, in assert_result
     assert world.result == float(result)
 AssertionError
         """.strip().format(step_file=step_file)

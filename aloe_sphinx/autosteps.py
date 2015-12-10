@@ -13,8 +13,6 @@ from __future__ import absolute_import
 # pylint:disable=redefined-builtin, unused-wildcard-import, wildcard-import
 from builtins import *
 # pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
-from future import standard_library
-standard_library.install_aliases()
 
 from types import FunctionType
 
