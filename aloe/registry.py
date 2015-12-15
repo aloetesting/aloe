@@ -12,8 +12,6 @@ from builtins import bytes
 from builtins import super
 from builtins import str
 # pylint:enable=redefined-builtin
-from future import standard_library
-standard_library.install_aliases()
 
 import re
 from collections import OrderedDict

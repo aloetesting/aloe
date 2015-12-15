@@ -10,8 +10,6 @@ from __future__ import absolute_import
 # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from builtins import *
 # pylint:enable=redefined-builtin,wildcard-import,unused-wildcard-import
-from future import standard_library
-standard_library.install_aliases()
 
 from nose.tools import assert_equal
 from aloe.parser import Feature

@@ -11,8 +11,6 @@ from __future__ import absolute_import
 from builtins import str
 from builtins import zip
 # pylint:enable=redefined-builtin
-from future import standard_library
-standard_library.install_aliases()
 
 import unicodedata
 

@@ -9,8 +9,6 @@ from __future__ import absolute_import
 # pylint:disable=redefined-builtin
 from builtins import super
 # pylint:enable=redefined-builtin
-from future import standard_library
-standard_library.install_aliases()
 
 from aloe.utils import PY3
 
