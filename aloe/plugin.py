@@ -6,10 +6,11 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
-# pylint:disable=redefined-builtin
-from builtins import super
-# pylint:enable=redefined-builtin
+# pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
+from builtins import *
+# pylint:enable=redefined-builtin,wildcard-import,unused-wildcard-import
 
+import sys
 import os
 
 from importlib import import_module
@@ -152,8 +153,14 @@ class GherkinPlugin(Plugin):
         if any(
                 file_dir.startswith(os.path.abspath(feature_dir))
                 for feature_dir in self.feature_dirs
-        ) and os.path.basename(file_).endswith('.feature'):
-            return True
+        ):
+            # Check the file extension
+            # Convert to str (not bytes) since Nose passes in both depending on
+            # whether the feature is in a Python module dir or not
+            if isinstance(file_, bytes):
+                file_ = file_.decode(sys.getfilesystemencoding())
+            if os.path.basename(file_).endswith('.feature'):
+                return True
 
     def wantPython(self, _):
         """
