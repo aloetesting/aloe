@@ -235,6 +235,16 @@ AssertionError
 
         self.assert_feature_success('tests')
 
+    def test_non_ascii_files(self):
+        """
+        Test that features are loaded from a directory also containing a file
+        with non-ASCII characters in the name.
+        """
+
+        # Nose behavior depends on whether there's __init__.py in the directory
+        self.assert_feature_success('features/non_ascii_files')
+        self.assert_feature_success('features/non_ascii_files_2')
+
     def test_scenario_indices(self):
         """
         Test specifying the scenario indices to run.
