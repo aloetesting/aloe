@@ -271,8 +271,17 @@ class FeatureTest(unittest.TestCase):
 
         argv += list(features)
 
+        # Save the loaded module list
+        old_modules = set(sys.modules.keys())
+
         result = TestRunner(exit=False, argv=argv, stream=stream)
         result.captured_stream = stream
+
+        # To avoid affecting the (outer) testsuite and its subsequent tests,
+        # unload all modules that were newly loaded
+        for module_name in set(sys.modules.keys()) - old_modules:
+            del sys.modules[module_name]
+
         return result
 
     def assert_feature_success(self, *features, **kwargs):
