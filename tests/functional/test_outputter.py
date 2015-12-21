@@ -74,12 +74,12 @@ Feature: Highlighting
   I want to see my scenarios with pretty highlighting
   So my output is easy to read
 
-  Scenario: behave_as works                            features/highlighting.feature:13
+  Scenario: behave_as works                            # features/highlighting.feature:13
     Given I have a table
     Given I have entered 10 into the calculator
     And I press [+]
 
-  Scenario Outline: Scenario outlines                  features/highlighting.feature:17
+  Scenario Outline: Scenario outlines                  # features/highlighting.feature:17
       | number |
       | 30     |
 
@@ -87,7 +87,7 @@ Feature: Highlighting
     Given I have entered 30 into the calculator
     And I press add
 
-  Scenario Outline: Scenario outlines                  features/highlighting.feature:17
+  Scenario Outline: Scenario outlines                  # features/highlighting.feature:17
       | number |
       | 40     |
 
@@ -96,7 +96,7 @@ Feature: Highlighting
     And I press add
 
   @tables
-  Scenario: Scenario with table                        features/highlighting.feature:27
+  Scenario: Scenario with table                        # features/highlighting.feature:27
     Given I have a table
     Given I have a table:
       | value |
@@ -104,7 +104,7 @@ Feature: Highlighting
       | 1     |
       | 2     |
 
-  Scenario: Scenario with a multiline                  features/highlighting.feature:34
+  Scenario: Scenario with a multiline                  # features/highlighting.feature:34
     Given I have a table
     Given I have a table:
       \"\"\"
@@ -132,12 +132,12 @@ Feature: Highlighting
   I want to see my scenarios with pretty highlighting
   So my output is easy to read
 
-  Scenario: behave_as works                            t.color11(features/highlighting.feature:13)
+  Scenario: behave_as works                            t.color243(# features/highlighting.feature:13)
 t.green(Given I have a table)
 t.green(Given I have entered 10 into the calculator)
 t.green(And I press [+])
 
-  Scenario Outline: Scenario outlines                  t.color11(features/highlighting.feature:17)
+  Scenario Outline: Scenario outlines                  t.color243(# features/highlighting.feature:17)
       | number |
       | 30     |
 
@@ -145,7 +145,7 @@ t.green(Given I have a table)
 t.green(Given I have entered 30 into the calculator)
 t.green(And I press add)
 
-  Scenario Outline: Scenario outlines                  t.color11(features/highlighting.feature:17)
+  Scenario Outline: Scenario outlines                  t.color243(# features/highlighting.feature:17)
       | number |
       | 40     |
 
@@ -154,7 +154,7 @@ t.green(Given I have entered 40 into the calculator)
 t.green(And I press add)
 
 t.cyan(@tables)
-  Scenario: Scenario with table                        t.color11(features/highlighting.feature:27)
+  Scenario: Scenario with table                        t.color243(# features/highlighting.feature:27)
 t.green(Given I have a table)
 t.green(Given I have a table:)
       | t.green(value) |
@@ -162,7 +162,7 @@ t.green(Given I have a table:)
       | t.green(1) |
       | t.green(2) |
 
-  Scenario: Scenario with a multiline                  t.color11(features/highlighting.feature:34)
+  Scenario: Scenario with a multiline                  t.color243(# features/highlighting.feature:34)
 t.green(Given I have a table)
 t.green(Given I have a table:)
       \"\"\"
@@ -186,8 +186,8 @@ t.green(Given I have a table:)
                               verbosity=3, stream=stream)
 
             # we are going to see the scenario written out 3 times
-            # once in color 8 as a preview, then each line individually
-            # followed by a green version of it
+            # once as a preview, then each line individually followed by a
+            # green version of it
             self.assertEqual(stream.getvalue(), """
 Feature: Highlighting
 
@@ -195,15 +195,15 @@ Feature: Highlighting
   I want to see my scenarios with pretty highlighting
   So my output is easy to read
 
-  Scenario: behave_as works                            t.color11(features/highlighting.feature:13)
-t.color11(Given I have a table
+  Scenario: behave_as works                            t.color243(# features/highlighting.feature:13)
+t.color243(Given I have a table
     Given I have entered 10 into the calculator
     And I press [+])
-<t.move_up><t.move_up><t.move_up>t.color11(Given I have a table)
+<t.move_up><t.move_up><t.move_up>t.yellow(Given I have a table)
 <t.move_up>t.green(Given I have a table)
-t.color11(Given I have entered 10 into the calculator)
+t.yellow(Given I have entered 10 into the calculator)
 <t.move_up>t.green(Given I have entered 10 into the calculator)
-t.color11(And I press [+])
+t.yellow(And I press [+])
 <t.move_up>t.green(And I press [+])
 
 """.lstrip())

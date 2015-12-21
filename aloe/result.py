@@ -45,6 +45,7 @@ class Terminal(blessings.Terminal):
      * Adds a decorator to require the terminal global being set and
        pass it into hooks.
      * Works around a bug in blessings.Terminal.
+     * Adds Aloe-specific color wrappers for steps.
     """
 
     def write(self, arg='', return_=False):
@@ -68,6 +69,10 @@ class Terminal(blessings.Terminal):
         # pylint:disable=too-many-function-args
         return super(Terminal, self).color(color) if self.does_styling else str
 
+    def grey(self, *args, **kwargs):
+        """Grey is not one of the basic 8 colors."""
+        return self.color(243)(*args, **kwargs)
+
     @classmethod
     def required(cls, func):
         """Decorate this hook to only execute if term is available"""
@@ -90,6 +95,34 @@ class Terminal(blessings.Terminal):
 
         return inner
 
+    def preview(self, *args, **kwargs):
+        """Wrap a preview of a step."""
+        return self.grey(*args, **kwargs)
+
+    def pending(self, *args, **kwargs):
+        """Wrap a pending step."""
+        return self.yellow(*args, **kwargs)
+
+    def failed(self, *args, **kwargs):
+        """Wrap a failed step."""
+        return self.red(*args, **kwargs)
+
+    def passed(self, *args, **kwargs):
+        """Wrap a passed step."""
+        return self.green(*args, **kwargs)
+
+    def skipped(self, *args, **kwargs):
+        """Wrap a skipped step."""
+        return self.cyan(*args, **kwargs)
+
+    def comment(self, *args, **kwargs):
+        """Wrap a comment."""
+        return self.grey(*args, **kwargs)
+
+    def tag(self, *args, **kwargs):
+        """Wrap a tag."""
+        return self.cyan(*args, **kwargs)
+
 
 @outer_around.each_feature
 @contextmanager
@@ -99,7 +132,7 @@ def feature_wrapper(term, feature):
 
     try:
         if feature.tags:
-            term.writeln(term.cyan(feature.represent_tags()))
+            term.writeln(term.tag(feature.represent_tags()))
 
         lines = feature.represented().splitlines()
         term.writeln(lines[0])
@@ -120,13 +153,13 @@ def example_wrapper(term, scenario, outline, steps):
 
     try:
         if scenario.tags:
-            term.writeln(term.cyan(scenario.represent_tags()))
+            term.writeln(term.tag(scenario.represent_tags()))
 
         represented = scenario.represented()
         represented = ljust(represented, scenario.feature.max_length + 2)
 
         term.write(represented)
-        term.writeln(term.color(11)(scenario.location))
+        term.writeln(term.comment('# ' + scenario.location))
 
         if outline:
             term.writeln(represent_table([outline.keys(),
@@ -144,7 +177,7 @@ def example_wrapper(term, scenario, outline, steps):
             steps_ += steps
 
             term.writeln(
-                term.color(11)('\n'.join(
+                term.preview('\n'.join(
                     step.represented()
                     for step in steps_
                 ) + '\n'),
@@ -166,17 +199,17 @@ def step_wrapper(term, step):
     try:
         if term.is_a_tty:
             term.writeln(
-                step.represented(color=term.color(11)),
+                step.represented(color=term.pending),
                 return_=True)
 
         yield
     finally:
         if step.passed:
-            color = term.green
+            color = term.passed
         elif step.failed:
-            color = term.red
+            color = term.failed
         else:
-            color = term.yellow
+            color = term.skipped
 
         term.writeln(
             step.represented(color=color)
