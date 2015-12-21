@@ -102,9 +102,9 @@ def feature_wrapper(term, feature):
             term.writeln(term.cyan(feature.represent_tags()))
 
         lines = feature.represented().splitlines()
-        term.writeln(term.bold_white(lines[0]))
+        term.writeln(lines[0])
         term.writeln()
-        term.writeln(term.white('\n'.join(lines[1:])))
+        term.writeln('\n'.join(lines[1:]))
         term.writeln()
 
         yield
@@ -125,14 +125,13 @@ def example_wrapper(term, scenario, outline, steps):
         represented = scenario.represented()
         represented = ljust(represented, scenario.feature.max_length + 2)
 
-        term.write(term.bold_white(represented))
-        term.writeln(term.color(8)(scenario.location))
+        term.write(represented)
+        term.writeln(term.color(11)(scenario.location))
 
         if outline:
             term.writeln(represent_table([outline.keys(),
                                           outline.values()],
-                                         indent=6,
-                                         cell_wrap=term.white))
+                                         indent=6))
             term.writeln()
 
         # write a preview of the steps
@@ -145,7 +144,7 @@ def example_wrapper(term, scenario, outline, steps):
             steps_ += steps
 
             term.writeln(
-                term.color(8)('\n'.join(
+                term.color(11)('\n'.join(
                     step.represented()
                     for step in steps_
                 ) + '\n'),
@@ -173,9 +172,9 @@ def step_wrapper(term, step):
         yield
     finally:
         if step.passed:
-            color = term.bold_green
+            color = term.green
         elif step.failed:
-            color = term.bold_red
+            color = term.red
         else:
             color = term.yellow
 

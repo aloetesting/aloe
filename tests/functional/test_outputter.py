@@ -126,47 +126,47 @@ Feature: Highlighting
                               force_color=True)
 
             self.assertEqual(stream.getvalue(), """
-t.bold_white(Feature: Highlighting)
+Feature: Highlighting
 
-t.white(As a programmer
+  As a programmer
   I want to see my scenarios with pretty highlighting
-  So my output is easy to read)
+  So my output is easy to read
 
-t.bold_white(Scenario: behave_as works)t.color8(features/highlighting.feature:13)
-t.bold_green(Given I have a table)
-t.bold_green(Given I have entered 10 into the calculator)
-t.bold_green(And I press [+])
+  Scenario: behave_as works                            t.color11(features/highlighting.feature:13)
+t.green(Given I have a table)
+t.green(Given I have entered 10 into the calculator)
+t.green(And I press [+])
 
-t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.feature:17)
-      | t.white(number) |
-      | t.white(30) |
+  Scenario Outline: Scenario outlines                  t.color11(features/highlighting.feature:17)
+      | number |
+      | 30     |
 
-t.bold_green(Given I have a table)
-t.bold_green(Given I have entered 30 into the calculator)
-t.bold_green(And I press add)
+t.green(Given I have a table)
+t.green(Given I have entered 30 into the calculator)
+t.green(And I press add)
 
-t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.feature:17)
-      | t.white(number) |
-      | t.white(40) |
+  Scenario Outline: Scenario outlines                  t.color11(features/highlighting.feature:17)
+      | number |
+      | 40     |
 
-t.bold_green(Given I have a table)
-t.bold_green(Given I have entered 40 into the calculator)
-t.bold_green(And I press add)
+t.green(Given I have a table)
+t.green(Given I have entered 40 into the calculator)
+t.green(And I press add)
 
 t.cyan(@tables)
-t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:27)
-t.bold_green(Given I have a table)
-t.bold_green(Given I have a table:)
-      | t.bold_green(value) |
-      | t.bold_green(1) |
-      | t.bold_green(1) |
-      | t.bold_green(2) |
+  Scenario: Scenario with table                        t.color11(features/highlighting.feature:27)
+t.green(Given I have a table)
+t.green(Given I have a table:)
+      | t.green(value) |
+      | t.green(1) |
+      | t.green(1) |
+      | t.green(2) |
 
-t.bold_white(Scenario: Scenario with a multiline)t.color8(features/highlighting.feature:34)
-t.bold_green(Given I have a table)
-t.bold_green(Given I have a table:)
+  Scenario: Scenario with a multiline                  t.color11(features/highlighting.feature:34)
+t.green(Given I have a table)
+t.green(Given I have a table:)
       \"\"\"
-      t.bold_green(Not actually a table :-P)
+      t.green(Not actually a table :-P)
       \"\"\"
 
 """.lstrip())
@@ -189,22 +189,22 @@ t.bold_green(Given I have a table:)
             # once in color 8 as a preview, then each line individually
             # followed by a green version of it
             self.assertEqual(stream.getvalue(), """
-t.bold_white(Feature: Highlighting)
+Feature: Highlighting
 
-t.white(As a programmer
+  As a programmer
   I want to see my scenarios with pretty highlighting
-  So my output is easy to read)
+  So my output is easy to read
 
-t.bold_white(Scenario: behave_as works)t.color8(features/highlighting.feature:13)
-t.color8(Given I have a table
+  Scenario: behave_as works                            t.color11(features/highlighting.feature:13)
+t.color11(Given I have a table
     Given I have entered 10 into the calculator
     And I press [+])
 <t.move_up><t.move_up><t.move_up>t.color11(Given I have a table)
-<t.move_up>t.bold_green(Given I have a table)
+<t.move_up>t.green(Given I have a table)
 t.color11(Given I have entered 10 into the calculator)
-<t.move_up>t.bold_green(Given I have entered 10 into the calculator)
+<t.move_up>t.green(Given I have entered 10 into the calculator)
 t.color11(And I press [+])
-<t.move_up>t.bold_green(And I press [+])
+<t.move_up>t.green(And I press [+])
 
 """.lstrip())
 
