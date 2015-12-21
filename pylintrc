@@ -6,6 +6,7 @@ max-line-length=80
 
 [REPORTS]
 output-format=colorized
+evaluation=10.0 - ((float(5 * error + warning + refactor + convention) / 1000) * 10)
 
 [MESSAGES CONTROL]
 disable=
