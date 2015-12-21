@@ -257,6 +257,8 @@ class FeatureTest(unittest.TestCase):
             # redirects output
             stream = TestWrapperIO()
 
+        # Reset the state of callbacks and steps so that individual tests don't
+        # affect each other
         CALLBACK_REGISTRY.clear(priority_class=PriorityClass.USER)
         STEP_REGISTRY.clear()
         world.__dict__.clear()
@@ -271,8 +273,20 @@ class FeatureTest(unittest.TestCase):
 
         argv += list(features)
 
+        # Save the loaded module list to restore later
+        old_modules = set(sys.modules.keys())
+
         result = TestRunner(exit=False, argv=argv, stream=stream)
         result.captured_stream = stream
+
+        # To avoid affecting the (outer) testsuite and its subsequent tests,
+        # unload all modules that were newly loaded. This also ensures that they
+        # are loaded again for the next tests, registering relevant steps and
+        # hooks.
+        new_modules = set(sys.modules.keys())
+        for module_name in new_modules - old_modules:
+            del sys.modules[module_name]
+
         return result
 
     def assert_feature_success(self, *features, **kwargs):

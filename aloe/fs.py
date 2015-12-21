@@ -8,7 +8,6 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
-import sys
 import os
 import fnmatch
 
@@ -51,13 +50,6 @@ class FeatureLoader(object):
                 # Import the module using its fully qualified name
                 filename = os.path.relpath(os.path.join(path, filename))
                 module_name = path_to_module_name(filename)
-
-                # Ensure the module is loaded anew, so that its steps and hooks
-                # are registered again
-                try:
-                    del sys.modules[module_name]
-                except KeyError:
-                    pass
 
                 cls.importer.importFromPath(filename, module_name)
 
