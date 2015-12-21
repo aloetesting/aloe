@@ -12,6 +12,8 @@ import sys
 import os
 from inspect import getsourcefile
 
+from nose.importer import Importer
+
 from aloe import world
 
 from aloe.testing import (
@@ -51,6 +53,14 @@ class SimpleScenarioTest(FeatureTest):
 
         self.assert_feature_fail('features/wrong_expectations.feature')
 
+    def step_module_filename(self, module_name):
+        """The file name corresponding to the steps module."""
+
+        Importer().importFromDir('.', module_name)
+        module = getsourcefile(sys.modules[module_name])
+        del sys.modules[module_name]
+        return module
+
     def test_error_message(self):
         """
         Check that the appropriate error messages are printed on failure.
@@ -76,7 +86,7 @@ class SimpleScenarioTest(FeatureTest):
 
         self.assertIn(feature_stack_frame, output)
 
-        step_file = getsourcefile(sys.modules['features.steps'])
+        step_file = self.step_module_filename('features.steps')
 
         step_stack_frame = """
   File "{step_file}", line 62, in assert_result
@@ -124,7 +134,7 @@ AssertionError
             feature_code_line = "那么结果应该是40"
             self.assertIn(feature_code_line, output)
 
-        step_file = getsourcefile(sys.modules['features.steps'])
+        step_file = self.step_module_filename('features.steps')
 
         step_stack_frame = """
   File "{step_file}", line 62, in assert_result
@@ -218,7 +228,7 @@ AssertionError
 
         self.assertIn(example_stack_frame, output)
 
-        step_file = getsourcefile(sys.modules['features.steps'])
+        step_file = self.step_module_filename('features.steps')
 
         step_stack_frame = """
   File "{step_file}", line 62, in assert_result
