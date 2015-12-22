@@ -10,6 +10,7 @@ from __future__ import absolute_import
 from builtins import *
 # pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
 
+import os
 from contextlib import contextmanager
 from functools import wraps
 
@@ -21,6 +22,7 @@ from aloe.registry import (
 )
 from aloe.strings import ljust, represent_table
 from aloe.tools import hook_not_reentrant
+from aloe.utils import memoizedproperty
 from nose.result import TextTestResult
 
 # A decorator to add callbacks which wrap the steps looser than all the other
@@ -47,6 +49,32 @@ class Terminal(blessings.Terminal):
      * Works around a bug in blessings.Terminal.
      * Adds Aloe-specific color wrappers for steps.
     """
+
+    DEFAULT_THEME = {
+        'preview': 'grey',
+        'pending': 'yellow',
+        'failed': 'red',
+        'passed': 'green',
+        'skipped': 'cyan',
+        'comment': 'grey',
+        'tag': 'cyan',
+    }
+
+    @memoizedproperty
+    def theme(self):
+        """The color theme, taking CUCUMBER_COLORS into account."""
+
+        theme = self.DEFAULT_THEME.copy()
+        for theme_element in os.environ.get('CUCUMBER_COLORS', '').split(':'):
+            try:
+                element, color = theme_element.split('=')
+            except ValueError:
+                # Ignore invalid values
+                continue
+
+            theme[element] = color
+
+        return theme
 
     def write(self, arg='', return_=False):
         """
@@ -95,33 +123,13 @@ class Terminal(blessings.Terminal):
 
         return inner
 
-    def preview(self, *args, **kwargs):
-        """Wrap a preview of a step."""
-        return self.grey(*args, **kwargs)
+    def __getattr__(self, attr):
+        """Translate the theme colors."""
 
-    def pending(self, *args, **kwargs):
-        """Wrap a pending step."""
-        return self.yellow(*args, **kwargs)
+        if attr in self.theme:  # pylint:disable=unsupported-membership-test
+            return getattr(self, self.theme[attr])  # pylint:disable=unsubscriptable-object
 
-    def failed(self, *args, **kwargs):
-        """Wrap a failed step."""
-        return self.red(*args, **kwargs)
-
-    def passed(self, *args, **kwargs):
-        """Wrap a passed step."""
-        return self.green(*args, **kwargs)
-
-    def skipped(self, *args, **kwargs):
-        """Wrap a skipped step."""
-        return self.cyan(*args, **kwargs)
-
-    def comment(self, *args, **kwargs):
-        """Wrap a comment."""
-        return self.grey(*args, **kwargs)
-
-    def tag(self, *args, **kwargs):
-        """Wrap a tag."""
-        return self.cyan(*args, **kwargs)
+        return super(Terminal, self).__getattr__(attr)
 
 
 @outer_around.each_feature
