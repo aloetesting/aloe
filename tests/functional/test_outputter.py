@@ -8,6 +8,11 @@ from __future__ import (absolute_import, division,
 from builtins import *
 # pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
 
+import os
+from contextlib import contextmanager
+
+import blessings
+
 from aloe.testing import (
     FeatureTest,
     in_directory,
@@ -40,14 +45,19 @@ class MockTermElement(object):
         return str(self) * other
 
 
+MOCK_ATTTRIBUTES = blessings.COLORS | set((
+    'grey',
+    'move_up',
+))
+
+
 class MockTerminal(Terminal):
     """Mock terminal to output printable elements instead of ANSI sequences"""
 
-    def __getattr__(self, attr):
-        return MockTermElement(attr)
-
-    def color(self, color):
-        return getattr(self, 'color%s' % color)
+    def __getattribute__(self, attr):
+        if attr in MOCK_ATTTRIBUTES:
+            return MockTermElement(attr)
+        return super(MockTerminal, self).__getattribute__(attr)
 
 
 @in_directory('tests/simple_app')
@@ -74,12 +84,12 @@ Feature: Highlighting
   I want to see my scenarios with pretty highlighting
   So my output is easy to read
 
-  Scenario: behave_as works                            features/highlighting.feature:13
+  Scenario: behave_as works                            # features/highlighting.feature:13
     Given I have a table
     Given I have entered 10 into the calculator
     And I press [+]
 
-  Scenario Outline: Scenario outlines                  features/highlighting.feature:17
+  Scenario Outline: Scenario outlines                  # features/highlighting.feature:17
       | number |
       | 30     |
 
@@ -87,7 +97,7 @@ Feature: Highlighting
     Given I have entered 30 into the calculator
     And I press add
 
-  Scenario Outline: Scenario outlines                  features/highlighting.feature:17
+  Scenario Outline: Scenario outlines                  # features/highlighting.feature:17
       | number |
       | 40     |
 
@@ -96,7 +106,7 @@ Feature: Highlighting
     And I press add
 
   @tables
-  Scenario: Scenario with table                        features/highlighting.feature:27
+  Scenario: Scenario with table                        # features/highlighting.feature:27
     Given I have a table
     Given I have a table:
       | value |
@@ -104,7 +114,7 @@ Feature: Highlighting
       | 1     |
       | 2     |
 
-  Scenario: Scenario with a multiline                  features/highlighting.feature:34
+  Scenario: Scenario with a multiline                  # features/highlighting.feature:34
     Given I have a table
     Given I have a table:
       \"\"\"
@@ -126,47 +136,120 @@ Feature: Highlighting
                               force_color=True)
 
             self.assertEqual(stream.getvalue(), """
-t.bold_white(Feature: Highlighting)
+Feature: Highlighting
 
-t.white(As a programmer
+  As a programmer
   I want to see my scenarios with pretty highlighting
-  So my output is easy to read)
+  So my output is easy to read
 
-t.bold_white(Scenario: behave_as works)t.color8(features/highlighting.feature:13)
-t.bold_green(Given I have a table)
-t.bold_green(Given I have entered 10 into the calculator)
-t.bold_green(And I press [+])
+  Scenario: behave_as works                            t.grey(# features/highlighting.feature:13)
+t.green(Given I have a table)
+t.green(Given I have entered 10 into the calculator)
+t.green(And I press [+])
 
-t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.feature:17)
-      | t.white(number) |
-      | t.white(30) |
+  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:17)
+      | number |
+      | 30     |
 
-t.bold_green(Given I have a table)
-t.bold_green(Given I have entered 30 into the calculator)
-t.bold_green(And I press add)
+t.green(Given I have a table)
+t.green(Given I have entered 30 into the calculator)
+t.green(And I press add)
 
-t.bold_white(Scenario Outline: Scenario outlines)t.color8(features/highlighting.feature:17)
-      | t.white(number) |
-      | t.white(40) |
+  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:17)
+      | number |
+      | 40     |
 
-t.bold_green(Given I have a table)
-t.bold_green(Given I have entered 40 into the calculator)
-t.bold_green(And I press add)
+t.green(Given I have a table)
+t.green(Given I have entered 40 into the calculator)
+t.green(And I press add)
 
 t.cyan(@tables)
-t.bold_white(Scenario: Scenario with table)t.color8(features/highlighting.feature:27)
-t.bold_green(Given I have a table)
-t.bold_green(Given I have a table:)
-      | t.bold_green(value) |
-      | t.bold_green(1) |
-      | t.bold_green(1) |
-      | t.bold_green(2) |
+  Scenario: Scenario with table                        t.grey(# features/highlighting.feature:27)
+t.green(Given I have a table)
+t.green(Given I have a table:)
+      | t.green(value) |
+      | t.green(1) |
+      | t.green(1) |
+      | t.green(2) |
 
-t.bold_white(Scenario: Scenario with a multiline)t.color8(features/highlighting.feature:34)
-t.bold_green(Given I have a table)
-t.bold_green(Given I have a table:)
+  Scenario: Scenario with a multiline                  t.grey(# features/highlighting.feature:34)
+t.green(Given I have a table)
+t.green(Given I have a table:)
       \"\"\"
-      t.bold_green(Not actually a table :-P)
+      t.green(Not actually a table :-P)
+      \"\"\"
+
+""".lstrip())
+
+    @contextmanager
+    def environment_override(self, key, value):
+        """A context manager to temporary set an environment variable."""
+
+        old_value = os.environ.pop(key, None)
+        os.environ[key] = value
+        try:
+            yield
+        finally:
+            os.environ.pop(key)
+            if old_value is not None:
+                os.environ[key] = old_value
+
+    def test_customized_color_output(self):
+        """Test streamed color output with overridden colors."""
+
+        stream = TestWrapperIO()
+
+        with self.environment_override('CUCUMBER_COLORS',
+                                       'failed=magenta:passed=blue'):
+            with \
+                    patch('aloe.result.Terminal', new=MockTerminal), \
+                    patch('aloe.result.AloeTestResult.printSummary'):
+                self.run_features('features/highlighting.feature',
+                                  verbosity=3, stream=stream,
+                                  force_color=True)
+
+            self.assertEqual(stream.getvalue(), """
+Feature: Highlighting
+
+  As a programmer
+  I want to see my scenarios with pretty highlighting
+  So my output is easy to read
+
+  Scenario: behave_as works                            t.grey(# features/highlighting.feature:13)
+t.blue(Given I have a table)
+t.blue(Given I have entered 10 into the calculator)
+t.blue(And I press [+])
+
+  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:17)
+      | number |
+      | 30     |
+
+t.blue(Given I have a table)
+t.blue(Given I have entered 30 into the calculator)
+t.blue(And I press add)
+
+  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:17)
+      | number |
+      | 40     |
+
+t.blue(Given I have a table)
+t.blue(Given I have entered 40 into the calculator)
+t.blue(And I press add)
+
+t.cyan(@tables)
+  Scenario: Scenario with table                        t.grey(# features/highlighting.feature:27)
+t.blue(Given I have a table)
+t.blue(Given I have a table:)
+      | t.blue(value) |
+      | t.blue(1) |
+      | t.blue(1) |
+      | t.blue(2) |
+
+  Scenario: Scenario with a multiline                  t.grey(# features/highlighting.feature:34)
+t.blue(Given I have a table)
+t.blue(Given I have a table:)
+      \"\"\"
+      t.blue(Not actually a table :-P)
       \"\"\"
 
 """.lstrip())
@@ -186,25 +269,25 @@ t.bold_green(Given I have a table:)
                               verbosity=3, stream=stream)
 
             # we are going to see the scenario written out 3 times
-            # once in color 8 as a preview, then each line individually
-            # followed by a green version of it
+            # once as a preview, then each line individually followed by a
+            # green version of it
             self.assertEqual(stream.getvalue(), """
-t.bold_white(Feature: Highlighting)
+Feature: Highlighting
 
-t.white(As a programmer
+  As a programmer
   I want to see my scenarios with pretty highlighting
-  So my output is easy to read)
+  So my output is easy to read
 
-t.bold_white(Scenario: behave_as works)t.color8(features/highlighting.feature:13)
-t.color8(Given I have a table
+  Scenario: behave_as works                            t.grey(# features/highlighting.feature:13)
+t.grey(Given I have a table
     Given I have entered 10 into the calculator
     And I press [+])
-<t.move_up><t.move_up><t.move_up>t.color11(Given I have a table)
-<t.move_up>t.bold_green(Given I have a table)
-t.color11(Given I have entered 10 into the calculator)
-<t.move_up>t.bold_green(Given I have entered 10 into the calculator)
-t.color11(And I press [+])
-<t.move_up>t.bold_green(And I press [+])
+<t.move_up><t.move_up><t.move_up>t.yellow(Given I have a table)
+<t.move_up>t.green(Given I have a table)
+t.yellow(Given I have entered 10 into the calculator)
+<t.move_up>t.green(Given I have entered 10 into the calculator)
+t.yellow(And I press [+])
+<t.move_up>t.green(And I press [+])
 
 """.lstrip())
 

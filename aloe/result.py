@@ -10,6 +10,7 @@ from __future__ import absolute_import
 from builtins import *
 # pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
 
+import os
 from contextlib import contextmanager
 from functools import wraps
 
@@ -21,6 +22,7 @@ from aloe.registry import (
 )
 from aloe.strings import ljust, represent_table
 from aloe.tools import hook_not_reentrant
+from aloe.utils import memoizedproperty
 from nose.result import TextTestResult
 
 # A decorator to add callbacks which wrap the steps looser than all the other
@@ -45,7 +47,34 @@ class Terminal(blessings.Terminal):
      * Adds a decorator to require the terminal global being set and
        pass it into hooks.
      * Works around a bug in blessings.Terminal.
+     * Adds Aloe-specific color wrappers for steps.
     """
+
+    DEFAULT_THEME = {
+        'preview': 'grey',
+        'pending': 'yellow',
+        'failed': 'red',
+        'passed': 'green',
+        'skipped': 'cyan',
+        'comment': 'grey',
+        'tag': 'cyan',
+    }
+
+    @memoizedproperty
+    def theme(self):
+        """The color theme, taking CUCUMBER_COLORS into account."""
+
+        theme = self.DEFAULT_THEME.copy()
+        for theme_element in os.environ.get('CUCUMBER_COLORS', '').split(':'):
+            try:
+                element, color = theme_element.split('=')
+            except ValueError:
+                # Ignore invalid values
+                continue
+
+            theme[element] = color
+
+        return theme
 
     def write(self, arg='', return_=False):
         """
@@ -67,6 +96,10 @@ class Terminal(blessings.Terminal):
         """Wrap Terminal.color() to work if styling is not set"""
         # pylint:disable=too-many-function-args
         return super(Terminal, self).color(color) if self.does_styling else str
+
+    def grey(self, *args, **kwargs):
+        """Grey is not one of the basic 8 colors."""
+        return self.color(243)(*args, **kwargs)
 
     @classmethod
     def required(cls, func):
@@ -90,6 +123,14 @@ class Terminal(blessings.Terminal):
 
         return inner
 
+    def __getattr__(self, attr):
+        """Translate the theme colors."""
+
+        if attr in self.theme:  # pylint:disable=unsupported-membership-test
+            return getattr(self, self.theme[attr])  # pylint:disable=unsubscriptable-object
+
+        return super(Terminal, self).__getattr__(attr)
+
 
 @outer_around.each_feature
 @contextmanager
@@ -99,12 +140,12 @@ def feature_wrapper(term, feature):
 
     try:
         if feature.tags:
-            term.writeln(term.cyan(feature.represent_tags()))
+            term.writeln(term.tag(feature.represent_tags()))
 
         lines = feature.represented().splitlines()
-        term.writeln(term.bold_white(lines[0]))
+        term.writeln(lines[0])
         term.writeln()
-        term.writeln(term.white('\n'.join(lines[1:])))
+        term.writeln('\n'.join(lines[1:]))
         term.writeln()
 
         yield
@@ -120,19 +161,18 @@ def example_wrapper(term, scenario, outline, steps):
 
     try:
         if scenario.tags:
-            term.writeln(term.cyan(scenario.represent_tags()))
+            term.writeln(term.tag(scenario.represent_tags()))
 
         represented = scenario.represented()
         represented = ljust(represented, scenario.feature.max_length + 2)
 
-        term.write(term.bold_white(represented))
-        term.writeln(term.color(8)(scenario.location))
+        term.write(represented)
+        term.writeln(term.comment('# ' + scenario.location))
 
         if outline:
             term.writeln(represent_table([outline.keys(),
                                           outline.values()],
-                                         indent=6,
-                                         cell_wrap=term.white))
+                                         indent=6))
             term.writeln()
 
         # write a preview of the steps
@@ -145,7 +185,7 @@ def example_wrapper(term, scenario, outline, steps):
             steps_ += steps
 
             term.writeln(
-                term.color(8)('\n'.join(
+                term.preview('\n'.join(
                     step.represented()
                     for step in steps_
                 ) + '\n'),
@@ -167,17 +207,17 @@ def step_wrapper(term, step):
     try:
         if term.is_a_tty:
             term.writeln(
-                step.represented(color=term.color(11)),
+                step.represented(color=term.pending),
                 return_=True)
 
         yield
     finally:
         if step.passed:
-            color = term.bold_green
+            color = term.passed
         elif step.failed:
-            color = term.bold_red
+            color = term.failed
         else:
-            color = term.yellow
+            color = term.skipped
 
         term.writeln(
             step.represented(color=color)
