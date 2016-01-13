@@ -45,6 +45,22 @@ class UserFactory(factory.Factory):
     email = factory.LazyAttribute(lambda o: '%s@example.org' % o.username)
 
 
+class Agency(object):
+    """An agency. This object has non-trivial plural name."""
+
+    agencies = []
+
+    class _meta(object):
+        """Meta, defined to mimic Django models."""
+
+        verbose_name_plural = "agencies"
+
+    def __init__(self, name):
+        self.name = name
+
+        self.agencies.append(self)
+
+
 @step(r'I made (\d+) users?')
 def count_users(self, nusers):
     """Test the number of users I have made"""
@@ -72,6 +88,45 @@ def check_users(self):
 def clear_user_list(scenario, outline, steps):
     """Clear the user list between tests"""
     User.users = []
+
+
+@step_from_factory
+class AgencyFactory(factory.Factory):
+    """Factory to build an agency."""
+
+    class Meta(object):
+        """Meta"""
+        model = Agency
+
+    name = factory.LazyAttribute(lambda n: 'agency%s' % n)
+
+
+@step(r'I made (\d+) (?:agency|agencies)')
+def count_agencies(self, nagencies):
+    """Test the number of agencies I have made"""
+
+    nagencies = guess_types(nagencies)
+    assert_equal(nagencies, len(Agency.agencies))
+
+
+@step('the agency list contains')
+def check_agencies(self):
+    """Look for agencies in my agency list"""
+
+    expected = guess_types(self.hashes)
+    actual = [{
+        'name': obj.name,
+    } for obj in Agency.agencies]
+
+    print(actual)
+
+    assert_equal(expected, actual)
+
+
+@after.each_example
+def clear_agency_list(scenario, outline, steps):
+    """Clear the agency list between tests"""
+    Agency.agencies = []
 
 
 class MyWeirdObject(object):

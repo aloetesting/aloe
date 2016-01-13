@@ -99,16 +99,17 @@ def step_from_factory(factory):
         # Then I have created 10 users all with the first name Joe
     """
 
+    # Look for verbose_name and verbose_name_plural on the Meta of the classes
+    # factory creates; its own Meta cannot define arbitrary attributes.
+
     try:
-        name = factory._meta.verbose_name  # pylint:disable=protected-access
+        name = factory._meta.model._meta.verbose_name  # pylint:disable=protected-access
     except AttributeError:
         name = camel_case_to_spaces(
             re.sub('Factory$', '', factory.__name__))
 
     try:
-        # pylint:disable=protected-access
-        plural = factory._meta.verbose_name_plural
-        # pylint:enable=protected-access
+        plural = factory._meta.model._meta.verbose_name_plural  # pylint:disable=protected-access
     except AttributeError:
         plural = name + 's'
 
