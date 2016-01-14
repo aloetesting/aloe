@@ -45,22 +45,6 @@ class UserFactory(factory.Factory):
     email = factory.LazyAttribute(lambda o: '%s@example.org' % o.username)
 
 
-class Agency(object):
-    """An agency. This object has non-trivial plural name."""
-
-    agencies = []
-
-    class _meta(object):
-        """Meta, defined to mimic Django models."""
-
-        verbose_name_plural = "agencies"
-
-    def __init__(self, name):
-        self.name = name
-
-        self.agencies.append(self)
-
-
 @step(r'I made (\d+) users?')
 def count_users(self, nusers):
     """Test the number of users I have made"""
@@ -90,6 +74,22 @@ def clear_user_list(scenario, outline, steps):
     User.users = []
 
 
+class Agency(object):
+    """An agency. This object has non-trivial plural name."""
+
+    agencies = []
+
+    class _meta(object):
+        """Meta, defined to mimic Django models."""
+
+        verbose_name_plural = "agencies"
+
+    def __init__(self, name):
+        self.name = name
+
+        self.agencies.append(self)
+
+
 @step_from_factory
 class AgencyFactory(factory.Factory):
     """Factory to build an agency."""
@@ -99,6 +99,14 @@ class AgencyFactory(factory.Factory):
         model = Agency
 
     name = factory.LazyAttribute(lambda n: 'agency%s' % n)
+
+
+@step_from_factory
+class MysteriousAgencyFactory(AgencyFactory):
+    """Another factory to build agencies."""
+
+    _verbose_name = "mysterious agency"
+    _verbose_name_plural = "mysterious agencies"
 
 
 @step(r'I made (\d+) (?:agency|agencies)')
