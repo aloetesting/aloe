@@ -49,6 +49,23 @@ def _run_factory(factory, self, count=None):
             factory(**row)
 
 
+def _get_factory_attr(factory, attr):
+    """
+    Try getting a meta attribute 'attr' from a factory.
+
+    The attribute is looked up as '_attr' on the factory, then as 'attr' on its
+    model's meta. The factory's own meta cannot define custom attributes and is
+    skipped.
+
+    If the attribute is not found in either place, an AttributeError is raised.
+    """
+
+    try:
+        return getattr(factory, '_' + attr)
+    except AttributeError:
+        return getattr(factory._meta.model._meta, attr)  # pylint:disable=protected-access
+
+
 def step_from_factory(factory):
     """
     Decorator to register a :class:`factory.Factory` as an Aloe step:
@@ -104,21 +121,15 @@ def step_from_factory(factory):
     # attributes.
 
     try:
-        name = factory._verbose_name  # pylint:disable=protected-access
+        name = _get_factory_attr(factory, 'verbose_name')
     except AttributeError:
-        try:
-            name = factory._meta.model._meta.verbose_name  # pylint:disable=protected-access
-        except AttributeError:
-            name = camel_case_to_spaces(
-                re.sub('Factory$', '', factory.__name__))
+        name = camel_case_to_spaces(
+            re.sub('Factory$', '', factory.__name__))
 
     try:
-        plural = factory._verbose_name_plural  # pylint:disable=protected-access
+        plural = _get_factory_attr(factory, 'verbose_name_plural')
     except AttributeError:
-        try:
-            plural = factory._meta.model._meta.verbose_name_plural  # pylint:disable=protected-access
-        except AttributeError:
-            plural = name + 's'
+        plural = name + 's'
 
     # pylint:disable=unused-variable
     # Functions are declared solely for the decorator side effects
