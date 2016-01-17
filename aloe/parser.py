@@ -16,11 +16,11 @@ from collections import OrderedDict
 from copy import copy
 from io import StringIO
 
-from gherkin3.dialect import Dialect
-from gherkin3.errors import ParserError
-from gherkin3.parser import Parser
-from gherkin3.token_matcher import TokenMatcher
-from gherkin3.token_scanner import TokenScanner as BaseTokenScanner
+from gherkin.dialect import Dialect
+from gherkin.errors import ParserError
+from gherkin.parser import Parser
+from gherkin.token_matcher import TokenMatcher
+from gherkin.token_scanner import TokenScanner as BaseTokenScanner
 
 from aloe import strings
 from aloe.exceptions import AloeSyntaxError
