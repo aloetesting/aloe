@@ -301,7 +301,11 @@ class TestCase(unittest.TestCase):
         source = ast.parse(source)
 
         # Set locations of the steps
-        for step, step_call in zip(steps, source.body[0].body[1:]):
+        step_source = source.body[0].body
+        if not is_background:
+            # There is no source for the background() call
+            step_source = step_source[1:]
+        for step, step_call in zip(steps, step_source):
             for node in ast.walk(step_call):
                 node.lineno = step.line
 

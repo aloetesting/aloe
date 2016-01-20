@@ -96,6 +96,42 @@ AssertionError
 
         self.assertIn(step_stack_frame, output)
 
+    def test_error_message_background(self):
+        """
+        Check that the appropriate error messages are printed on failure in a
+        step background.
+        """
+
+        stream = TestWrapperIO()
+
+        failing_feature = 'features/wrong_expectations_background.feature'
+
+        self.assert_feature_fail(failing_feature, '-n', '1', stream=stream)
+
+        output = stream.getvalue()
+
+        error_header = "FAIL: Never reached " + \
+            "(features.wrong_expectations_background: Wrong expectations)"
+
+        self.assertIn(error_header, output)
+
+        feature_stack_frame = """
+  File "{feature}", line 11, in background
+    Then the result should be 40 on the screen
+        """.strip().format(feature=os.path.abspath(failing_feature))
+
+        self.assertIn(feature_stack_frame, output)
+
+        step_file = self.step_module_filename('features.steps')
+
+        step_stack_frame = """
+  File "{step_file}", line 62, in assert_result
+    assert world.result == float(result)
+AssertionError
+        """.strip().format(step_file=step_file)
+
+        self.assertIn(step_stack_frame, output)
+
     def test_failure_zh(self):
         """
         Test that a failing feature in Chinese fails tests.
