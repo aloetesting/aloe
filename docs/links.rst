@@ -1,4 +1,4 @@
-.. _aloe: https://github.com/koterpillar/aloe
+.. _aloe: https://github.com/aloetesting/aloe
 .. _gherkin: https://cucumber.io/
 .. _nose: https://nose.readthedocs.org/
 .. _`Attribute selector plugin`: https://nose.readthedocs.org/en/latest/plugins/attrib.html
