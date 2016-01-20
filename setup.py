@@ -17,7 +17,7 @@ if __name__ == '__main__':
             description='Gherkin runner compatible with Lettuce',
             author='Alexey Kotlyarov',
             author_email='a@koterpillar.com',
-            url='https://github.com/koterpillar/aloe',
+            url='https://github.com/aloetesting/aloe',
             long_description=readme.read(),
             classifiers=[
                 'License :: OSI Approved :: ' +
