@@ -75,5 +75,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 [nose-plugin-attrib]: https://nose.readthedocs.org/en/latest/plugins/attrib.html
 [lettuce]: http://lettuce.it/
 [gherkin-syntax]: https://cucumber.io/docs/reference
-[aloe-django]: https://github.com/koterpillar/aloe_django
+[aloe-django]: https://github.com/aloetesting/aloe_django
 [docs]: http://aloe.readthedocs.org/

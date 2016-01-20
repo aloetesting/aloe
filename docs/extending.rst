@@ -19,5 +19,6 @@ Extensions
     :maxdepth: 2
 
 * `aloe_django`_ -- Django integration for `Aloe`.
+* `aloe_webdriver`_ -- Selenium integration for `Aloe`.
 
 .. include:: links.rst
