@@ -86,7 +86,7 @@ failures.
 
         from aloe import after
 
-        after.each_step
+        @after.each_step
         def after_step(step):
             print("After step")
 
