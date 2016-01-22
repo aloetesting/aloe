@@ -125,7 +125,7 @@ steps.
                 set_flag(flag, enabled=False)
 
     Furthermore, steps that are needed by all features can be moved to a
-    `before.each_example` callback.
+    :func:`~aloe.before.each_example` callback.
 
     If you want to write reusable steps, you can sometimes mix behavior
     and declaration.

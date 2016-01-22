@@ -64,9 +64,16 @@ Step
 
         The :class:`Background` this step belongs to (if inside a background).
 
+    .. attribute:: test
+
+        The instance of :class:`unittest.TestCase` running the current test,
+        or None if not currently in a test (e.g. in a
+        :func:`~aloe.before.each_feature` callback).
+
     .. attribute:: testclass
 
-        The :class:`unittest.TestCase` used to run this test.
+        The :class:`unittest.TestCase` used to run this test. Use
+        :attr:`.test` for the *instance* of the test case.
 
     .. attribute:: passed
 

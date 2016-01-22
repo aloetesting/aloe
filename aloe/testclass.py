@@ -48,6 +48,12 @@ class TestStep(Step):
         """
         return self.feature.testclass
 
+    test = None
+    """
+    The test currently running the step, or None if not currently in a test
+    (e.g. in a `before_feature` callback).
+    """
+
     def __init__(self, *args, **kwargs):
         """Initialize the step status."""
         self.failed = None
@@ -56,7 +62,7 @@ class TestStep(Step):
 
     def behave_as(self, string):
         """Run the specified step in the current context."""
-        self.testclass.behave_as(self, string)
+        self.test.behave_as(self, string)
 
     def given(self, string):
         """Run the specified 'Given' step in the current context."""
@@ -118,8 +124,7 @@ class TestCase(unittest.TestCase):
         super().tearDownClass()
         cls.after_feature(cls.feature)
 
-    @classmethod
-    def behave_as(cls, context_step, string):
+    def behave_as(self, context_step, string):
         """
         Run the steps described by the given string in the context of the
         step.
@@ -129,12 +134,14 @@ class TestCase(unittest.TestCase):
 
         # Copy necessary attributes onto new steps
         for step in steps:
+            step.test = self
+
             try:
                 step.scenario = context_step.scenario
             except AttributeError:
                 step.background = context_step.background
 
-            definition = cls.prepare_step(step)
+            definition = self.prepare_step(step)
 
             definition['func'](definition['step'],
                                *definition['args'],
@@ -295,7 +302,15 @@ class TestCase(unittest.TestCase):
         if not is_background:
             source += '    self.background()\n'
         source += '\n'.join(
-            '    func{i}(step{i}, *args{i}, **kwargs{i})'.format(i=i)
+            # This has to be a single statement, in order to set its source
+            # location as a whole below
+            '\n'.join((
+                '    try:',
+                '        step{i}.test = self',
+                '        func{i}(step{i}, *args{i}, **kwargs{i})',
+                '    finally:',
+                '        step{i}.test = None',
+            )).format(i=i)
             for i in range(len(step_definitions))
         )
         source = ast.parse(source)
