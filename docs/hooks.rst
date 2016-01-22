@@ -17,7 +17,7 @@ failures.
         Run this function before `everything`.
 
         Example:
-        
+
         .. code-block:: python
 
             from aloe import before
@@ -33,7 +33,7 @@ failures.
         :param Feature feature: the feature about to be run
 
         Example:
-        
+
         .. code-block:: python
 
             from aloe import before
@@ -51,7 +51,7 @@ failures.
         :param list steps: the steps about to be run
 
         Example:
-        
+
         .. code-block:: python
 
             from aloe import before
@@ -67,7 +67,7 @@ failures.
         :param Step step: the step about to be run
 
         Example:
-        
+
         .. code-block:: python
 
             from aloe import before
@@ -81,7 +81,7 @@ failures.
     Run functions `after` an event. See :class:`aloe.before`.
 
     Example:
-    
+
     .. code-block:: python
 
         from aloe import after

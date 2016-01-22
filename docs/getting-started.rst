@@ -30,10 +30,10 @@ step definitions::
     (...)
     aloe.exceptions.NoDefinitionFound: The step r"Given I have entered 50 into the
     calculator" is not defined
-    
+
     ----------------------------------------------------------------------
     Ran 1 test in 0.001s
-    
+
     FAILED (errors=1)
 
 Now add the definitions in ``features/steps.py``:

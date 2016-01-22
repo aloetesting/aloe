@@ -76,7 +76,7 @@ Step
 
         The step failed (used in :class:`after` and :class:`around`).
 
-    .. method:: behave_as(sentence) 
+    .. method:: behave_as(sentence)
 
         Execute another step.
 
@@ -86,7 +86,7 @@ Step
 
             self.behave_as("Given I am at the market")
 
-    .. method:: given(sentence) 
+    .. method:: given(sentence)
 
         Execute another step.
 
@@ -96,7 +96,7 @@ Step
 
             self.given("I am at the market")
 
-    .. method:: when(sentence) 
+    .. method:: when(sentence)
 
         Execute another step.
 
@@ -106,7 +106,7 @@ Step
 
             self.when("I buy two oranges")
 
-    .. method:: then(sentence) 
+    .. method:: then(sentence)
 
         Execute another step.
 
