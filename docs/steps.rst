@@ -167,6 +167,8 @@ steps.
 
         Given there are 1 users in the database
 
+    Natural:
+
     .. code-block:: gherkin
 
         Given there is 1 user in the database
