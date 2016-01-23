@@ -304,13 +304,13 @@ class TestCase(unittest.TestCase):
         source += '\n'.join(
             # This has to be a single statement, in order to set its source
             # location as a whole below
-            '\n'.join((
-                '    try:',
-                '        step{i}.test = self',
-                '        func{i}(step{i}, *args{i}, **kwargs{i})',
-                '    finally:',
-                '        step{i}.test = None',
-            )).format(i=i)
+            """
+    try:
+        step{i}.test = self
+        func{i}(step{i}, *args{i}, **kwargs{i})
+    finally:
+        step{i}.test = None
+            """.format(i=i)
             for i in range(len(step_definitions))
         )
         source = ast.parse(source)
