@@ -56,9 +56,12 @@ class CallbackTest(FeatureTest):
             'Then the step event sequence should be "{[A]}{[B]}{["',
         ]))
 
-        # Check step.testclass
+        # Check step.test and step.testclass
+        self.assertEqual(len(world.step_tests), 3)
         self.assertEqual(len(world.step_testclasses), 3)
-        for testclass in world.feature_testclasses:
+        for test, testclass in zip(world.step_tests,
+                                   world.step_testclasses):
+            self.assertTrue(isinstance(test, testclass))
             self.assertTrue(issubclass(testclass, TestCase))
             self.assertEqual(testclass.__name__, "Step callbacks")
 

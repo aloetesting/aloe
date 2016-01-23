@@ -41,6 +41,7 @@ def before_step(self):
     record_event('step', '{')
     record_event('step_names', ('before', self.sentence))
     record_event('step_testclasses', self.testclass)
+    record_event('step_tests', self.test)
     record_event('types', 'before step')
 
 

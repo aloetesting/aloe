@@ -64,9 +64,16 @@ Step
 
         The :class:`Background` this step belongs to (if inside a background).
 
+    .. attribute:: test
+
+        The instance of :class:`unittest.TestCase` running the current test,
+        or None if not currently in a test (e.g. in a
+        :func:`~aloe.before.each_feature` callback).
+
     .. attribute:: testclass
 
-        The :class:`unittest.TestCase` used to run this test.
+        The :class:`unittest.TestCase` used to run this test. Use
+        :attr:`.test` for the *instance* of the test case.
 
     .. attribute:: passed
 
@@ -76,7 +83,7 @@ Step
 
         The step failed (used in :class:`after` and :class:`around`).
 
-    .. method:: behave_as(sentence) 
+    .. method:: behave_as(sentence)
 
         Execute another step.
 
@@ -86,7 +93,7 @@ Step
 
             self.behave_as("Given I am at the market")
 
-    .. method:: given(sentence) 
+    .. method:: given(sentence)
 
         Execute another step.
 
@@ -96,7 +103,7 @@ Step
 
             self.given("I am at the market")
 
-    .. method:: when(sentence) 
+    .. method:: when(sentence)
 
         Execute another step.
 
@@ -106,7 +113,7 @@ Step
 
             self.when("I buy two oranges")
 
-    .. method:: then(sentence) 
+    .. method:: then(sentence)
 
         Execute another step.
 
