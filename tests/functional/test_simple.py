@@ -345,15 +345,16 @@ AssertionError
         self.assertEqual(world.all_results, [4])
 
 
-@in_directory('tests/bad_steps_app')
 class BadStepsTest(FeatureTest):
     """
     Test loading an application with an error in a step definition file.
     """
 
-    def test_bad_steps(self):
+    @in_directory('tests/bad_steps_app')
+    def test_parent_import_error(self):
         """
-        Test the error message when an error occurs loading steps.
+        Test the error message when a step definition file cannot be imported
+        due to the parent __init__.py file not being found.
         """
 
         with self.assertRaises(StepDiscoveryError) as raised:
@@ -376,3 +377,13 @@ class BadStepsTest(FeatureTest):
             str(cause).replace('\'', ''),
             "No module named features"
         )
+
+    @in_directory('tests/bad_steps_app_2')
+    def test_normal_import_error(self):
+        """
+        Test the error message when a step definition file cannot be imported
+        due to an error inside it.
+        """
+
+        with self.assertRaises(ValueError):
+            self.run_features('features/dummy.feature')
