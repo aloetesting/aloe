@@ -370,7 +370,9 @@ class BadStepsTest(FeatureTest):
         cause = raised.exception.__cause__
 
         self.assertIsInstance(cause, ImportError)
+        # Python 3 has quotes around the module name:
+        # No module named 'features'
         self.assertEqual(
-            str(cause),
-            "No module named 'features'"
+            str(cause).replace('\'', ''),
+            "No module named features"
         )
