@@ -15,6 +15,7 @@ from inspect import getsourcefile
 from nose.importer import Importer
 
 from aloe import world
+from aloe.exceptions import StepDiscoveryError
 
 from aloe.testing import (
     FeatureTest,
@@ -342,3 +343,34 @@ AssertionError
         # Specify more than one tag to exclude
         self.assert_feature_success(feature_dir, '-a', '!hana,!dul')
         self.assertEqual(world.all_results, [4])
+
+
+@in_directory('tests/bad_steps_app')
+class BadStepsTest(FeatureTest):
+    """
+    Test loading an application with an error in a step definition file.
+    """
+
+    def test_bad_steps(self):
+        """
+        Test the error message when an error occurs loading steps.
+        """
+
+        with self.assertRaises(StepDiscoveryError) as raised:
+            self.run_features('features/dummy.feature')
+
+        # The file that caused the problem should be visible
+        self.assertEqual(
+            str(raised.exception),
+            "Cannot load step definition file: 'features/steps/__init__.py'"
+        )
+
+        # The original exception, with an unhelpful error message. Real cause:
+        # features/__init__.py does not exist
+        cause = raised.exception.__cause__
+
+        self.assertIsInstance(cause, ImportError)
+        self.assertEqual(
+            str(cause),
+            "No module named 'features'"
+        )

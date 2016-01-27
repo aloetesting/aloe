@@ -26,7 +26,12 @@ class AloeSyntaxError(SyntaxError):
 
 
 class StepLoadingError(Exception):
-    """Raised when a step cannot be loaded."""
+    """A step definition cannot be registered."""
+    pass
+
+
+class StepDiscoveryError(Exception):
+    """A step definition file cannot be imported."""
     pass
 
 
