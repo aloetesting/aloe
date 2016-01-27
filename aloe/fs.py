@@ -11,7 +11,11 @@ from __future__ import absolute_import
 import os
 import fnmatch
 
+from future.utils import raise_from
+
 from nose.importer import Importer
+
+from aloe.exceptions import StepDiscoveryError
 
 
 def path_to_module_name(filename):
@@ -51,7 +55,15 @@ class FeatureLoader(object):
                 filename = os.path.relpath(os.path.join(path, filename))
                 module_name = path_to_module_name(filename)
 
-                cls.importer.importFromPath(filename, module_name)
+                try:
+                    cls.importer.importFromPath(filename, module_name)
+                except ImportError as exc:
+                    raise_from(
+                        StepDiscoveryError(
+                            "Cannot load step definition file: '%s'" % filename
+                        ),
+                        exc
+                    )
 
     @classmethod
     def find_feature_directories(cls, dir_):

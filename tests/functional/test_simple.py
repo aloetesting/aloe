@@ -15,6 +15,7 @@ from inspect import getsourcefile
 from nose.importer import Importer
 
 from aloe import world
+from aloe.exceptions import StepDiscoveryError
 
 from aloe.testing import (
     FeatureTest,
@@ -342,3 +343,47 @@ AssertionError
         # Specify more than one tag to exclude
         self.assert_feature_success(feature_dir, '-a', '!hana,!dul')
         self.assertEqual(world.all_results, [4])
+
+
+class BadStepsTest(FeatureTest):
+    """
+    Test loading an application with an error in a step definition file.
+    """
+
+    @in_directory('tests/bad_steps_app')
+    def test_parent_import_error(self):
+        """
+        Test the error message when a step definition file cannot be imported
+        due to the parent __init__.py file not being found.
+        """
+
+        with self.assertRaises(StepDiscoveryError) as raised:
+            self.run_features('features/dummy.feature')
+
+        # The file that caused the problem should be visible
+        self.assertEqual(
+            str(raised.exception),
+            "Cannot load step definition file: 'features/steps/__init__.py'"
+        )
+
+        # The original exception, with an unhelpful error message. Real cause:
+        # features/__init__.py does not exist
+        cause = raised.exception.__cause__
+
+        self.assertIsInstance(cause, ImportError)
+        # Python 3 has quotes around the module name:
+        # No module named 'features'
+        self.assertEqual(
+            str(cause).replace('\'', ''),
+            "No module named features"
+        )
+
+    @in_directory('tests/bad_steps_app_2')
+    def test_normal_import_error(self):
+        """
+        Test the error message when a step definition file cannot be imported
+        due to an error inside it.
+        """
+
+        with self.assertRaises(ValueError):
+            self.run_features('features/dummy.feature')
