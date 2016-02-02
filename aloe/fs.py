@@ -18,6 +18,9 @@ from nose.importer import Importer
 from aloe.exceptions import StepDiscoveryError
 
 
+GHERKIN_FEATURES_DIR_NAME = 'GHERKIN_FEATURES_DIR_NAME'
+
+
 def path_to_module_name(filename):
     """Convert a path to a file to a Python module name."""
 
@@ -66,14 +69,37 @@ class FeatureLoader(object):
                     )
 
     @classmethod
+    def features_dirname(cls):
+        """
+        Set the name of the features directory.
+        It is possible to change the name by setting the environment variable:
+        GHERKIN_FEATURES_DIR_NAME = 'gherkin_features'
+        """
+
+        env = os.environ
+        features_dirname = env.get(GHERKIN_FEATURES_DIR_NAME, 'features')
+
+        # check the dir name is not a path
+        if '/' in features_dirname:
+            raise_from(
+                StepDiscoveryError("%s cannot be a path: %s" % (
+                    GHERKIN_FEATURES_DIR_NAME, features_dirname)),
+                None
+            )
+
+        return features_dirname
+
+    @classmethod
     def find_feature_directories(cls, dir_):
         """
         Locate directories to load features from.
 
-        The directories must be named 'features'; they must either reside
+        The directories should be named 'features'; they must either reside
         directly in the specified directory, or otherwise all their parents
         must be packages (have __init__.py files).
         """
+
+        features_dirname = cls.features_dirname()
 
         # A set of package directories discovered
         packages = set()
@@ -85,8 +111,8 @@ class FeatureLoader(object):
 
             if path == dir_ or path in packages:
                 # Does this package have a feature directory?
-                if 'features' in dirs:
-                    yield os.path.join(path, 'features')
+                if features_dirname in dirs:
+                    yield os.path.join(path, features_dirname)
 
             else:
                 # This is not a package, prune search
