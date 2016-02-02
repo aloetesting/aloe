@@ -53,3 +53,47 @@ class StepLoadingTest(FeatureTest):
                 'submodule/features/third.feature',
             )
         ])
+
+    def test_single_alternative_feature(self):
+        """
+        Test running a single feature in the alternative features directory.
+        """
+
+        os.environ['GHERKIN_FEATURES_DIR_NAME'] = 'alternative_features'
+
+        self.assert_feature_success('alternative_features/single.feature')
+
+        del os.environ['GHERKIN_FEATURES_DIR_NAME']
+
+    def test_alternative_subdirectory_feature(self):
+        """
+        Test running a feature in a subdirectory of the alternative features
+        directory.
+        """
+
+        os.environ['GHERKIN_FEATURES_DIR_NAME'] = 'alternative_features'
+
+        self.assert_feature_success(
+            'alternative_features/subdirectory/another.feature')
+
+        del os.environ['GHERKIN_FEATURES_DIR_NAME']
+
+    def test_all_alternative_features(self):
+        """
+        Test running all the features under the alternative features directory
+        without explicitly specifying them.
+        """
+
+        os.environ['GHERKIN_FEATURES_DIR_NAME'] = 'alternative_features'
+
+        result = self.assert_feature_success()
+
+        del os.environ['GHERKIN_FEATURES_DIR_NAME']
+
+        self.assertEqual(result.tests_run, [
+            os.path.abspath(feature) for feature in (
+                'alternative_features/single.feature',
+                'alternative_features/subdirectory/another.feature',
+                'submodule/alternative_features/third.feature',
+            )
+        ])

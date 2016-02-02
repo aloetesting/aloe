@@ -7,9 +7,11 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
+import os
 import unittest
 
-from aloe.fs import path_to_module_name
+from aloe.exceptions import StepDiscoveryError
+from aloe.fs import FeatureLoader, path_to_module_name
 
 
 class PathToModuleNameTest(unittest.TestCase):
@@ -29,3 +31,16 @@ class PathToModuleNameTest(unittest.TestCase):
             'one.two',
             path_to_module_name('one/two/__init__.py')
         )
+
+
+class AlternativeFeaturesDirTest(unittest.TestCase):
+    """Test alternative features directory."""
+
+    def test_alternative_directory(self):
+        """Test alternative directory is not a path"""
+
+        with self.assertRaises(StepDiscoveryError):
+            os.environ['GHERKIN_FEATURES_DIR_NAME'] = 'my/features'
+            FeatureLoader.features_dirname()
+
+        del os.environ['GHERKIN_FEATURES_DIR_NAME']
