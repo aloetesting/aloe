@@ -18,8 +18,10 @@ from nose.tools import (
 from aloe.registry import (
     CallbackDecorator,
     CallbackDict,
+    ExtendedStep,
     PriorityClass,
     StepDict,
+    STEP_REGISTRY,
 )
 from aloe.exceptions import (
     StepLoadingError,
@@ -267,6 +269,7 @@ def test_unload_reload():
     steps.step(step.sentence)(step)
 
     assert_matches(steps, "My step 1", (step, ('1',), {}))
+    # pylint:enable=no-member
 
 
 class CallbackDictTest(unittest.TestCase):
@@ -561,3 +564,102 @@ class CallbackDictTest(unittest.TestCase):
         self.assertEqual([item for (item,) in sequence], [
             'wrapped',
         ])
+
+
+class ExtendedStepTest(unittest.TestCase):
+    """
+    Test extended step.
+    """
+
+    def setUp(self):
+        self.extended_step = ExtendedStep()
+        self.single_expression_placeholders = \
+            self.extended_step.single_expression_placeholders
+        self.multi_expression_placeholders = \
+            self.extended_step.multi_expression_placeholders
+
+        self.extended_step.register_placeholder('TEST1', 't1')
+        self.extended_step.register_placeholder('TEST2', 't2_1', 't2_2')
+
+    def test_register_placeholder(self):
+        """Test registering placeholders."""
+
+        self.single_expression_placeholders.update({'TEST': 't1'})
+        self.multi_expression_placeholders.update({'TEST2': ('t2_1', 't2_2')})
+
+        self.assertDictEqual(
+            self.extended_step.single_expression_placeholders,
+            self.single_expression_placeholders
+        )
+
+        self.assertDictEqual(
+            self.extended_step.multi_expression_placeholders,
+            self.multi_expression_placeholders
+        )
+
+    def test_replace_placeholders(self):
+        """Test replacing placeholders in string."""
+
+        sentences = [
+            '{TEST1}',
+            '{TEST2}',
+            '{TEST1}-{TEST2}',
+            '{TEST1}-TEST2',
+            '{test1}-{test2}',
+            '{NUMBER}',
+            '{STRING}',
+            '{NON_CAPTURING_STRING}',
+            '{NON_CAPTURING_NUMBER}',
+            '{TEST2}-{STRING}',
+        ]
+
+        results = [
+            ('t1', ),
+            ('t2_1', 't2_2'),
+            ('t1-t2_1', 't1-t2_2'),
+            ('t1-TEST2', ),
+            ('{test1}-{test2}', ),
+            (r'(-?\d+(?:\.\d*)?)', ),
+            (r'"([^"]*)"', r"'([^']*)'"),
+            (r'|'.join((r'"[^"]*"', r"'[^']*'")), ),
+            (r'-?\d+(?:\.\d*)?', ),
+            (r't2_1-"([^"]*)"',
+             r't2_2-"([^"]*)"',
+             r"t2_1-'([^']*)'",
+             r"t2_2-'([^']*)'",
+            )
+        ]
+
+        for index, sentence in enumerate(sentences):
+            self.assertItemsEqual(
+                self.extended_step._replace_placeholders(sentence),  # pylint:disable=protected-access
+                results[index]
+            )
+
+    def test_extended_step_func(self):
+        """Test extended_step function."""
+
+        def step():  # pylint:disable=missing-docstring
+            pass
+
+        steps = STEP_REGISTRY
+
+        # Load
+        self.extended_step.extended_step(r'My step {NUMBER}')(step)
+
+        assert_matches(steps, "My step 1", (step, ('1',), {}))
+
+        # Unload
+        step.unregister()  # pylint:disable=no-member
+
+        # Load
+        self.extended_step.extended_step(r'My step {STRING}')(step)
+
+        assert_matches(steps, "My step 'one'", (step, ('one',), {}))
+        assert_matches(steps, 'My step "two"', (step, ('two',), {}))
+
+        # Unload
+        step.unregister()  # pylint:disable=no-member
+
+        assert_no_match(steps, "My step 'one'")
+        assert_no_match(steps, 'My step "two"')
