@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Steps for testing the basic Gherkin test functionality.
 """
@@ -162,6 +163,7 @@ def after_all():
 
 
 @step(r'I emit an? ([^ ]+) event of "([^"]+)"')
+@step(r'Я записываю событие ([^ ]+) "([^"]+)"')
 def emit_event(self, kind, event):
     """Record a user-defined event."""
     record_event(kind, event)
@@ -182,7 +184,24 @@ def emit_event_letters(self, kind, letters):
         ))
 
 
+@step(r'Я записываю событие ([^ ]+) для каждой буквы в "([^"]+)"')
+def emit_event_letters_ru(self, kind, letters):
+    """
+    Record several user-defined events in succession, using the Russian step
+    definition.
+
+    Used to test behave_as.
+    """
+
+    for letter in letters:
+        self.when('Я записываю событие {kind} "{letter}"'.format(
+            kind=kind,
+            letter=letter,
+        ))
+
+
 @step(r'The ([^ ]+) event sequence should be "([^"]+)"')
+@step(r'Последовательность событий ([^ ]+) должна быть "([^"]+)"')
 def check_events(self, kind, events):
     """Check the recorded events of a particular type."""
     kind = kind.replace('"', '')
