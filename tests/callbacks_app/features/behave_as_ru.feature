@@ -4,11 +4,11 @@
   Проверка работы behave_as на русском языке
 
   Контекст:
-    Пусть I emit a step event of "Z"
-    И I emit a step event for each letter in "BC"
+    Пусть я записываю событие step "Z"
+    И я записываю событие step для каждой буквы в "BC"
 
   Сценарий: Проверка behave_as
-    Пусть I emit a step event of "A"
-    И I emit a step event for each letter in "DE"
+    Пусть я записываю событие step "A"
+    И я записываю событие step для каждой буквы в "DE"
     # Last two brackets are from the current example
-    Тогда the step event sequence should be "{[Z]}{[{[B]}{[C]}]}{[A]}{[{[D]}{[E]}]}{["
+    Тогда последовательность событий step должна быть "{[Z]}{[{[B]}{[C]}]}{[A]}{[{[D]}{[E]}]}{["
