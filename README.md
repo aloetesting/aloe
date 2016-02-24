@@ -1,6 +1,8 @@
 Aloe
 ----
 
+[![Build Status](https://travis-ci.org/aloetesting/aloe.svg?branch=master)](https://travis-ci.org/aloetesting/aloe)
+
 A [Gherkin][gherkin] runner for Python based on [Nose][nose] and
 [Lettuce][lettuce].
 
