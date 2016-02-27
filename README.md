@@ -1,5 +1,5 @@
 Aloe
-----
+====
 
 [![Build status](https://img.shields.io/travis/aloetesting/aloe.svg)](https://travis-ci.org/aloetesting/aloe)
 [![Coverage](https://img.shields.io/coveralls/aloetesting/aloe.svg)](https://coveralls.io/github/aloetesting/aloe)
@@ -15,7 +15,7 @@ Install:
 Read the [documentation][docs].
 
 Invocation
-==========
+----------
 
 `aloe` command line tool is a wrapper for the `nose` runner, configured to only
 run Gherkin tests. As such, the invocation is the same as `nose`, but the
@@ -31,7 +31,7 @@ following parameters are added:
 * `--no-ignore-python` - run Python tests as well as Gherkin.
 
 Migrating from Lettuce
-======================
+----------------------
 
 Aloe, started as a fork of Lettuce, tries to be compatible where it makes
 sense. However, there are following incompatible changes:
@@ -50,7 +50,7 @@ sense. However, there are following incompatible changes:
   verbosity 1. To get colored output with steps printed as they run, use `-v 3`.
 
 License
-=======
+-------
 
 Aloe - Cucumber runner for Python based on Lettuce and Nose
 
