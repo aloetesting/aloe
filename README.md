@@ -1,6 +1,10 @@
 Aloe
 ----
 
+[![Build status](https://img.shields.io/travis/aloetesting/aloe.svg)](https://travis-ci.org/aloetesting/aloe)
+[![Coverage](https://img.shields.io/coveralls/aloetesting/aloe.svg)](https://coveralls.io/github/aloetesting/aloe)
+[![PyPI](https://img.shields.io/pypi/v/aloe.svg)](https://pypi.python.org/pypi/aloe)
+
 A [Gherkin][gherkin] runner for Python based on [Nose][nose] and
 [Lettuce][lettuce].
 
