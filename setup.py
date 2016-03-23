@@ -2,8 +2,6 @@
 Setup script.
 """
 
-__version__ = '0.0.44'
-
 from setuptools import setup, find_packages
 
 if __name__ == '__main__':
@@ -13,7 +11,7 @@ if __name__ == '__main__':
             open('README.md') as readme:
         setup(
             name='aloe',
-            version=__version__,
+            use_scm_version=True,
             description='Gherkin runner compatible with Lettuce',
             author='Alexey Kotlyarov',
             author_email='a@koterpillar.com',
@@ -35,6 +33,8 @@ if __name__ == '__main__':
                     'aloe = aloe:main',
                 ],
             },
+
+            setup_requires=['setuptools_scm'],
 
             install_requires=requirements.readlines(),
 
