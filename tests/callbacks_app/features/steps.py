@@ -25,7 +25,7 @@ from aloe import (
 from aloe.testclass import TestCase
 
 
-class CallbackTestCase(TestCase):
+class CallbackTestCase(TestCase):  # pylint:disable=abstract-method
     """Base for Gherkin test cases recording the use of setUp()/tearDown()."""
 
     def setUp(self):
