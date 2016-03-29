@@ -78,7 +78,7 @@ class FeatureLoader(object):
         # A set of package directories discovered
         packages = set()
 
-        for path, dirs, files in os.walk(dir_):
+        for path, dirs, files in os.walk(dir_, followlinks=True):
             # Is this a package?
             if '__init__.py' in files:
                 packages.add(path)
