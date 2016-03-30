@@ -170,8 +170,9 @@ class TestCase(unittest.TestCase):
 
         background = cls.make_background(feature.background)
         scenarios = [
-            cls.make_scenario(scenario, i + 1)
+            example
             for i, scenario in enumerate(feature.scenarios)
+            for example in cls.make_examples(scenario, i + 1)
         ]
 
         before_feature, after_feature = \
@@ -211,53 +212,69 @@ class TestCase(unittest.TestCase):
         return result
 
     @classmethod
-    def make_scenario(cls, scenario, index):
+    def make_examples(cls, scenario, index):
         """
-        Construct a method running the scenario steps.
+        Construct methods for running all the examples of a scenario.
 
         index is the 1-based number of the scenario in the feature.
         """
 
         if scenario.outlines:
-            source = 'def run_outlines(self):\n' + '\n'.join(
-                '    outline{i}(self)'.format(i=i)
-                for i in range(len(scenario.outlines))
-            )
-            source = ast.parse(source)
+            for i, (outline, steps) in enumerate(scenario.evaluated, 1):
+                # Create a function calling the real scenario example to show
+                # the right location in the outline
+                source = """
+def run_example(self):
+    outline(self)
+                """
+                source = ast.parse(source)
 
-            # Set locations of the steps
-            for outline, outline_call in \
-                    zip(scenario.outlines, source.body[0].body):
-                for node in ast.walk(outline_call):
+                # Set location of the call
+                for node in ast.walk(source.body[0].body[0]):
                     node.lineno = outline.line
 
-            context = {
-                'outline' + str(i): cls.make_steps(scenario,
-                                                   steps,
-                                                   is_background=False,
-                                                   outline=outline)
-                for i, (outline, steps) in enumerate(scenario.evaluated)
-            }
+                context = {
+                    'outline': cls.make_steps(scenario,
+                                              steps,
+                                              is_background=False,
+                                              outline=outline)
+                }
 
-            result = make_function(
-                source=source,
-                context=context,
-                source_file=scenario.feature.filename,
-                name=scenario.name,
-            )
+                yield cls.make_example(
+                    make_function(
+                        source=source,
+                        context=context,
+                        source_file=scenario.feature.filename,
+                        name='{}: Example {}'.format(scenario.name, i),
+                    ),
+                    scenario,
+                    index,
+                )
         else:
-            result = cls.make_steps(scenario,
-                                    scenario.steps,
-                                    is_background=False)
+            yield cls.make_example(
+                cls.make_steps(
+                    scenario,
+                    scenario.steps,
+                    is_background=False,
+                ),
+                scenario,
+                index,
+            )
 
-        result.is_scenario = True
-        result.scenario = scenario
-        result.scenario_index = index
+    @classmethod
+    def make_example(cls, method, scenario, index):
+        """
+        Set the method attributes to associate it with given scenario and index.
+        """
+
+        method.is_example = True
+        method.scenario = scenario
+        method.scenario_index = index
 
         for tag in scenario.tags:
-            result = attr(tag)(result)
+            method = attr(tag)(method)
 
-        return result
+        return method
 
     @classmethod
     def prepare_step(cls, step):
@@ -356,15 +373,10 @@ class TestCase(unittest.TestCase):
         order they were declared in the feature, together with their indices.
         """
 
-        attrs = {
-            name: getattr(cls, name)
-            for name in cls.__dict__
-        }
-
         scenarios = {
             name: method
-            for (name, method) in attrs.items()
-            if getattr(method, 'is_scenario', False)
+            for name, method in cls.__dict__.items()
+            if getattr(method, 'is_example', False)
         }
 
         with_indices = [

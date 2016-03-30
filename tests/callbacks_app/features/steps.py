@@ -7,6 +7,9 @@ from __future__ import unicode_literals
 from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
+# pylint:disable=redefined-builtin
+from builtins import super
+# pylint:enable=redefined-builtin
 
 from contextlib import contextmanager
 
@@ -19,6 +22,23 @@ from aloe import (
     step,
     world,
 )
+from aloe.testclass import TestCase
+
+
+class CallbackTestCase(TestCase):  # pylint:disable=abstract-method
+    """Base for Gherkin test cases recording the use of setUp()/tearDown()."""
+
+    def setUp(self):
+        """Emit a 'setUp' event."""
+
+        super().setUp()
+        record_event('testclass', '[')
+
+    def tearDown(self):
+        """Emit a 'tearDown' event."""
+
+        record_event('testclass', ']')
+        super().tearDown()
 
 
 def record_event(kind, value):

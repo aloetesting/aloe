@@ -252,7 +252,7 @@ AssertionError
 
         # TODO: Why isn't the line indented with 6 spaces like in the file?
         feature_stack_frame = """
-  File "{feature}", line 22, in Fail repeatedly
+  File "{feature}", line 22, in Fail repeatedly: Example 1
     | 50     |
         """.strip().format(feature=os.path.abspath(failing_feature))
 
