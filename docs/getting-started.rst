@@ -23,8 +23,10 @@ Write your first feature ``features/calculator.feature``:
 
 Features are written using the `Gherkin syntax`_.
 
-Now run ``aloe features/calculator.feature`` and see it fail because there are no
-step definitions::
+Now run ``aloe features/calculator.feature`` and see it fail because there are
+no step definitions:
+
+.. code-block:: console
 
     $ aloe features/calculator.feature
     (...)
@@ -36,9 +38,11 @@ step definitions::
 
     FAILED (errors=1)
 
-Now add the definitions in ``features/steps.py``:
+Now add the definitions in ``features/__init__.py``:
 
 .. code-block:: python
+
+    from calculator import add
 
     from aloe import before, step, world
 
@@ -57,17 +61,61 @@ Now add the definitions in ``features/steps.py``:
 
     @step(r'I press add')
     def press_add(self):
-        world.result = sum(world.numbers)
+        world.result = add(*world.numbers)
 
 
     @step(r'The result should be (\d+) on the screen')
     def assert_result(self, result):
         assert world.result == float(result)
 
-Now it works::
+And the implementation stub in ``calculator.py``:
+
+.. code-block:: python
+
+    def add(*numbers):
+        return 0
+
+Aloe will tell you that there is an error, including the location of the
+failing step, as if it was a normal Python test:
+
+.. code-block:: console
+    :emphasize-lines: 9,10
 
     $ aloe features/calculator.feature
-    (...)
+
+    F
+    ======================================================================
+    FAIL: Add two numbers (features.calculator: Add up numbers)
+    ----------------------------------------------------------------------
+    Traceback (most recent call last):
+      (...)
+      File ".../features/calculator.feature", line 11, in Add two numbers
+        Then the result should be 80 on the screen
+      File ".../aloe/registry.py", line 161, in wrapped
+        return function(*args, **kwargs)
+      File ".../features/__init__.py", line 25, in assert_result
+        assert world.result == float(result)
+    AssertionError
+
+    ----------------------------------------------------------------------
+    Ran 1 test in 0.001s
+
+    FAILED (failures=1)
+
+Let's implement the function properly:
+
+.. code-block:: python
+
+    def add(*numbers):
+        return sum(numbers)
+
+Now it works:
+
+.. code-block:: console
+
+    $ aloe features/calculator.feature
+    .
+    ----------------------------------------------------------------------
     Ran 1 test in 0.001s
 
     OK
