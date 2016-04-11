@@ -688,6 +688,7 @@ class Feature(HeaderNode, TaggedNode):
 
         for child in parsed['children']:
             if child['type'] == 'Background':
+                # Gherkin syntax disallows multiple backgrounds
                 assert not self.background, "Duplicate background found."
                 self.background = self.background_class(child,
                                                         filename=filename,
