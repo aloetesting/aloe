@@ -675,20 +675,30 @@ class Feature(HeaderNode, TaggedNode):
     background = None
 
     def __init__(self, parsed, filename=None, **kwargs):
+        # Gherkin's top level definition is a GherkinDocument, which doesn't
+        # have a location
+        parsed = parsed['feature']
         super().__init__(parsed, filename=filename, **kwargs)
 
         self.language = parsed['language']
 
         self.description_node = Description(parsed, filename=filename)
 
-        if 'background' in parsed:
-            self.background = self.background_class(parsed['background'],
-                                                    filename=filename,
-                                                    feature=self)
+        scenarios = []
+
+        for child in parsed['children']:
+            if child['type'] == 'Background':
+                # Gherkin syntax disallows multiple backgrounds
+                assert not self.background, "Duplicate background found."
+                self.background = self.background_class(child,
+                                                        filename=filename,
+                                                        feature=self)
+            else:
+                scenarios.append(child)
 
         self.scenarios = tuple(
             self.scenario_class(scenario, filename=filename, feature=self)
-            for scenario in parsed['scenarioDefinitions']
+            for scenario in scenarios
         )
 
     @classmethod

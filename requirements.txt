@@ -1,5 +1,5 @@
 blessings
 future>=0.14.0
-gherkin-official
+gherkin-official>=4, <5
 nose
 repoze.lru
