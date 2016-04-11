@@ -856,8 +856,7 @@ PARSE ERROR
     assert_equal(error.exception.msg, '\n'.join((
         "Syntax error at: None",
         "Parser errors:",
-        "(2:1): expected: #Language, #TagLine, #FeatureLine, #Comment, #Empty, got 'PARSE ERROR'",
-        "(3:0): unexpected end of file, expected: #Language, #TagLine, #FeatureLine, #Comment, #Empty",
+        "(2:1): expected: #EOF, #Language, #TagLine, #FeatureLine, #Comment, #Empty, got 'PARSE ERROR'",
     )))
     # pylint:enable=line-too-long
 
@@ -878,8 +877,7 @@ PARSE ERROR
         assert_equal(error.exception.msg, '\n'.join((
             "Syntax error at: {filename}",
             "Parser errors:",
-            "(2:1): expected: #Language, #TagLine, #FeatureLine, #Comment, #Empty, got 'PARSE ERROR'",
-            "(3:0): unexpected end of file, expected: #Language, #TagLine, #FeatureLine, #Comment, #Empty",
+            "(2:1): expected: #EOF, #Language, #TagLine, #FeatureLine, #Comment, #Empty, got 'PARSE ERROR'",
         )).format(filename=feature_file.name))
         # pylint:enable=line-too-long
 
