@@ -237,7 +237,7 @@ class FeatureTest(unittest.TestCase):
 
         with tempfile.NamedTemporaryFile(suffix='.feature', dir='features') \
                 as feature_file:
-            feature_file.write(feature_string.encode())
+            feature_file.write(feature_string.encode('utf-8'))
             feature_file.flush()
             return self.run_features(os.path.relpath(feature_file.name))
 
