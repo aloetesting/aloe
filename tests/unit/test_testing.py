@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Test step loading.
 """
@@ -68,6 +69,24 @@ class FeatureTestTest(FeatureTest):
         )
 
         self.assertFalse(result.success)
+
+    def test_run_good_feature_string_non_ascii(self):
+        """
+        Test running strings with non-ASCII symbols as features.
+        """
+
+        result = self.run_feature_string(
+            """
+            # language: zh-CN
+            功能: Empty feature
+
+            场景: Empty scenario
+                当I do nothing
+                那么I do nothing
+            """
+        )
+
+        self.assertTrue(result.success)
 
 
 def relative(directory):
