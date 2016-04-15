@@ -510,6 +510,24 @@ def test_feature_has_scenarios():
     ]
 
 
+def test_outline_steps():
+    """Test steps that are part of an outline."""
+
+    feature = Feature.from_string(FEATURE6)
+
+    # Steps that are a part of an outline have a reference back to the outline
+    for outline, steps in feature.scenarios[0].evaluated:
+        for step in steps:
+            assert_equal(step.outline, outline)
+
+    feature = Feature.from_string(FEATURE1)
+
+    # Steps that are not a part of an outline don't have the outline reference
+    for outline, steps in feature.scenarios[0].evaluated:
+        for step in steps:
+            assert_equal(step, outline, None)
+
+
 def test_can_parse_feature_description():
     """
     A feature object should have a description
