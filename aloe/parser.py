@@ -152,6 +152,11 @@ class Step(Node):
             \"\"\"
     """
 
+    outline = None
+    """
+    If this step is a part of an outline, the reference to the outline.
+    """
+
     def __init__(self, parsed, background=None, scenario=None, **kwargs):
         super().__init__(parsed, **kwargs)
 
@@ -375,6 +380,8 @@ class Step(Node):
                 )
                 for row in self.table
             )
+
+        replaced.outline = outline
 
         return replaced
 

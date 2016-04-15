@@ -328,42 +328,6 @@ Feature: Redis database server
         And M2 contains database 3
         """
 
-FEATURE18 = """
-@feature_runme
-Feature: correct matching
-  @runme1
-  Scenario: Holy tag, Batman [1]
-    Given this scenario has tags
-    Then it can be inspected from within the object
-
-  @runme2
-  Scenario: Holy tag2, Batman (2)
-    Given this scenario has other tags
-    Then it can be inspected from within the object even with the table
-    | What | Is | This  |
-    | It   | is | TABLE |
-
-  @runme3
-  Scenario: Holy tag3, Batman
-    Given this scenario has even more tags
-    Then it can be inspected from within the object
-
-"""
-
-
-FEATURE19 = """
-Feature: correct matching
-  @runme1
-  Scenario: Holy tag, Batman (1)
-    Given this scenario has tags
-    Then it can be inspected from within the object
-
-  @runme2
-  Scenario: Holy tag2, Batman [2]
-    Given this scenario has other tags
-    Then it can be inspected from within the object
-"""
-
 FEATURE16 = """
 Feature: Movie rental
     As a rental store owner
@@ -404,6 +368,41 @@ Feature: Movie rental without MMF
     Scenario: Renting a featured movie
         Given the client 'John Doe' rents 'Iron Man 2'
         Then there are 10 more left
+"""
+
+FEATURE18 = """
+@feature_runme
+Feature: correct matching
+  @runme1
+  Scenario: Holy tag, Batman [1]
+    Given this scenario has tags
+    Then it can be inspected from within the object
+
+  @runme2
+  Scenario: Holy tag2, Batman (2)
+    Given this scenario has other tags
+    Then it can be inspected from within the object even with the table
+    | What | Is | This  |
+    | It   | is | TABLE |
+
+  @runme3
+  Scenario: Holy tag3, Batman
+    Given this scenario has even more tags
+    Then it can be inspected from within the object
+
+"""
+
+FEATURE19 = """
+Feature: correct matching
+  @runme1
+  Scenario: Holy tag, Batman (1)
+    Given this scenario has tags
+    Then it can be inspected from within the object
+
+  @runme2
+  Scenario: Holy tag2, Batman [2]
+    Given this scenario has other tags
+    Then it can be inspected from within the object
 """
 
 FEATURE20 = """
@@ -509,6 +508,24 @@ def test_feature_has_scenarios():
             'Available': '6',
         },
     ]
+
+
+def test_outline_steps():
+    """Test steps that are part of an outline."""
+
+    feature = Feature.from_string(FEATURE6)
+
+    # Steps that are a part of an outline have a reference back to the outline
+    for outline, steps in feature.scenarios[0].evaluated:
+        for step in steps:
+            assert_equal(step.outline, outline)
+
+    feature = Feature.from_string(FEATURE1)
+
+    # Steps that are not a part of an outline don't have the outline reference
+    for outline, steps in feature.scenarios[0].evaluated:
+        for step in steps:
+            assert_equal(step, outline, None)
 
 
 def test_can_parse_feature_description():
