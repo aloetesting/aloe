@@ -16,6 +16,8 @@ from aloe.registry import (
     after,
     around,
     before,
+    extended_step,
+    register_placeholder,
     step,
 )
 

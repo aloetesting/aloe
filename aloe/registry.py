@@ -214,8 +214,12 @@ class StepDict(object):
         self.steps[step_re.pattern] = (step_re, func)
 
         try:
+            if not getattr(func, 'patterns', None):
+                func.patterns = set()
+
+            func.patterns.add(step_re.pattern)
             func.sentence = sentence
-            func.unregister = partial(self.unload, step_re.pattern)
+            func.unregister = partial(self.unload, *func.patterns)
         except AttributeError:
             # func might have been a bound method, no way to set attributes
             # on that
@@ -223,10 +227,11 @@ class StepDict(object):
 
         return func
 
-    def unload(self, sentence):
+    def unload(self, *sentences):
         """Remove a mapping for a given step sentence, if it exists."""
         try:
-            del self.steps[sentence]
+            for sentence in sentences:
+                del self.steps[sentence]
         except KeyError:
             pass
 
@@ -448,4 +453,112 @@ class CallbackDecorator(object):
 after = CallbackDecorator(CALLBACK_REGISTRY, 'after')
 around = CallbackDecorator(CALLBACK_REGISTRY, 'around')
 before = CallbackDecorator(CALLBACK_REGISTRY, 'before')
+# pylint:enable=invalid-name
+
+
+class ExtendedStep(object):
+    """
+    An extended step decorator that defines placeholders and allows to easily
+    assign multiple sentences to a single function.
+    Useful for sentences that capture a string which is enclosed either in
+    single or double quotes
+    """
+    CLOSURE = '{%s}'
+
+    def __init__(self):
+        self.single_expression_placeholders = {
+            'NUMBER': r'(-?\d+(?:\.\d*)?)',
+            'NON_CAPTURING_STRING': r'|'.join((r'"[^"]*"', r"'[^']*'")),
+            'NON_CAPTURING_NUMBER': r'-?\d+(?:\.\d*)?',
+        }
+        self.multi_expression_placeholders = {
+            'STRING': (r'"([^"]*)"', r"'([^']*)'"),
+        }
+
+    def register_placeholder(self, placeholder, *args):
+        """Register a placeholder to be used on the extended_step."""
+
+        if len(args) > 1:
+            self.multi_expression_placeholders[placeholder] = args
+        else:
+            self.single_expression_placeholders[placeholder] = args[0]
+
+    def _replace_placeholders(self, sentence):
+        """
+        Replace placeholders with their associated expressions.
+        Returns a list with at least one sentences to the product of all
+        the expressions when one or more multiple-expressions are used.
+        `replace` is use instead of `format` as the latter interferes with
+        defining complex custom regexes that contains {}.
+        """
+
+        for placeholder, expression in \
+                self.single_expression_placeholders.iteritems():
+            sentence = sentence.replace(self.CLOSURE % placeholder, expression)
+
+        sentences = [sentence]
+
+        for placeholder in self.multi_expression_placeholders.keys():
+            sentences = self._replace_multi_expression_placeholder(
+                sentences, placeholder
+            )
+
+        return sentences
+
+    # pylint:disable=invalid-name
+    def _replace_multi_expression_placeholder(self, sentences, placeholder):
+        """
+        Replace a placeholder that is associated with multiple expressions.
+        """
+
+        placeholder_str = self.CLOSURE % placeholder
+
+        if placeholder_str not in sentences[0]:
+            return sentences
+
+        expressions = self.multi_expression_placeholders[placeholder]
+        new_sentences = []
+
+        for expression in expressions:
+            for sentence in sentences:
+                new_sentences.append(
+                    sentence.replace(placeholder_str, expression)
+                )
+
+        return new_sentences
+    # pylint:enable=invalid-name
+
+    def extended_step(self, sentence):
+        """
+        Creates one or multiple step definitions and associate them to the same
+        function.
+        The sentence can contain placeholders that are replaced by common
+        expressions/regexes.
+        A placeholder can be associated with multiple regexes creating in that
+        way multiple step definitions.
+        Placeholders are case sensitive and are enclosed in {}.
+        Common placeholders:
+            {STRING}
+            {NUMBER}
+            {NON_CAPTURING_STRING}
+            {NON_CAPTURING_NUMBER}
+        """
+
+        def decorator(func):
+            """Register a function as a step using the parsed sentence."""
+
+            sentences = self._replace_placeholders(sentence)
+
+            for parsed_sentence in sentences:
+                step(parsed_sentence)(func)
+
+        return decorator
+
+
+EXTENDED_STEP = ExtendedStep()
+
+# These are functions, not constants
+# pylint:disable=invalid-name
+register_placeholder = EXTENDED_STEP.register_placeholder
+extended_step = EXTENDED_STEP.extended_step
 # pylint:enable=invalid-name
