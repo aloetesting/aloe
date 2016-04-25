@@ -388,6 +388,9 @@ class StepDict(object):
                 \"\"\"
 
         This is exposed in the step as :attr:`Step.multiline`.
+
+        The registered function will have an :code:`unregister()` method that
+        removes all the step definitions that are associated with it.
         """
 
         if isinstance(step_func_or_sentence, bytes):
