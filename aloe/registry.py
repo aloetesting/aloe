@@ -215,7 +215,7 @@ class StepDict(object):
 
         try:
             func.sentence = sentence
-            func.unregister = partial(self.unload, step_re.pattern)
+            func.unregister = partial(self.unload_func, func)
         except AttributeError:
             # func might have been a bound method, no way to set attributes
             # on that
@@ -229,6 +229,17 @@ class StepDict(object):
             del self.steps[sentence]
         except KeyError:
             pass
+
+    def unload_func(self, func):
+        """Remove any mappings for a given function."""
+
+        sentences_to_remove = list(
+            sentence
+            for sentence, (_, step_func) in self.steps.items()
+            if step_func == func
+        )
+        for sentence in sentences_to_remove:
+            del self.steps[sentence]
 
     def clear(self):
         """Remove all registered steps."""
@@ -377,6 +388,9 @@ class StepDict(object):
                 \"\"\"
 
         This is exposed in the step as :attr:`Step.multiline`.
+
+        The registered function will have an :code:`unregister()` method that
+        removes all the step definitions that are associated with it.
         """
 
         if isinstance(step_func_or_sentence, bytes):

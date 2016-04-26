@@ -247,8 +247,10 @@ def test_unload_reload():
 
     # Load
     steps.step(r'My step (\d)')(step)
+    steps.step(r'Another step (\d)')(step)
 
     assert_matches(steps, "My step 1", (step, ('1',), {}))
+    assert_matches(steps, "Another step 1", (step, ('1',), {}))
 
     # Members added to step by registering it
     # pylint:disable=no-member
@@ -257,14 +259,16 @@ def test_unload_reload():
     step.unregister()
 
     assert_no_match(steps, "My step 1")
+    assert_no_match(steps, "Another step 1")
 
     # Should be a no-op
     step.unregister()
 
     assert_no_match(steps, "My step 1")
+    assert_no_match(steps, "Another step 1")
 
     # Reload
-    steps.step(step.sentence)(step)
+    steps.step(r'My step (\d)')(step)
 
     assert_matches(steps, "My step 1", (step, ('1',), {}))
 
