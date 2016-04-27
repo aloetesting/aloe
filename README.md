@@ -75,9 +75,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [gherkin]: https://cucumber.io/
-[nose]: https://nose.readthedocs.org/
-[nose-plugin-attrib]: https://nose.readthedocs.org/en/latest/plugins/attrib.html
+[nose]: https://nose.readthedocs.io/
+[nose-plugin-attrib]: https://nose.readthedocs.io/en/latest/plugins/attrib.html
 [lettuce]: http://lettuce.it/
 [gherkin-syntax]: https://cucumber.io/docs/reference
 [aloe-django]: https://github.com/aloetesting/aloe_django
-[docs]: http://aloe.readthedocs.org/
+[docs]: http://aloe.readthedocs.io/
