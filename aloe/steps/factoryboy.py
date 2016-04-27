@@ -9,7 +9,7 @@ custom step.
 To activate these steps import :mod:`aloe.steps.factoryboy` into your
 ``steps/__init__.py``.
 
-.. _factory_boy: https://factoryboy.readthedocs.org/en/latest/
+.. _factory_boy: https://factoryboy.readthedocs.io/en/latest/
 """
 
 from __future__ import (absolute_import, division,
