@@ -88,7 +88,8 @@ Tags
 ----
 
 Feature and scenario tags are specified using the form ``@tag_name`` and are
-converted to Nose attribute tags, and can be run/excluded using :option:`-a`.
+set as attributes on the corresponding test methods, so that they can be
+run/excluded using :option:`-a`.
 
 .. code-block:: gherkin
 

@@ -1,5 +1,5 @@
 """
-Cucumber-esque outputter for Nose.
+Cucumber-esque outputter.
 """
 
 from __future__ import print_function
