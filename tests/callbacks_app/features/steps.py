@@ -13,8 +13,6 @@ from builtins import super
 
 from contextlib import contextmanager
 
-from nose.tools import assert_equal
-
 from aloe import (
     after,
     around,
@@ -225,7 +223,7 @@ def emit_event_letters_ru(self, kind, letters):
 def check_events(self, kind, events):
     """Check the recorded events of a particular type."""
     kind = kind.replace('"', '')
-    assert_equal(''.join(getattr(world, kind)), events)
+    assert ''.join(getattr(world, kind)) == events
 
 
 @after.each_step

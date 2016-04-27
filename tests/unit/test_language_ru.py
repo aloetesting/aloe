@@ -11,7 +11,8 @@ from __future__ import absolute_import
 from builtins import *
 # pylint:enable=redefined-builtin,wildcard-import,unused-wildcard-import
 
-from nose.tools import assert_equal
+import unittest
+
 from aloe.parser import Feature
 
 SCENARIO = u"""
@@ -53,89 +54,90 @@ FEATURE = u'''
 '''
 
 
-def parse_scenario(string, language=None):
+def parse_scenario(string):
     """Parse a scenario, prefixing it with a feature header."""
     feature_str = u"""
     Функция: parse_scenario
     """
     feature_str += string
-    feature = Feature.from_string(feature_str, language=language)
+    feature = Feature.from_string(feature_str, language='ru')
 
     return feature.scenarios[0]
 
 
-def test_scenario_ru_from_string():
-    """
-    Language: RU -> Scenario.from_string
-    """
+class TestRussian(unittest.TestCase):
+    """Test parsing Russian scenarios."""
 
-    scenario = parse_scenario(SCENARIO, language='ru')
+    def test_scenario_ru_from_string(self):
+        """
+        Language: RU -> Scenario.from_string
+        """
 
-    assert_equal(
-        scenario.name,
-        u'Сохранение базы курсов универитета в текстовый файл'
-    )
-    assert_equal(
-        scenario.steps[0].hashes,
-        (
-            {u'Название': u'Матан',
-             u'Длительность': u'2 года'},
-            {u'Название': u'Основы программирования',
-             u'Длительность': u'1 год'},
+        scenario = parse_scenario(SCENARIO)
+
+        self.assertEqual(
+            scenario.name,
+            u'Сохранение базы курсов универитета в текстовый файл'
         )
-    )
-
-
-def test_scenario_outline1_ru_from_string():
-    """
-    Language: RU -> Scenario.from_string, with scenario outline, first case
-    """
-
-    scenario = parse_scenario(SCENARIO_OUTLINE1, language='ru')
-
-    assert_equal(
-        scenario.name,
-        u'Заполнение пользователей в базу'
-    )
-    assert_equal(
-        scenario.outlines,
-        (
-            {u'имя': u'Вася', u'возраст': '22'},
-            {u'имя': u'Петя', u'возраст': '30'},
+        self.assertEqual(
+            scenario.steps[0].hashes,
+            (
+                {u'Название': u'Матан',
+                 u'Длительность': u'2 года'},
+                {u'Название': u'Основы программирования',
+                 u'Длительность': u'1 год'},
+            )
         )
-    )
 
+    def test_scenario_outline1_ru_from_string(self):
+        """
+        Language: RU -> Scenario.from_string, with scenario outline, first case
+        """
 
-def test_feature_ru_from_string():
-    """
-    Language: RU -> Feature.from_string
-    """
+        scenario = parse_scenario(SCENARIO_OUTLINE1)
 
-    feature = Feature.from_string(FEATURE, language='ru')
-
-    assert_equal(
-        feature.name,
-        u'Деление чисел'
-    )
-
-    assert_equal(
-        feature.description,
-        u"Поскольку деление сложный процесс и люди часто допускают ошибки\n"
-        u"Нужно дать им возможность делить на калькуляторе"
-    )
-
-    (scenario, ) = feature.scenarios
-
-    assert_equal(
-        scenario.name,
-        u'Целочисленное деление'
-    )
-
-    assert_equal(
-        scenario.steps[-1].hashes,
-        (
-            {u'делимое': '100', u'делитель': '2', u'частное': '50'},
-            {u'делимое': '28', u'делитель': '7', u'частное': '4'},
-            {u'делимое': '0', u'делитель': '5', u'частное': '0'},
+        self.assertEqual(
+            scenario.name,
+            u'Заполнение пользователей в базу'
         )
-    )
+        self.assertEqual(
+            scenario.outlines,
+            (
+                {u'имя': u'Вася', u'возраст': '22'},
+                {u'имя': u'Петя', u'возраст': '30'},
+            )
+        )
+
+    def test_feature_ru_from_string(self):
+        """
+        Language: RU -> Feature.from_string
+        """
+
+        feature = Feature.from_string(FEATURE, language='ru')
+
+        self.assertEqual(
+            feature.name,
+            u'Деление чисел'
+        )
+
+        self.assertEqual(
+            feature.description,
+            u"Поскольку деление сложный процесс и люди часто допускают ошибки\n"
+            u"Нужно дать им возможность делить на калькуляторе"
+        )
+
+        (scenario, ) = feature.scenarios
+
+        self.assertEqual(
+            scenario.name,
+            u'Целочисленное деление'
+        )
+
+        self.assertEqual(
+            scenario.steps[-1].hashes,
+            (
+                {u'делимое': '100', u'делитель': '2', u'частное': '50'},
+                {u'делимое': '28', u'делитель': '7', u'частное': '4'},
+                {u'делимое': '0', u'делитель': '5', u'частное': '0'},
+            )
+        )
