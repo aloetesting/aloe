@@ -447,13 +447,10 @@ class TestScenarioParsing(unittest.TestCase):
 
         solved = solved_steps(scenario1)
 
-        self.assertEqual(len(solved), 2)
-        expected_sentences = [
+        self.assertEqual([step.sentence for step in solved], [
             'Given I have entered ok into the fail',
             'Given I have entered fail into the ok',
-        ]
-        for step, expected in zip(solved, expected_sentences):
-            self.assertEqual(step.sentence, expected)
+        ])
 
         expected_evaluated = (
             (
