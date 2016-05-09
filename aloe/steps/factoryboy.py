@@ -78,9 +78,15 @@ def step_from_factory(factory):
     object. If a number of objects is requested, at most one row can be given,
     passed as `kwargs` to :meth:`factory.Factory.create_batch`.
 
-    The name of the object and its plural are taken from
-    :attr:`factory.Factory._meta` if set, or otherwise inferred from the
-    class name.
+    The name of the object and its plural can be specified as:
+
+    - :code:`_verbose_name` and :code:`_verbose_name_plural` attributes on the
+      factory;
+    - If the factory creates a Django model, :code:`verbose_name` and
+      :code:`verbose_name_plural` of the model;
+
+    If neither is specified, the object name is inferred from the factory class
+    name.
 
     Example:
 
@@ -95,6 +101,8 @@ def step_from_factory(factory):
 
             first_name = factory.Faker('first_name')
             last_name = factory.Faker('last_name')
+
+            _verbose_name = "random user"
 
     .. code-block:: gherkin
 

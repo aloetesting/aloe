@@ -102,7 +102,7 @@ class AgencyFactory(factory.Factory):
 
 
 @step_from_factory
-class MysteriousAgencyFactory(AgencyFactory):
+class SecretAgencyFactory(AgencyFactory):
     """Another factory to build agencies."""
 
     _verbose_name = "mysterious agency"
