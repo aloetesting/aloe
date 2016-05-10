@@ -82,6 +82,7 @@ class Agency(object):
     class _meta(object):
         """Meta, defined to mimic Django models."""
 
+        verbose_name = "agency"
         verbose_name_plural = "agencies"
 
     def __init__(self, name):
@@ -102,8 +103,17 @@ class AgencyFactory(factory.Factory):
 
 
 @step_from_factory
+class BoringAgencyFactory(AgencyFactory):
+    """Customized factory to build agencies."""
+
+    # This factory will have registered steps according to its name - "boring
+    # agency"
+    pass
+
+
+@step_from_factory
 class SecretAgencyFactory(AgencyFactory):
-    """Another factory to build agencies."""
+    """Another customized factory to build agencies."""
 
     _verbose_name = "mysterious agency"
     _verbose_name_plural = "mysterious agencies"

@@ -53,9 +53,9 @@ def _get_factory_attr(factory, attr):
     """
     Try getting a meta attribute 'attr' from a factory.
 
-    The attribute is looked up as '_attr' on the factory, then as 'attr' on its
-    model's meta. The factory's own meta cannot define custom attributes and is
-    skipped.
+    The attribute is looked up as '_attr' on the factory, then, if the factory
+    and its model class names match, as 'attr' on the model's meta. The
+    factory's own meta cannot define custom attributes and is skipped.
 
     If the attribute is not found in either place, an AttributeError is raised.
     """
@@ -63,7 +63,11 @@ def _get_factory_attr(factory, attr):
     try:
         return getattr(factory, '_' + attr)
     except AttributeError:
-        return getattr(factory._meta.model._meta, attr)  # pylint:disable=protected-access
+        # pylint:disable=protected-access
+        if factory.__name__ == factory._meta.model.__name__ + 'Factory':
+            return getattr(factory._meta.model._meta, attr)
+        else:
+            raise
 
 
 def step_from_factory(factory):
@@ -82,8 +86,9 @@ def step_from_factory(factory):
 
     - :code:`_verbose_name` and :code:`_verbose_name_plural` attributes on the
       factory;
-    - If the factory creates a Django model, :code:`verbose_name` and
-      :code:`verbose_name_plural` of the model;
+    - If the factory creates a Django model, and its name corresponds to the
+      model class name (e.g. :code:`UserFactory` and :code:`User`),
+      :code:`verbose_name` and :code:`verbose_name_plural` of the model;
 
     If neither is specified, the object name is inferred from the factory class
     name.
