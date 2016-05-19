@@ -59,7 +59,7 @@ Feature: Test Factory Boy steps
             | name       |
             | Black Mesa |
             | Combine    |
-        And I have a mysterious agency
+        And I have a boring agency
         And I have 2 mysterious agencies
 
         Then I made 6 agencies
