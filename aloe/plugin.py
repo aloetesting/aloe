@@ -24,6 +24,9 @@ from aloe.testclass import TestCase
 from aloe.result import AloeTestResult
 
 
+USING_DEPRECATED_RUNNER = False
+
+
 class GherkinPlugin(Plugin):
     """
     Collect Gherkin tests.
@@ -75,29 +78,35 @@ class GherkinPlugin(Plugin):
 
         test_class_name = \
             '{c.__module__}.{c.__name__}'.format(c=self.TEST_CLASS)
+
+        # default values for command line arguments
+        parser.set_defaults(
+            test_class_name=env.get('NOSE_GHERKIN_CLASS', test_class_name),
+            ignore_python=USING_DEPRECATED_RUNNER,
+            scenario_indices='',
+            force_color=False,
+        )
+
         parser.add_option(
             '--test-class', action='store',
             dest='test_class_name',
-            default=env.get('NOSE_GHERKIN_CLASS', test_class_name),
             metavar='TEST_CLASS',
             help='Base class to use for the generated tests',
         )
-        parser.add_option(
-            '--no-ignore-python', action='store_false',
-            dest='ignore_python',
-            default=True,
-            help='Run Python and Gherkin tests together',
-        )
+        if USING_DEPRECATED_RUNNER:
+            parser.add_option(
+                '--no-ignore-python', action='store_false',
+                dest='ignore_python',
+                help='Run Python and Gherkin tests together',
+            )
         parser.add_option(
             '-n', '--scenario-indices', action='store',
             dest='scenario_indices',
-            default='',
             help='Only run scenarios with these indices (comma-separated)',
         )
         parser.add_option(
             '--color', action='store_true',
             dest='force_color',
-            default=False,
             help='Force colored output',
         )
 

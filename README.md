@@ -17,13 +17,11 @@ Read the [documentation][docs].
 Invocation
 ----------
 
-Pass the `--with-gherkin` argument to `nosetests` to run your BDD tests.  You
-may also pass the `--no-ignore-python` argument to run other nose discovered
-tests as well.
+Pass the `--with-gherkin` argument to `nosetests` to run your BDD tests.
 
-The `aloe` command line tool is a wrapper for the `nose` runner, configured to
-only run Gherkin tests. As such, the invocation is the same as `nose`, but the
-following parameters are added:
+The `aloe` command line tool is a deprecated wrapper for the `nose` runner,
+configured to only run Gherkin tests. As such, the invocation is the same as
+`nose`, but the following parameters are added:
 
 * `-n N[,N...]` - only run the specified scenarios (by number, 1-based) in each
   feature. Makes sense when only specifying one feature to run, for example
