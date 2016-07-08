@@ -17,8 +17,12 @@ Read the [documentation][docs].
 Invocation
 ----------
 
-`aloe` command line tool is a wrapper for the `nose` runner, configured to only
-run Gherkin tests. As such, the invocation is the same as `nose`, but the
+Pass the `--with-gherkin` argument to `nosetests` to run your BDD tests.  You
+may also pass the `--no-ignore-python` argument to run other nose discovered
+tests as well.
+
+The `aloe` command line tool is a wrapper for the `nose` runner, configured to
+only run Gherkin tests. As such, the invocation is the same as `nose`, but the
 following parameters are added:
 
 * `-n N[,N...]` - only run the specified scenarios (by number, 1-based) in each

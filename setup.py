@@ -29,6 +29,9 @@ if __name__ == '__main__':
             include_package_data=True,
 
             entry_points={
+                'nose.plugins.0.10': [
+                    'aloe = aloe.plugin:GherkinPlugin',
+                ],
                 'console_scripts': [
                     'aloe = aloe:main',
                 ],
