@@ -1,5 +1,10 @@
 # Change Log
 
+## 0.1.7
+
+- An entry point for running Gherkin tests via `nosetests --with-gherkin`
+  (#115).
+
 ## 0.1.6
 
 ### Changed
