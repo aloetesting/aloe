@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.1.8
+
+- Fixed deployment via Travis CI
+
 ## 0.1.7
 
 - An entry point for running Gherkin tests via `nosetests --with-gherkin`
