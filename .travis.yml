@@ -32,7 +32,7 @@ deploy:
     provider: pypi
     user: koterpillar
     password:
-        secure: "ngmlqV8hod71n7GudGTaW9Re1DXJZvA2XaFOW4FqRbJydkPWdXbZw1FoPiZM8UFQCgWc9D1MuGzs17+cVobe3YWOSW7OG5G7oJBMuLlJ+zDExHb4UusYDi2ADBK2R46ukd1A002sb4ns7X3SC2w1v1oMEp3HIKFGvRVVUf+PfK0="
+        secure: "PVNJN8mqJTiJhvSXDC0oi8GZwOySl8o8tAzrsiqk4uNkRwBAciHnUGSnAtt92SBC4eQmrxsnjhxCdfXOVA+SxaVoUBEnIu233EE0/k+ylueiv3VI305iBZWG2Vf0ioISCm2Mxc3Ec9ujwbwFQWXFxUHydNG9PZRjbupVF7Bnn0c="
     server: https://pypi.python.org/pypi
     on:
         tags: true
