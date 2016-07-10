@@ -2,9 +2,13 @@
 
 ## 0.1.8
 
-- Fixed deployment via Travis CI
+### Fixed
+
+- Deployment via Travis CI
 
 ## 0.1.7
+
+### Added
 
 - An entry point for running Gherkin tests via `nosetests --with-gherkin`
   (#115).
