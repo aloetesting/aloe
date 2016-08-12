@@ -27,7 +27,7 @@ from aloe.registry import (
     STEP_REGISTRY,
 )
 from aloe.runner import Runner
-from aloe.utils import PY3, TestWrapperIO
+from aloe.utils import PY3
 
 # When the outer Nose captures output, it's a different type between Python 2
 # and 3.
@@ -251,11 +251,6 @@ class FeatureTest(unittest.TestCase):
         verbosity = kwargs.get('verbosity')
         stream = kwargs.get('stream')
         force_color = kwargs.get('force_color', False)
-
-        if stream is None and isinstance(sys.stdout, CAPTURED_OUTPUTS):
-            # Don't show results of running the inner tests if the outer Nose
-            # redirects output
-            stream = TestWrapperIO()
 
         # Reset the state of callbacks and steps so that individual tests don't
         # affect each other
