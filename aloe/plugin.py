@@ -10,6 +10,7 @@ from __future__ import absolute_import
 from builtins import *
 # pylint:enable=redefined-builtin,wildcard-import,unused-wildcard-import
 
+import fnmatch
 import sys
 import os
 import unittest
@@ -60,20 +61,19 @@ class GherkinLoader(unittest.loader.TestLoader):
     def loadTestsFromModule(self, module, *args, pattern=None, **kws):
         raise NotImplementedError
 
-    def wantDirectory(self, directory):
+    def is_feature_directory(self, directory):
         """
-        Collect features from 'features' directories.
+        Whether to collect features from a directory.
 
-        This returns true for any directory either _above_ or _below_ any of
-        the features directories; above to ensure the search continues inside,
-        below to collect features from all the subdirectories.
+        This returns true for any directory _below_ any of
+        the features directories to ensure features from all the
+        subdirectories are collected.
         """
 
         directory = os.path.abspath(directory)
         for feature_dir in self.feature_dirs:
             feature_dir = os.path.abspath(feature_dir)
-            if feature_dir.startswith(directory) or \
-                    directory.startswith(feature_dir):
+            if directory.startswith(feature_dir):
                 return True
 
     def wantFile(self, file_):
@@ -126,13 +126,21 @@ class GherkinLoader(unittest.loader.TestLoader):
 
         return True
 
-    def tests_from(self, file_):
+    def tests_from(self, file_or_dir):
         """
         Load a feature from the feature file and return an iterable of the
         tests contained.
         """
 
-        test = self.test_class.from_file(file_)
+        if os.path.isdir(file_or_dir):
+            for path, _, files in os.walk(file_or_dir):
+                if self.is_feature_directory(path):
+                    for filename in fnmatch.filter(files, '*.feature'):
+                        for test in self.tests_from(filename):
+                            yield test
+            return
+
+        test = self.test_class.from_file(file_or_dir)
 
         # About to run a feature - ensure "before all" callbacks have run
         self.ensure_before_callbacks()
