@@ -14,14 +14,10 @@ import sys
 import os
 import unittest
 
-from importlib import import_module
-
 from nose.plugins.attrib import AttributeSelector
 
 from aloe.fs import FeatureLoader
 from aloe.registry import CALLBACK_REGISTRY
-from aloe.testclass import TestCase
-from aloe.result import AloeTestResult
 
 
 class GherkinLoader(unittest.loader.TestLoader):
@@ -31,8 +27,6 @@ class GherkinLoader(unittest.loader.TestLoader):
 
     # Nose interface has non-Pythonic names
     # pylint:disable=invalid-name,unused-argument
-
-    TEST_CLASS = TestCase
 
     def __init__(self):
         """Initialise the helper plugin."""
@@ -44,7 +38,7 @@ class GherkinLoader(unittest.loader.TestLoader):
         super().__init__()
         self.attrib_plugin = AttributeSelector()
 
-        # FIXME
+        # Will be set by the main test program
         self.scenario_indices = None
 
         # Load all the step definitions
@@ -63,72 +57,8 @@ class GherkinLoader(unittest.loader.TestLoader):
             return self.suiteClass(self.tests_from(name))
         raise NotImplementedError
 
-    def loadTestsFromModule(self, module, pattern=None):
+    def loadTestsFromModule(self, module, *args, pattern=None, **kws):
         raise NotImplementedError
-
-    def options(self, parser, env=None):
-        """
-        Register the plugin options.
-        """
-
-        if env is None:
-            env = os.environ
-
-        super().options(parser, env)
-
-        test_class_name = \
-            '{c.__module__}.{c.__name__}'.format(c=self.TEST_CLASS)
-        parser.add_option(
-            '--test-class', action='store',
-            dest='test_class_name',
-            default=env.get('NOSE_GHERKIN_CLASS', test_class_name),
-            metavar='TEST_CLASS',
-            help='Base class to use for the generated tests',
-        )
-        parser.add_option(
-            '--no-ignore-python', action='store_false',
-            dest='ignore_python',
-            default=True,
-            help='Run Python and Gherkin tests together',
-        )
-        parser.add_option(
-            '-n', '--scenario-indices', action='store',
-            dest='scenario_indices',
-            default='',
-            help='Only run scenarios with these indices (comma-separated)',
-        )
-        parser.add_option(
-            '--color', action='store_true',
-            dest='force_color',
-            default=False,
-            help='Force colored output',
-        )
-
-        # Options for attribute plugin will be registered by its main instance
-
-    def configure(self, options, conf):
-        """
-        Configure the plugin.
-        """
-
-        super().configure(options, conf)
-
-        module_name, class_name = options.test_class_name.rsplit('.', 1)
-        module = import_module(module_name)
-        self.test_class = getattr(module, class_name)
-        self.ignore_python = options.ignore_python
-
-        conf.force_color = options.force_color
-
-        if options.scenario_indices:
-            self.scenario_indices = tuple(
-                int(index)
-                for index in options.scenario_indices.split(',')
-            )
-        else:
-            self.scenario_indices = None
-
-        self.attrib_plugin.configure(options, conf)
 
     def wantDirectory(self, directory):
         """
@@ -202,9 +132,6 @@ class GherkinLoader(unittest.loader.TestLoader):
         tests contained.
         """
 
-        # FIXME
-        self.test_class = self.TEST_CLASS
-
         test = self.test_class.from_file(file_)
 
         # About to run a feature - ensure "before all" callbacks have run
@@ -243,21 +170,3 @@ class GherkinLoader(unittest.loader.TestLoader):
         if hasattr(self, 'after_hook'):
             self.after_hook()
             delattr(self, 'after_hook')
-
-    def prepareTestRunner(self, runner):
-        """
-        Monkeypatch in our TestResult class.
-
-        In unittest we could just set runner.resultclass, but Nose
-        doesn't use this.
-        """
-        def _makeResult():
-            """Build our result"""
-            return AloeTestResult(runner.stream,
-                                  runner.descriptions,
-                                  runner.verbosity,
-                                  runner.config)
-
-        runner._makeResult = _makeResult  # pylint:disable=protected-access
-
-        return runner

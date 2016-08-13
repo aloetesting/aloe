@@ -9,7 +9,6 @@ from __future__ import division
 from __future__ import absolute_import
 
 import sys
-import os
 from inspect import getsourcefile
 
 from nose.importer import Importer
@@ -83,7 +82,7 @@ class SimpleScenarioTest(FeatureTest):
         feature_stack_frame = """
   File "{feature}", line 11, in Fail at adding
     Then the result should be 40 on the screen
-        """.strip().format(feature=os.path.abspath(failing_feature))
+        """.strip().format(feature=failing_feature)
 
         self.assertIn(feature_stack_frame, output)
 
@@ -119,7 +118,7 @@ AssertionError
         feature_stack_frame = """
   File "{feature}", line 11, in background
     Then the result should be 40 on the screen
-        """.strip().format(feature=os.path.abspath(failing_feature))
+        """.strip().format(feature=failing_feature)
 
         self.assertIn(feature_stack_frame, output)
 
@@ -157,14 +156,14 @@ AssertionError
             feature_stack_frame = """
   File "{feature}", line 12, in 添加两个数值
     那么结果应该是40
-            """.strip().format(feature=os.path.abspath(failing_feature))
+            """.strip().format(feature=failing_feature)
 
             self.assertIn(feature_stack_frame, output)
         else:
             # Cannot use non-ASCII method names in Python 2
             feature_stack_frame = """
   File "{feature}", line 12, in
-            """.strip().format(feature=os.path.abspath(failing_feature))
+            """.strip().format(feature=failing_feature)
 
             self.assertIn(feature_stack_frame, output)
 
@@ -254,14 +253,14 @@ AssertionError
         feature_stack_frame = """
   File "{feature}", line 22, in Fail repeatedly: Example 1
     | 50     |
-        """.strip().format(feature=os.path.abspath(failing_feature))
+        """.strip().format(feature=failing_feature)
 
         self.assertIn(feature_stack_frame, output)
 
         example_stack_frame = """
   File "{feature}", line 18, in Fail repeatedly
     Then the result should be <result> on the screen
-        """.strip().format(feature=os.path.abspath(failing_feature))
+        """.strip().format(feature=failing_feature)
 
         self.assertIn(example_stack_frame, output)
 

@@ -26,8 +26,8 @@ from aloe.registry import (
     PriorityClass,
     STEP_REGISTRY,
 )
-from aloe.runner import Runner
-from aloe.utils import PY3
+from aloe.runner import GherkinRunner, TestProgram
+from aloe.utils import callable_type, PY3
 
 # When the outer Nose captures output, it's a different type between Python 2
 # and 3.
@@ -168,18 +168,18 @@ class TestGherkinLoader(GherkinLoader):
     Gherkin test loader remembering the tests it ran.
     """
 
-    def load_tests(self, file_):
+    def tests_from(self, file_):
         """
         Record which tests were run.
         """
 
-        for scenario in super().load_tests(file_):
+        for scenario in super().tests_from(file_):
             yield scenario
 
-        self.runner.tests_run.append(file_)
+        self.tests_run.append(file_)
 
 
-class TestRunner(Runner):
+class TestTestProgram(TestProgram):
     """
     A test test runner to store information about the tests run.
 
@@ -188,32 +188,32 @@ class TestRunner(Runner):
 
     gherkin_loader = TestGherkinLoader
 
+    def createTests(self):
+        """Pass extra options to the test loader."""
+
+        self.testLoader.tests_run = self.tests_run
+
+        super().createTests()
+
+    def make_runner(self, *args, **kwargs):
+        """Pass the stream to the test runner."""
+        return GherkinRunner(*args, **kwargs, stream=self.stream)
+
     def __init__(self, *args, **kwargs):
         self.tests_run = []
         self.stream = kwargs.pop('stream')
+        if self.stream:
+            kwargs['buffer'] = True
+
+        kwargs['testRunner'] = callable_type(self.make_runner)
 
         super().__init__(*args, **kwargs)
-
-    def makeConfig(self, *args, **kwargs):
-        config = super().makeConfig(*args, **kwargs)
-
-        if self.stream:
-            config.stream = self.stream
-
-        return config
 
 
 class FeatureTest(unittest.TestCase):
     """
     Base class for tests running Gherkin features.
     """
-
-    def setUp(self):
-        """
-        Ensure inner Nose doesn't redirect output.
-        """
-
-        os.environ['NOSE_NOCAPTURE'] = '1'
 
     def run_feature_string(self, feature_string):
         """
@@ -264,7 +264,7 @@ class FeatureTest(unittest.TestCase):
         # Save the loaded module list to restore later
         old_modules = set(sys.modules.keys())
 
-        result = TestRunner(exit=False, argv=argv, stream=stream)
+        result = TestTestProgram(exit=False, argv=argv, stream=stream)
         result.captured_stream = stream
 
         # To avoid affecting the (outer) testsuite and its subsequent tests,
