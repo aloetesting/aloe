@@ -1,5 +1,5 @@
 """
-Gherkin plugin for Nose.
+Loader for tests written in Gherkin.
 """
 
 from __future__ import unicode_literals
@@ -12,10 +12,10 @@ from builtins import *
 
 import sys
 import os
+import unittest
 
 from importlib import import_module
 
-from nose.plugins import Plugin
 from nose.plugins.attrib import AttributeSelector
 
 from aloe.fs import FeatureLoader
@@ -24,16 +24,13 @@ from aloe.testclass import TestCase
 from aloe.result import AloeTestResult
 
 
-class GherkinPlugin(Plugin):
+class GherkinLoader(unittest.loader.TestLoader):
     """
     Collect Gherkin tests.
     """
 
     # Nose interface has non-Pythonic names
     # pylint:disable=invalid-name,unused-argument
-
-    name = 'gherkin'
-    enableOpt = 'gherkin'
 
     TEST_CLASS = TestCase
 
@@ -47,21 +44,27 @@ class GherkinPlugin(Plugin):
         super().__init__()
         self.attrib_plugin = AttributeSelector()
 
-    def begin(self):
-        """
-        Start the test suite, loading all the step definitions.
-        """
+        # FIXME
+        self.scenario_indices = None
 
-        if self.conf.options.version or self.conf.options.showPlugins:
-            # Don't try to load anything if only called for information
-            return
-
+        # Load all the step definitions
         self.feature_dirs = [
             dir_
             for dir_ in FeatureLoader.find_feature_directories('.')
         ]
         for feature_dir in self.feature_dirs:
             FeatureLoader.find_and_load_step_definitions(feature_dir)
+
+    def discover(self, start_dir, pattern=None, top_level_dir=None):
+        raise NotImplementedError("Discovery not implemented")
+
+    def loadTestsFromName(self, name, module=None):
+        if isinstance(name, str):
+            return self.suiteClass(self.tests_from(name))
+        raise NotImplementedError
+
+    def loadTestsFromModule(self, module, pattern=None):
+        raise NotImplementedError
 
     def options(self, parser, env=None):
         """
@@ -193,10 +196,14 @@ class GherkinPlugin(Plugin):
 
         return True
 
-    def loadTestsFromFile(self, file_):
+    def tests_from(self, file_):
         """
-        Load a feature from the feature file.
+        Load a feature from the feature file and return an iterable of the
+        tests contained.
         """
+
+        # FIXME
+        self.test_class = self.TEST_CLASS
 
         test = self.test_class.from_file(file_)
 

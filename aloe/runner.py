@@ -10,37 +10,32 @@ from __future__ import absolute_import
 from builtins import super
 # pylint:enable=redefined-builtin
 
-import os
+import unittest
 
-import nose.core
+from aloe.plugin import GherkinLoader
+from aloe.result import AloeTestResult
 
-from aloe.plugin import GherkinPlugin
 
-
-class Runner(nose.core.TestProgram):
+class AloeTestRunner(unittest.runner.TextTestRunner):
     """
-    A test runner collecting Gherkin tests.
+    A test runner with Aloe result class.
     """
 
-    def gherkin_plugin(self):
-        """
-        The plugin to add to the runner.
-        Hook point for tests.
-        """
+    resultclass = AloeTestResult
 
-        return GherkinPlugin()
+
+class Runner(unittest.TestProgram):
+    """
+    A test program loading Gherkin tests.
+    """
+
+    gherkin_loader = GherkinLoader
 
     def __init__(self, *args, **kwargs):
         """
         Enable Gherkin loading plugins and run the tests.
         """
 
-        # Add Gherkin plugin
-        kwargs.setdefault('addplugins', []).append(self.gherkin_plugin())
-
-        # Ensure it's loaded
-        env = kwargs.pop('env', os.environ)
-        env['NOSE_WITH_GHERKIN'] = '1'
-        kwargs['env'] = env
-
+        kwargs.setdefault('testLoader', self.gherkin_loader())
+        kwargs.setdefault('testRunner', AloeTestRunner)
         super().__init__(*args, **kwargs)

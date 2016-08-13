@@ -20,7 +20,7 @@ from functools import wraps
 
 from aloe import world
 from aloe.fs import path_to_module_name
-from aloe.plugin import GherkinPlugin
+from aloe.plugin import GherkinLoader
 from aloe.registry import (
     CALLBACK_REGISTRY,
     PriorityClass,
@@ -163,17 +163,17 @@ def in_directory(directory):
     return wrapper
 
 
-class TestGherkinPlugin(GherkinPlugin):
+class TestGherkinLoader(GherkinLoader):
     """
-    Test Gherkin plugin.
+    Gherkin test loader remembering the tests it ran.
     """
 
-    def loadTestsFromFile(self, file_):
+    def load_tests(self, file_):
         """
         Record which tests were run.
         """
 
-        for scenario in super().loadTestsFromFile(file_):
+        for scenario in super().load_tests(file_):
             yield scenario
 
         self.runner.tests_run.append(file_)
@@ -186,14 +186,7 @@ class TestRunner(Runner):
     :param stream: a stream to write the output into (optional)
     """
 
-    def gherkin_plugin(self):
-        """
-        Override the plugin class.
-        """
-
-        plugin = TestGherkinPlugin()
-        plugin.runner = self
-        return plugin
+    gherkin_loader = TestGherkinLoader
 
     def __init__(self, *args, **kwargs):
         self.tests_run = []
@@ -291,7 +284,7 @@ class FeatureTest(unittest.TestCase):
 
         result = self.run_features(*features, **kwargs)
         try:
-            assert result.success
+            assert result.result.wasSuccessful()
             return result
         except AssertionError:
             if isinstance(result.captured_stream, CAPTURED_OUTPUTS):
@@ -307,7 +300,7 @@ class FeatureTest(unittest.TestCase):
 
         result = self.run_features(*features, **kwargs)
         try:
-            assert not result.success
+            assert not result.result.wasSuccessful()
             return result
         except AssertionError:
             if isinstance(result.captured_stream, CAPTURED_OUTPUTS):
