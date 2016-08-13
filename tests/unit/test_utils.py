@@ -15,6 +15,7 @@ from contextlib import contextmanager
 from functools import wraps
 
 from aloe.utils import (
+    callable_type,
     unwrap_function,
     memoizedproperty,
     memoizedtype,
@@ -128,3 +129,25 @@ class MemoizedTest(unittest.TestCase):
 
         # Only two objects should have been created
         self.assertEqual(Memoized.counter, 2)
+
+
+class TestCallableType(unittest.TestCase):
+    """Test callable_type."""
+
+    def test_callable_type(self):
+        """Test callable_type."""
+
+        def function(*args, **kwargs):
+            """A test function to wrap in callable_type."""
+            return [args, kwargs]
+
+        callable_type_function = callable_type(function)
+
+        self.assertIsInstance(callable_type_function, type)
+        self.assertEqual(
+            callable_type_function(1, 2, a=3, b=4),
+            [
+                (1, 2),
+                {'a': 3, 'b': 4},
+            ],
+        )

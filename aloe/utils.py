@@ -127,3 +127,18 @@ class memoizedtype(type):  # pylint:disable=invalid-name
     def __call__(cls, *args, **kwargs):
         # On Python 2, newsuper can't deal with metaclasses
         return super(memoizedtype, cls).__call__(*args, **kwargs)
+
+
+def callable_type(func):
+    """
+    A type object that, when called, returns the result of a given function.
+    """
+
+    class FuncClass(type):
+        """A metaclass to call the provided function."""
+
+        def __new__(mcs, *args, **kwargs):
+            """Call the provided function instead of creating the object."""
+            return func(*args, **kwargs)
+
+    return FuncClass
