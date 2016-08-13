@@ -10,7 +10,6 @@ from __future__ import absolute_import
 from builtins import super
 # pylint:enable=redefined-builtin
 
-import io
 import os
 import sys
 import tempfile
@@ -27,20 +26,7 @@ from aloe.registry import (
     STEP_REGISTRY,
 )
 from aloe.runner import GherkinRunner, TestProgram
-from aloe.utils import callable_type, PY3
-
-# When the outer Nose captures output, it's a different type between Python 2
-# and 3.
-if PY3:
-    CAPTURED_OUTPUTS = (io.StringIO,)
-else:
-    # io.StringIO is an alias to cStringIO.StringIO, which is a function and
-    # not a type
-    import StringIO  # pylint:disable=import-error
-    CAPTURED_OUTPUTS = (
-        type(io.StringIO()),
-        StringIO.StringIO,
-    )
+from aloe.utils import callable_type
 
 
 @contextmanager
@@ -265,7 +251,6 @@ class FeatureTest(unittest.TestCase):
         old_modules = set(sys.modules.keys())
 
         result = TestTestProgram(exit=False, argv=argv, stream=stream)
-        result.captured_stream = stream
 
         # To avoid affecting the (outer) testsuite and its subsequent tests,
         # unload all modules that were newly loaded. This also ensures that they
@@ -283,15 +268,8 @@ class FeatureTest(unittest.TestCase):
         """
 
         result = self.run_features(*features, **kwargs)
-        try:
-            assert result.result.wasSuccessful()
-            return result
-        except AssertionError:
-            if isinstance(result.captured_stream, CAPTURED_OUTPUTS):
-                print("--Output--")
-                print(result.captured_stream.getvalue())
-                print("--END--")
-            raise
+        assert result.result.wasSuccessful()
+        return result
 
     def assert_feature_fail(self, *features, **kwargs):
         """
@@ -299,12 +277,5 @@ class FeatureTest(unittest.TestCase):
         """
 
         result = self.run_features(*features, **kwargs)
-        try:
-            assert not result.result.wasSuccessful()
-            return result
-        except AssertionError:
-            if isinstance(result.captured_stream, CAPTURED_OUTPUTS):
-                print("--Output--")
-                print(result.captured_stream.getvalue())
-                print("--END--")
-            raise
+        assert not result.result.wasSuccessful()
+        return result

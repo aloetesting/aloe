@@ -48,7 +48,7 @@ if PY3:
     TestWrapperIO = io.StringIO  # pylint:disable=invalid-name
 else:
     class TestWrapperIO(io.StringIO):
-        """A wrapper for capturing Nose output in tests."""
+        """A wrapper for capturing output in tests."""
 
         def write(self, str_):
             """
