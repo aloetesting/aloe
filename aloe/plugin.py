@@ -46,7 +46,11 @@ class GherkinLoader(unittest.loader.TestLoader):
 
     def loadTestsFromName(self, name, module=None):
         if isinstance(name, str):
-            return self.suiteClass(self.tests_from(name))
+            if os.path.isdir(name):
+                tests = self.tests_from_directory(name)
+            else:
+                tests = self.tests_from_file(name)
+            return self.suiteClass(tests)
         raise NotImplementedError
 
     def loadTestsFromModule(self, module, *args, pattern=None, **kws):
@@ -89,22 +93,13 @@ class GherkinLoader(unittest.loader.TestLoader):
 
         return True
 
-    def tests_from(self, file_or_dir):
+    def tests_from_file(self, file_):
         """
         Load a feature from the feature file and return an iterable of the
         tests contained.
         """
 
-        if os.path.isdir(file_or_dir):
-            for path, _, files in os.walk(file_or_dir):
-                if self.is_feature_directory(path):
-                    for filename in fnmatch.filter(files, '*.feature'):
-                        filepath = os.path.join(path, filename)
-                        for test in self.tests_from(filepath):
-                            yield test
-            return
-
-        test = self.test_class.from_file(file_or_dir)
+        test = self.test_class.from_file(file_)
 
         # About to run a feature - ensure "before all" callbacks have run
         self.ensure_before_callbacks()
@@ -113,6 +108,26 @@ class GherkinLoader(unittest.loader.TestLoader):
         for idx, scenario_name in test.scenarios():
             if self.scenario_matches(test, idx, scenario_name):
                 yield test(scenario_name)
+
+    def tests_from_directory(self, directory):
+        """
+        Load all tests from all features from within the specified directory.
+        """
+
+        features = sorted(self.find_features(directory))
+        for feature in features:
+            for test in self.tests_from_file(feature):
+                yield test
+
+    def find_features(self, directory):
+        """
+        An iterable of all the feature files within a specified directory.
+        """
+
+        for path, _, files in os.walk(directory):
+            if self.is_feature_directory(path):
+                for filename in fnmatch.filter(files, '*.feature'):
+                    yield os.path.join(path, filename)
 
     def ensure_before_callbacks(self):
         """

@@ -154,12 +154,12 @@ class TestGherkinLoader(GherkinLoader):
     Gherkin test loader remembering the tests it ran.
     """
 
-    def tests_from(self, file_):
+    def tests_from_file(self, file_):
         """
         Record which tests were run.
         """
 
-        for scenario in super().tests_from(file_):
+        for scenario in super().tests_from_file(file_):
             yield scenario
 
         self.tests_run.append(file_)
