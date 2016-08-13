@@ -84,6 +84,20 @@ class TestProgram(unittest.TestProgram):
             default=False,
             help='Force colored output',
         )
+        parser.add_argument(
+            '--tag', action='append', dest='tags',
+            help=(
+                'Run only tests with the specified tag. '
+                'Can be used multiple times.'
+            ),
+        )
+        parser.add_argument(
+            '--exclude-tag', action='append', dest='exclude_tags',
+            help=(
+                'Do not run tests with the specified tag. '
+                'Can be used multiple times.'
+            ),
+        )
 
         return parser
 
@@ -94,6 +108,7 @@ class TestProgram(unittest.TestProgram):
         # pylint:disable=no-member
         self.testLoader.force_color = self.force_color
         self.testLoader.ignore_python = self.ignore_python
+
         if self.scenario_indices:
             self.testLoader.scenario_indices = tuple(
                 int(index)
@@ -105,5 +120,8 @@ class TestProgram(unittest.TestProgram):
         module_name, class_name = self.test_class_name.rsplit('.', 1)
         module = import_module(module_name)
         self.testLoader.test_class = getattr(module, class_name)
+
+        self.testLoader.tags = set(self.tags or ())
+        self.testLoader.exclude_tags = set(self.exclude_tags or ())
 
         return super().createTests()

@@ -1,5 +1,15 @@
 # Change Log
 
+## Unreleased
+
+### Changed
+
+- Aloe no longer uses Nose to run the tests. Standard unittest library is used
+  instead.
+- The options to select test via tags have changed from `-a tag` and `-a !tag`
+  to `--tag tag` and `--exclude-tag tag`. This is consistent with Django's
+  implementation.
+
 ## 0.1.8
 
 ### Fixed

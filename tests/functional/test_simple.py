@@ -320,27 +320,31 @@ AssertionError
         feature_one = 'features/with_tags/one.feature'
 
         # Run scenarios by tag
-        self.assert_feature_success(feature_one, '-a', 'hana')
+        self.assert_feature_success(feature_one, '--tag', 'hana')
         self.assertEqual(world.all_results, [1, 11, 22])
 
         # Run scenarios with a tag that's not there
-        self.assert_feature_success(feature_one, '-a', 'set')
+        self.assert_feature_success(feature_one, '--tag', 'set')
         self.assertEqual(world.all_results, [])
 
         # Run features and scenarios with the tag
-        self.assert_feature_success(feature_dir, '-a', 'dul')
+        self.assert_feature_success(feature_dir, '--tag', 'dul')
         self.assertEqual(world.all_results, [2, 13, 20, 200])
 
         # Specify a tag to exclude
-        self.assert_feature_success(feature_one, '-a', '!hana')
+        self.assert_feature_success(feature_one, '--exclude-tag', 'hana')
         self.assertEqual(world.all_results, [2, 4])
 
         # Specify more than one tag to run
-        self.assert_feature_success(feature_one, '-a', 'hana', '-a', 'dul')
+        self.assert_feature_success(feature_one,
+                                    '--tag', 'hana',
+                                    '--tag', 'dul')
         self.assertEqual(world.all_results, [1, 2, 11, 22])
 
         # Specify more than one tag to exclude
-        self.assert_feature_success(feature_dir, '-a', '!hana,!dul')
+        self.assert_feature_success(feature_dir,
+                                    '--exclude-tag', 'hana',
+                                    '--exclude-tag', 'dul')
         self.assertEqual(world.all_results, [4])
 
 

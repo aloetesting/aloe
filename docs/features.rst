@@ -87,8 +87,8 @@ Scenario outlines have a name and may optionally have tags_.
 Tags
 ----
 
-Feature and scenario tags are specified using the form ``@tag_name`` and are
-converted to Nose attribute tags, and can be run/excluded using :option:`-a`.
+Feature and scenario tags are specified using the form ``@tag_name`` and can
+be run/excluded using :option:`--tag` and :option:`--exclude-tag`.
 
 .. code-block:: gherkin
 
@@ -98,8 +98,6 @@ converted to Nose attribute tags, and can be run/excluded using :option:`-a`.
         Scenario: Live server works as expected
             When I search for "pet food"
             Then I should see >1 result
-
-See docs for the `Attribute selector plugin`_ for more information.
 
 Feature Loading
 ---------------

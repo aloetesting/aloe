@@ -30,13 +30,13 @@ extensively documented here.
 
     Run Python tests as well as Gherkin.
 
-.. option:: -a attr
+.. option:: --tag attr
 
-    Run features and scenarios with the given tag. (This is a Nose flag, but
-    works the same for Gherkin tags.)
+    Run features and scenarios with the given tag. Can be used multiple times.
 
-.. option:: -a '!attr'
+.. option:: --exclude-tag attr
 
-    Run features and scenarios that do not have the given tag.
+    Run features and scenarios that do not have the given tag. Can be used
+    multiple times.
 
 .. include:: links.rst

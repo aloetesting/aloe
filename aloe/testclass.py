@@ -17,8 +17,6 @@ import ast
 import unittest
 from contextlib import contextmanager
 
-from nose.plugins.attrib import attr
-
 from aloe.codegen import make_function
 from aloe.fs import path_to_module_name
 from aloe.parser import (
@@ -271,8 +269,7 @@ def run_example(self):
         method.scenario = scenario
         method.scenario_index = index
 
-        for tag in scenario.tags:
-            method = attr(tag)(method)
+        setattr(method, 'tags', set(scenario.tags))
 
         return method
 
