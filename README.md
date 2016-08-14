@@ -5,7 +5,7 @@ Aloe
 [![Coverage](https://img.shields.io/coveralls/aloetesting/aloe.svg)](https://coveralls.io/github/aloetesting/aloe)
 [![PyPI](https://img.shields.io/pypi/v/aloe.svg)](https://pypi.python.org/pypi/aloe)
 
-A [Gherkin][gherkin] runner for Python based on [Nose][nose] and
+A [Gherkin][gherkin] runner for Python based on [unittest][unittest] and
 [Lettuce][lettuce].
 
 Install:
@@ -17,13 +17,9 @@ Read the [documentation][docs].
 Invocation
 ----------
 
-Pass the `--with-gherkin` argument to `nosetests` to run your BDD tests.  You
-may also pass the `--no-ignore-python` argument to run other nose discovered
-tests as well.
-
-The `aloe` command line tool is a wrapper for the `nose` runner, configured to
-only run Gherkin tests. As such, the invocation is the same as `nose`, but the
-following parameters are added:
+Run `aloe` to run the BDD tests. It is a wrapper for `unittest` runner,
+configured to run Gherkin tests instead. As such, the invocation is the same
+as `unittest`, but the following parameters are added:
 
 * `-n N[,N...]` - only run the specified scenarios (by number, 1-based) in each
   feature. Makes sense when only specifying one feature to run, for example
@@ -33,6 +29,12 @@ following parameters are added:
 * `--test-class` - override the class used as a base for each feature.
 
 * `--no-ignore-python` - run Python tests as well as Gherkin.
+
+* `--progress` - show steps execution as it happens.
+
+* `--color` - color the step execution progress.
+
+* `--tag`, `--exclude-tag` - limit the tests based on tags.
 
 Migrating from Lettuce
 ----------------------
@@ -56,7 +58,7 @@ sense. However, there are following incompatible changes:
 License
 -------
 
-Aloe - Cucumber runner for Python based on Lettuce and Nose
+Aloe - Cucumber runner for Python based on Lettuce and unittest
 
 Copyright (C) <2015> Alexey Kotlyarov <a@koterpillar.com>
 
@@ -79,8 +81,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 [gherkin]: https://cucumber.io/
-[nose]: https://nose.readthedocs.io/
-[nose-plugin-attrib]: https://nose.readthedocs.io/en/latest/plugins/attrib.html
+[unittest]: https://docs.python.org/3/library/unittest.html
 [lettuce]: http://lettuce.it/
 [gherkin-syntax]: https://cucumber.io/docs/reference
 [aloe-django]: https://github.com/aloetesting/aloe_django
