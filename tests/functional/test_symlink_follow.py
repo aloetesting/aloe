@@ -7,8 +7,6 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
-import os
-
 from aloe.testing import (
     FeatureTest,
     in_directory,
@@ -27,7 +25,7 @@ class SymlinkLoadingTest(FeatureTest):
         """
 
         result = self.assert_feature_success()
-        self.assertEqual(
-            result.tests_run,
-            [os.path.abspath('common_app/features/symlinked.feature')]
+        self.assert_tests_run(
+            result,
+            'common_app/features/symlinked.feature',
         )

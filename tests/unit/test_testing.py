@@ -38,7 +38,7 @@ class FeatureTestTest(FeatureTest):
             """
         )
 
-        self.assertTrue(result.success)
+        self.assertTrue(result.result.wasSuccessful())
 
     def test_run_feature_string_fail(self):
         """
@@ -55,7 +55,7 @@ class FeatureTestTest(FeatureTest):
             """
         )
 
-        self.assertFalse(result.success)
+        self.assertFalse(result.result.wasSuccessful())
 
     def test_run_feature_string_parse_error(self):
         """
@@ -68,7 +68,7 @@ class FeatureTestTest(FeatureTest):
             """
         )
 
-        self.assertFalse(result.success)
+        self.assertFalse(result.result.wasSuccessful())
 
     def test_run_good_feature_string_non_ascii(self):
         """
@@ -86,7 +86,7 @@ class FeatureTestTest(FeatureTest):
             """
         )
 
-        self.assertTrue(result.success)
+        self.assertTrue(result.result.wasSuccessful())
 
 
 def relative(directory):

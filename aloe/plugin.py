@@ -61,7 +61,7 @@ class GherkinLoader(unittest.loader.TestLoader):
             return self.suiteClass(tests)
         raise NotImplementedError
 
-    def loadTestsFromModule(self, module, *args, pattern=None, **kws):
+    def loadTestsFromModule(self, *args, **kwargs):
         """Ignore Python tests."""
         return self.suiteClass([])
 

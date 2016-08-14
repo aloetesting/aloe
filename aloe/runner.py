@@ -141,6 +141,8 @@ class TestProgram(unittest.TestProgram):
     def runTests(self):
         """Run the "all" level callbacks."""
 
+        # Loader is really GherkinLoader
+        # pylint:disable=no-member
         self.testLoader.run_before_callbacks()
         super().runTests()
         self.testLoader.run_after_callbacks()

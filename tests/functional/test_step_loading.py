@@ -7,8 +7,6 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import absolute_import
 
-import os
-
 from aloe.testing import (
     FeatureTest,
     in_directory,
@@ -46,10 +44,9 @@ class StepLoadingTest(FeatureTest):
         """
 
         result = self.assert_feature_success()
-        self.assertEqual(result.tests_run, [
-            os.path.abspath(feature) for feature in (
-                'features/single.feature',
-                'features/subdirectory/another.feature',
-                'submodule/features/third.feature',
-            )
-        ])
+        self.assert_tests_run(
+            result,
+            'features/single.feature',
+            'features/subdirectory/another.feature',
+            'submodule/features/third.feature',
+        )

@@ -284,3 +284,11 @@ class FeatureTest(unittest.TestCase):
         result = self.run_features(*features, **kwargs)
         assert not result.result.wasSuccessful()
         return result
+
+    def assert_tests_run(self, result, *tests):
+        """Assert that the lists of paths are equal."""
+
+        self.assertEqual(
+            list(map(os.path.abspath, result.tests_run)),
+            list(map(os.path.abspath, tests)),
+        )
