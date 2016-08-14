@@ -33,7 +33,8 @@ class GherkinRunner(unittest.runner.TextTestRunner):
 
     def resultclass(self, *args, **kwargs):  # pylint:disable=method-hidden
         """Construct an overridden result with extra arguments."""
-        return AloeTestResult(*args, **kwargs, force_color=self.force_color)
+        kwargs['force_color'] = self.force_color
+        return AloeTestResult(*args, **kwargs)
 
 
 class TestProgram(unittest.TestProgram):
