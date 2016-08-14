@@ -29,16 +29,21 @@ class SimpleIntegrationTest(unittest.TestCase):
         Test running a simple feature.
         """
 
-        exitcode, _ = self.run_feature('features/calculator.feature')
-        self.assertEqual(exitcode, 0, "Feature run successfully.")
+        exitcode, output = self.run_feature('features/calculator.feature')
+        if exitcode != 0:
+            print(output)
+            raise AssertionError("Feature should have passed.")
 
     def test_failure(self):
         """
         Test running a failing feature.
         """
 
-        exitcode, _ = self.run_feature('features/wrong_expectations.feature')
-        self.assertNotEqual(exitcode, 0, "Feature run failed.")
+        exitcode, output = self.run_feature(
+            'features/wrong_expectations.feature')
+        if exitcode == 0:
+            print(output)
+            raise AssertionError("Feature should have failed.")
 
     def run_feature(self, *args):
         """
