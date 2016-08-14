@@ -9,6 +9,7 @@ from builtins import *
 # pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
 
 import os
+import unittest
 from contextlib import contextmanager
 
 import blessings
@@ -60,6 +61,18 @@ class MockTerminal(Terminal):
         return super(MockTerminal, self).__getattribute__(attr)
 
 
+def strip_summary(value):
+    """
+    Remove the summary ("Ran N tests...") from a string containing an output of
+    unittest run.
+    """
+
+    summary_index = value.find(unittest.TextTestResult.separator2)
+    if summary_index >= 0:
+        value = value[:summary_index]
+    return value
+
+
 @in_directory('tests/simple_app')
 class OutputterTest(FeatureTest):
     """
@@ -73,11 +86,10 @@ class OutputterTest(FeatureTest):
 
         stream = TestWrapperIO()
 
-        with patch('aloe.result.AloeTestResult.printSummary'):
-            self.run_features('features/highlighting.feature',
-                              verbosity=3, stream=stream)
+        self.run_features('features/highlighting.feature',
+                          verbosity=3, stream=stream)
 
-            self.assertEqual(stream.getvalue(), """
+        self.assertEqual(strip_summary(stream.getvalue()), """
 Feature: Highlighting
 
   As a programmer
@@ -128,14 +140,12 @@ Feature: Highlighting
 
         stream = TestWrapperIO()
 
-        with \
-                patch('aloe.result.Terminal', new=MockTerminal), \
-                patch('aloe.result.AloeTestResult.printSummary'):
+        with patch('aloe.result.Terminal', new=MockTerminal):
             self.run_features('features/highlighting.feature',
                               verbosity=3, stream=stream,
                               force_color=True)
 
-            self.assertEqual(stream.getvalue(), """
+            self.assertEqual(strip_summary(stream.getvalue()), """
 Feature: Highlighting
 
   As a programmer
@@ -201,14 +211,12 @@ t.green(Given I have a table:)
 
         with self.environment_override('CUCUMBER_COLORS',
                                        'failed=magenta:passed=blue'):
-            with \
-                    patch('aloe.result.Terminal', new=MockTerminal), \
-                    patch('aloe.result.AloeTestResult.printSummary'):
+            with patch('aloe.result.Terminal', new=MockTerminal):
                 self.run_features('features/highlighting.feature',
                                   verbosity=3, stream=stream,
                                   force_color=True)
 
-            self.assertEqual(stream.getvalue(), """
+            self.assertEqual(strip_summary(stream.getvalue()), """
 Feature: Highlighting
 
   As a programmer
@@ -259,9 +267,7 @@ t.blue(Given I have a table:)
 
         stream = TestWrapperIO()
 
-        with \
-                patch('aloe.result.Terminal', new=MockTerminal) as mock_term, \
-                patch('aloe.result.AloeTestResult.printSummary'):
+        with patch('aloe.result.Terminal', new=MockTerminal) as mock_term:
 
             mock_term.is_a_tty = True
             self.run_features('-n', '1',
@@ -271,7 +277,7 @@ t.blue(Given I have a table:)
             # we are going to see the scenario written out 3 times
             # once as a preview, then each line individually followed by a
             # green version of it
-            self.assertEqual(stream.getvalue(), """
+            self.assertEqual(strip_summary(stream.getvalue()), """
 Feature: Highlighting
 
   As a programmer

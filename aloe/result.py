@@ -13,6 +13,7 @@ from builtins import *
 import os
 from contextlib import contextmanager
 from functools import wraps
+from unittest.runner import TextTestResult
 
 import blessings
 from aloe.registry import (
@@ -23,7 +24,6 @@ from aloe.registry import (
 from aloe.strings import ljust, represent_table
 from aloe.tools import hook_not_reentrant
 from aloe.utils import memoizedproperty
-from nose.result import TextTestResult
 
 # A decorator to add callbacks which wrap the steps looser than all the other
 # callbacks.
@@ -228,11 +228,9 @@ class AloeTestResult(TextTestResult):
     """
     Cucumber test progress display (verbosity level 3).
     """
-    # pylint:disable=too-many-arguments
-    def __init__(self, stream, descriptions, verbosity,
-                 config=None, errorClasses=None):
-        super().__init__(stream, descriptions, verbosity,
-                         config=config, errorClasses=errorClasses)
+    def __init__(self, stream, descriptions, verbosity, force_color):
+        super().__init__(stream, descriptions, verbosity)
+
         self.showAll = verbosity == 2
         self.showSteps = verbosity >= 3  # pylint:disable=invalid-name
 
@@ -241,7 +239,7 @@ class AloeTestResult(TextTestResult):
             # the hooks.
             TERMINAL[0] = Terminal(
                 stream=stream,
-                force_styling=config.force_color)
+                force_styling=force_color)
         else:
             # unset the global -- primarily for the tests where we're going
             # to create more TestResults with different streams.

@@ -18,6 +18,7 @@ from importlib import import_module
 from aloe.plugin import GherkinLoader
 from aloe.result import AloeTestResult
 from aloe.testclass import TestCase
+from aloe.utils import callable_type
 
 
 class GherkinRunner(unittest.runner.TextTestRunner):
@@ -25,7 +26,14 @@ class GherkinRunner(unittest.runner.TextTestRunner):
     A test runner with Aloe result class.
     """
 
-    resultclass = AloeTestResult
+    def __init__(self, *args, **kwargs):
+        """Remember the extra arguments."""
+        self.force_color = kwargs.pop('force_color')
+        super().__init__(*args, **kwargs)
+
+    def resultclass(self, *args, **kwargs):  # pylint:disable=method-hidden
+        """Construct an overridden result with extra arguments."""
+        return AloeTestResult(*args, **kwargs, force_color=self.force_color)
 
 
 class TestProgram(unittest.TestProgram):
@@ -35,7 +43,6 @@ class TestProgram(unittest.TestProgram):
 
     gherkin_loader = GherkinLoader
     test_class = TestCase
-    runner = GherkinRunner
 
     def __init__(self, *args, **kwargs):
         """
@@ -43,8 +50,22 @@ class TestProgram(unittest.TestProgram):
         """
 
         kwargs.setdefault('testLoader', self.gherkin_loader())
-        kwargs.setdefault('testRunner', self.runner)
+        kwargs.setdefault('testRunner', callable_type(self.make_runner))
         super().__init__(*args, **kwargs)
+
+    def make_runner(self, *args, **kwargs):
+        """Pass extra arguments to the test runner."""
+        kwargs.update(self.extra_runner_args())
+        return GherkinRunner(*args, **kwargs)
+
+    def extra_runner_args(self):
+        """Extra arguments to pass to the test runner."""
+
+        # These options are put onto self by parseArgs from the base class
+        # pylint:disable=no-member
+        return {
+            'force_color': self.force_color,
+        }
 
     def _getMainArgParser(self, parent):
         """Add arguments specific to Aloe."""
@@ -77,6 +98,11 @@ class TestProgram(unittest.TestProgram):
             dest='scenario_indices',
             default='',
             help='Only run scenarios with these indices (comma-separated)',
+        )
+        parser.add_argument(
+            '--progress', action='store_const',
+            dest='verbosity', const=3,
+            help='Show the progress of running scenarios',
         )
         parser.add_argument(
             '--color', action='store_true',

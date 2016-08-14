@@ -25,8 +25,7 @@ from aloe.registry import (
     PriorityClass,
     STEP_REGISTRY,
 )
-from aloe.runner import GherkinRunner, TestProgram
-from aloe.utils import callable_type
+from aloe.runner import TestProgram
 
 
 @contextmanager
@@ -181,17 +180,17 @@ class TestTestProgram(TestProgram):
 
         super().setup_loader()
 
-    def make_runner(self, *args, **kwargs):
+    def extra_runner_args(self):
         """Pass the stream to the test runner."""
-        return GherkinRunner(*args, **kwargs, stream=self.stream)
+        kwargs = super().extra_runner_args()
+        kwargs['stream'] = self.stream
+        return kwargs
 
     def __init__(self, *args, **kwargs):
         self.tests_run = []
         self.stream = kwargs.pop('stream')
         if self.stream:
             kwargs['buffer'] = True
-
-        kwargs['testRunner'] = callable_type(self.make_runner)
 
         super().__init__(*args, **kwargs)
 
@@ -239,8 +238,10 @@ class FeatureTest(unittest.TestCase):
 
         argv = ['aloe']
 
-        if verbosity:
-            argv += ['--verbosity', str(verbosity)]
+        if verbosity == 2:
+            argv += ['--verbose']
+        elif verbosity == 3:
+            argv += ['--progress']
 
         if force_color:
             argv += ['--color']
