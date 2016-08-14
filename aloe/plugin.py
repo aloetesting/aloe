@@ -11,6 +11,7 @@ from builtins import *
 # pylint:enable=redefined-builtin,wildcard-import,unused-wildcard-import
 
 import fnmatch
+import itertools
 import os
 import unittest
 
@@ -42,9 +43,16 @@ class GherkinLoader(unittest.loader.TestLoader):
             FeatureLoader.find_and_load_step_definitions(feature_dir)
 
     def discover(self, start_dir, pattern=None, top_level_dir=None):
-        raise NotImplementedError("Discovery not implemented")
+        """Discover all features in feature directories."""
+
+        tests = itertools.chain.from_iterable(
+            self.tests_from_directory(feature_dir)
+            for feature_dir in self.feature_dirs
+        )
+        return self.suiteClass(tests)
 
     def loadTestsFromName(self, name, module=None):
+        """Load features from a file or a directory containing them."""
         if isinstance(name, str):
             if os.path.isdir(name):
                 tests = self.tests_from_directory(name)
@@ -54,7 +62,8 @@ class GherkinLoader(unittest.loader.TestLoader):
         raise NotImplementedError
 
     def loadTestsFromModule(self, module, *args, pattern=None, **kws):
-        raise NotImplementedError
+        """Ignore Python tests."""
+        return self.suiteClass([])
 
     def is_feature_directory(self, directory):
         """
@@ -102,7 +111,7 @@ class GherkinLoader(unittest.loader.TestLoader):
         test = self.test_class.from_file(file_)
 
         # About to run a feature - ensure "before all" callbacks have run
-        self.ensure_before_callbacks()
+        self.run_before_callbacks()
 
         # Filter the scenarios, if asked
         for idx, scenario_name in test.scenarios():
@@ -129,23 +138,16 @@ class GherkinLoader(unittest.loader.TestLoader):
                 for filename in fnmatch.filter(files, '*.feature'):
                     yield os.path.join(path, filename)
 
-    def ensure_before_callbacks(self):
-        """
-        Before the first test, run the "before all" callbacks.
-        """
+    def run_before_callbacks(self):
+        """Run the "before all" callbacks."""
 
         if not hasattr(self, 'after_hook'):
             before_all, after_all = CALLBACK_REGISTRY.before_after('all')
             before_all()
             self.after_hook = after_all
 
-    def finalize(self, result):
-        """
-        After the last test, run the "after all" callbacks.
-        """
-
-        # TODO: Is there a better method to do something _after_ all the tests
-        # have been run?
+    def run_after_callbacks(self):
+        """Run the "after all" callbacks."""
 
         if hasattr(self, 'after_hook'):
             self.after_hook()

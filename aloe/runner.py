@@ -102,6 +102,20 @@ class TestProgram(unittest.TestProgram):
         return parser
 
     def createTests(self):
+        """Set up loader before running tests."""
+
+        self.setup_loader()
+
+        return super().createTests()
+
+    def _do_discovery(self, *args, **kwargs):
+        """Set up loader before running discovery."""
+
+        self.setup_loader()
+
+        return super()._do_discovery(*args, **kwargs)
+
+    def setup_loader(self):
         """Pass extra options to the test loader."""
 
         # These options are put onto self by parseArgs from the base class
@@ -124,4 +138,9 @@ class TestProgram(unittest.TestProgram):
         self.testLoader.tags = set(self.tags or ())
         self.testLoader.exclude_tags = set(self.exclude_tags or ())
 
-        return super().createTests()
+    def runTests(self):
+        """Run the "all" level callbacks."""
+
+        self.testLoader.run_before_callbacks()
+        super().runTests()
+        self.testLoader.run_after_callbacks()

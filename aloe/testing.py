@@ -174,12 +174,12 @@ class TestTestProgram(TestProgram):
 
     gherkin_loader = TestGherkinLoader
 
-    def createTests(self):
+    def setup_loader(self):
         """Pass extra options to the test loader."""
 
         self.testLoader.tests_run = self.tests_run
 
-        super().createTests()
+        super().setup_loader()
 
     def make_runner(self, *args, **kwargs):
         """Pass the stream to the test runner."""
@@ -250,7 +250,12 @@ class FeatureTest(unittest.TestCase):
         # Save the loaded module list to restore later
         old_modules = set(sys.modules.keys())
 
-        result = TestTestProgram(exit=False, argv=argv, stream=stream)
+        result = TestTestProgram(
+            module=None,
+            exit=False,
+            argv=argv,
+            stream=stream,
+        )
 
         # To avoid affecting the (outer) testsuite and its subsequent tests,
         # unload all modules that were newly loaded. This also ensures that they
