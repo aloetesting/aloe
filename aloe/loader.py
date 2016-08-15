@@ -20,6 +20,18 @@ from aloe.fs import FeatureLoader
 from aloe.registry import CALLBACK_REGISTRY
 
 
+def _make_failed_test(exception):
+    """Make a test that raises an exception."""
+
+    def test_failure(self):
+        """Raise the exception."""
+        raise exception
+
+    attrs = {'test_failure': test_failure}
+    test_class = type('AloeFailedTest', (unittest.TestCase,), attrs)
+    return test_class('test_failure')
+
+
 class GherkinLoader(unittest.loader.TestLoader):
     """
     Collect Gherkin tests.
@@ -126,8 +138,7 @@ class GherkinLoader(unittest.loader.TestLoader):
         try:
             test = self.test_class.from_file(file_)
         except AloeSyntaxError as exc:
-            # pylint:disable=protected-access
-            yield unittest.loader._FailedTest('feature', exc)
+            yield _make_failed_test(exc)
             return
 
         # About to run a feature - ensure "before all" callbacks have run
