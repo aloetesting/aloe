@@ -4,9 +4,10 @@ Running Aloe
 .. toctree::
     :maxdepth: 2
 
-The ``aloe`` helper runs Nose_ with the Aloe_ plugin enabled.
+The ``aloe`` command collects and runs Gherkin tests using the unittest_
+runner.
 
-``aloe`` accepts the same flags as ``nosetests`` and so these are not
+``aloe`` accepts the same flags as ``python -m unittest`` and so these are not
 extensively documented here.
 
 .. program:: aloe
@@ -29,6 +30,14 @@ extensively documented here.
 .. option:: --no-ignore-python
 
     Run Python tests as well as Gherkin.
+
+.. option:: --progress
+
+    Show steps as they are executed.
+
+.. option:: --color
+
+    Show step execution in color.
 
 .. option:: --tag attr
 

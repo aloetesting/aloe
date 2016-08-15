@@ -26,7 +26,7 @@ class GherkinLoader(unittest.loader.TestLoader):
     """
 
     def __init__(self):
-        """Initialise the helper plugin."""
+        """Initialise the Gherkin loader."""
 
         super().__init__()
 
@@ -35,7 +35,14 @@ class GherkinLoader(unittest.loader.TestLoader):
         self.tags = None
         self.exclude_tags = None
 
-        # Load all the step definitions
+        self.steps_loaded = False
+
+    def load_steps(self):
+        """Discover feature directories and load the step definitions."""
+
+        if self.steps_loaded:
+            return
+
         self.feature_dirs = [
             dir_
             for dir_ in FeatureLoader.find_feature_directories('.')
@@ -43,8 +50,12 @@ class GherkinLoader(unittest.loader.TestLoader):
         for feature_dir in self.feature_dirs:
             FeatureLoader.find_and_load_step_definitions(feature_dir)
 
+        self.steps_loaded = True
+
     def discover(self, start_dir, pattern=None, top_level_dir=None):
         """Discover all features in feature directories."""
+
+        self.load_steps()
 
         tests = itertools.chain.from_iterable(
             self.tests_from_directory(feature_dir)
@@ -54,6 +65,9 @@ class GherkinLoader(unittest.loader.TestLoader):
 
     def loadTestsFromName(self, name, module=None):
         """Load features from a file or a directory containing them."""
+
+        self.load_steps()
+
         if isinstance(name, str):
             if os.path.isdir(name):
                 tests = self.tests_from_directory(name)

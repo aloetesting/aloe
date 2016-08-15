@@ -18,4 +18,4 @@ virtualenv check_install_venv
 pip install check_install_dist/*.tar.gz
 
 # Smoke test
-aloe --version
+aloe --help

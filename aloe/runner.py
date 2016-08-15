@@ -15,7 +15,7 @@ import unittest
 
 from importlib import import_module
 
-from aloe.plugin import GherkinLoader
+from aloe.loader import GherkinLoader
 from aloe.result import AloeTestResult
 from aloe.testclass import TestCase
 from aloe.utils import callable_type

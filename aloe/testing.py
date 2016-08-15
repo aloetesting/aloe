@@ -19,7 +19,7 @@ from functools import wraps
 
 from aloe import world
 from aloe.fs import path_to_module_name
-from aloe.plugin import GherkinLoader
+from aloe.loader import GherkinLoader
 from aloe.registry import (
     CALLBACK_REGISTRY,
     PriorityClass,
