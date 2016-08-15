@@ -11,7 +11,7 @@ from __future__ import absolute_import
 from builtins import *
 # pylint:enable=redefined-builtin,wildcard-import,unused-wildcard-import
 
-from nose.tools import assert_equal
+import unittest
 
 from aloe.parser import Feature
 
@@ -81,98 +81,100 @@ Funcionalidade: parse_scenario
     return feature.scenarios[0]
 
 
-def test_scenario_ptbr_from_string():
-    """
-    Language: PT-BR -> Scenario.from_string
-    """
+class PortugeseScenarioTest(unittest.TestCase):
+    """Test Portugese scenario parsing."""
 
-    scenario = parse_scenario(SCENARIO, language='pt-br')
+    def test_scenario_ptbr_from_string(self):
+        """
+        Language: PT-BR -> Scenario.from_string
+        """
 
-    assert_equal(
-        scenario.name,
-        u'Consolidar o banco de dados de cursos universitários em '
-        u'arquivo texto'
-    )
-    assert_equal(
-        scenario.steps[0].hashes,
-        (
-            {'Nome': u'Ciência da Computação', u'Duração': '5 anos'},
-            {'Nome': u'Nutrição', u'Duração': '4 anos'},
+        scenario = parse_scenario(SCENARIO, language='pt-br')
+
+        self.assertEqual(
+            scenario.name,
+            u'Consolidar o banco de dados de cursos universitários em '
+            u'arquivo texto'
         )
-    )
-
-
-def test_scenario_outline1_ptbr_from_string():
-    """
-    Language: PT-BR -> Scenario.from_string, with scenario outline, first case
-    """
-
-    scenario = parse_scenario(SCENARIO_OUTLINE1, language='pt-br')
-
-    assert_equal(
-        scenario.name,
-        'Cadastrar um aluno no banco de dados'
-    )
-    assert_equal(
-        scenario.outlines,
-        (
-            {'nome': u'Gabriel', u'idade': '22'},
-            {'nome': u'João', u'idade': '30'},
+        self.assertEqual(
+            scenario.steps[0].hashes,
+            (
+                {'Nome': u'Ciência da Computação', u'Duração': '5 anos'},
+                {'Nome': u'Nutrição', u'Duração': '4 anos'},
+            )
         )
-    )
 
+    def test_scenario_outline1_ptbr_from_string(self):
+        """
+        Language: PT-BR -> Scenario.from_string, with scenario outline, first
+        case
+        """
 
-def test_scenario_outline2_ptbr_from_string():
-    """
-    Language: PT-BR -> Scenario.from_string, with scenario outline, second case
-    """
+        scenario = parse_scenario(SCENARIO_OUTLINE1, language='pt-br')
 
-    scenario = parse_scenario(SCENARIO_OUTLINE2, language='pt-br')
-
-    assert_equal(
-        scenario.name,
-        'Cadastrar um aluno no banco de dados'
-    )
-    assert_equal(
-        scenario.outlines,
-        (
-            {'nome': u'Gabriel', u'idade': '99'},
-            {'nome': u'João', u'idade': '100'},
+        self.assertEqual(
+            scenario.name,
+            'Cadastrar um aluno no banco de dados'
         )
-    )
-
-
-def test_feature_ptbr_from_string():
-    """
-    Language: PT-BR -> Feature.from_string
-    """
-
-    feature = Feature.from_string(FEATURE, language='pt-br')
-
-    assert_equal(
-        feature.name,
-        u'Pesquisar alunos com matrícula vencida'
-    )
-
-    assert_equal(
-        feature.description,
-        u"Como gerente financeiro\n"
-        u"Eu quero pesquisar alunos com matrícula vencida\n"
-        u"Para propor um financiamento"
-    )
-
-    (scenario, ) = feature.scenarios
-
-    assert_equal(
-        scenario.name,
-        'Pesquisar por nome do curso'
-    )
-
-    assert_equal(
-        scenario.steps[-1].hashes,
-        (
-            {'nome': u'João', u'valor devido': 'R$ 512,66'},
-            {'nome': u'Maria', u'valor devido': 'R$ 998,41'},
-            {'nome': u'Ana', u'valor devido': 'R$ 231,00'},
+        self.assertEqual(
+            scenario.outlines,
+            (
+                {'nome': u'Gabriel', u'idade': '22'},
+                {'nome': u'João', u'idade': '30'},
+            )
         )
-    )
+
+    def test_scenario_outline2_ptbr_from_string(self):
+        """
+        Language: PT-BR -> Scenario.from_string, with scenario outline, second
+        case
+        """
+
+        scenario = parse_scenario(SCENARIO_OUTLINE2, language='pt-br')
+
+        self.assertEqual(
+            scenario.name,
+            'Cadastrar um aluno no banco de dados'
+        )
+        self.assertEqual(
+            scenario.outlines,
+            (
+                {'nome': u'Gabriel', u'idade': '99'},
+                {'nome': u'João', u'idade': '100'},
+            )
+        )
+
+    def test_feature_ptbr_from_string(self):
+        """
+        Language: PT-BR -> Feature.from_string
+        """
+
+        feature = Feature.from_string(FEATURE, language='pt-br')
+
+        self.assertEqual(
+            feature.name,
+            u'Pesquisar alunos com matrícula vencida'
+        )
+
+        self.assertEqual(
+            feature.description,
+            u"Como gerente financeiro\n"
+            u"Eu quero pesquisar alunos com matrícula vencida\n"
+            u"Para propor um financiamento"
+        )
+
+        (scenario, ) = feature.scenarios
+
+        self.assertEqual(
+            scenario.name,
+            'Pesquisar por nome do curso'
+        )
+
+        self.assertEqual(
+            scenario.steps[-1].hashes,
+            (
+                {'nome': u'João', u'valor devido': 'R$ 512,66'},
+                {'nome': u'Maria', u'valor devido': 'R$ 998,41'},
+                {'nome': u'Ana', u'valor devido': 'R$ 231,00'},
+            )
+        )

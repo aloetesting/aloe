@@ -11,8 +11,6 @@ import operator
 import os
 from functools import reduce  # pylint:disable=redefined-builtin
 
-from nose.tools import assert_equal
-
 from aloe import world
 from aloe.testclass import TestCase
 from aloe.testing import (
@@ -111,12 +109,12 @@ class CallbackTest(FeatureTest):
         self.assert_feature_success('features/all_callbacks_1.feature',
                                     'features/all_callbacks_2.feature')
 
-        assert_equal(''.join(world.all), '{[ABCD]}')
+        self.assertEqual(''.join(world.all), '{[ABCD]}')
 
         # Run all the features; some will fail because they expect only a
         # subset to be run
         self.run_features()
-        assert_equal(''.join(world.all), '{[ABCD]}')
+        self.assertEqual(''.join(world.all), '{[ABCD]}')
 
     def test_testcase_methods(self):
         """Test setUp and tearDown on the test class."""
@@ -130,7 +128,7 @@ class CallbackTest(FeatureTest):
 
         # Each scenario and outline example must be a separate test, preceded
         # by setUp() and followed by tearDown().
-        assert_equal(''.join(world.testclass), '[BS][BO][BU]')
+        self.assertEqual(''.join(world.testclass), '[BS][BO][BU]')
 
     def test_relative_order(self):
         """
@@ -196,7 +194,7 @@ class CallbackTest(FeatureTest):
             ),
         )
 
-        assert_equal(tuple(world.types), expected)
+        self.assertEqual(tuple(world.types), expected)
 
     def test_behave_as(self):
         """
@@ -220,8 +218,8 @@ class CallbackTest(FeatureTest):
         # The test fails
         self.run_features('features/step_failed.feature')
 
-        assert_equal(world.passing_steps, 2)
-        assert_equal(world.failed_steps, 1)
+        self.assertEqual(world.passing_steps, 2)
+        self.assertEqual(world.failed_steps, 1)
 
 
 @in_directory('tests/multiple_steps_app')

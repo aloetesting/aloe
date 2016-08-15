@@ -10,11 +10,6 @@ from __future__ import absolute_import
 
 import unittest
 
-from nose.tools import (
-    assert_equal,
-    assert_raises,
-)
-
 from aloe.registry import (
     CallbackDecorator,
     CallbackDict,
@@ -36,241 +31,236 @@ class FakeStep(object):
         self.sentence = sentence
 
 
-def assert_matches(step_dict, sentence, func_args):
-    """
-    Assert what a given sentence matches in a step dictionary.
+class StepRegistryTest(unittest.TestCase):
+    """Test step registry."""
 
-    :param StepDict step_dict: Step dictionary to check
-    :param sentence str: Sentence to match
-    :param func_args (callable, tuple, dict): Expected function and arguments
-    """
+    def assert_matches(self, step_dict, sentence, func_args):
+        """
+        Assert what a given sentence matches in a step dictionary.
 
-    assert_equal(step_dict.match_step(FakeStep(sentence)), func_args)
+        :param StepDict step_dict: Step dictionary to check
+        :param sentence str: Sentence to match
+        :param func_args (callable, tuple, dict): Expected function and
+        arguments
+        """
 
+        self.assertEqual(step_dict.match_step(FakeStep(sentence)), func_args)
 
-def assert_no_match(step_dict, sentence):
-    """Assert that no match is found for a sentence in a step dictionary."""
+    def assert_no_match(self, step_dict, sentence):
+        """Assert that no match is found for a sentence in a step dictionary."""
 
-    assert_matches(step_dict, sentence, (undefined_step, (), {}))
+        self.assert_matches(step_dict, sentence, (undefined_step, (), {}))
 
+    def test_raise_StepLoadingError_if_first_argument_is_not_a_regex(self):
+        """
+        aloe.STEP_REGISTRY.load(step, func) should raise an error if step is
+        not a regex
+        """
+        steps = StepDict()
+        with self.assertRaises(StepLoadingError):
+            steps.load("an invalid regex;)", lambda: "")
 
-def test_StepDict_raise_StepLoadingError_if_first_argument_is_not_a_regex():
-    """
-    aloe.STEP_REGISTRY.load(step, func) should raise an error if step is
-    not a regex
-    """
-    steps = StepDict()
-    with assert_raises(StepLoadingError):
-        steps.load("an invalid regex;)", lambda: "")
+    def test_can_load_a_step_composed_of_a_regex_and_a_function(self):
+        """
+        aloe.STEP_REGISTRY.load(step, func) append item(step, func) to
+        STEP_REGISTRY
+        """
+        steps = StepDict()
 
+        def func():  # pylint:disable=missing-docstring
+            return ""
 
-def test_StepDict_can_load_a_step_composed_of_a_regex_and_a_function():
-    """
-    aloe.STEP_REGISTRY.load(step, func) append item(step, func) to
-    STEP_REGISTRY
-    """
-    steps = StepDict()
+        step = "a step to test"
+        steps.load(step, func)
 
-    def func():  # pylint:disable=missing-docstring
-        return ""
+        self.assert_matches(steps, step, (func, (), {}))
 
-    step = "a step to test"
-    steps.load(step, func)
+    def test_replacing_step(self):
+        """
+        Test registering a different step with the same sentence.
+        """
 
-    assert_matches(steps, step, (func, (), {}))
-
-
-def test_replacing_step():
-    """
-    Test registering a different step with the same sentence.
-    """
-
-    def func1():
-        """First function to register as a step."""
-        pass
-
-    def func2():
-        """Second function to register as a step."""
-        pass
-
-    steps = StepDict()
-
-    # This has to be more than re._MAXCACHE; currently 100 on Python 2.7 and
-    # 512 on Python 3.5
-    step_count = 1024
-
-    sentence = "sentence {0}".format
-
-    # Register some steps
-    for num in range(step_count):
-        steps.load(sentence(num), func1)
-
-    # Register the same steps again
-    for num in range(step_count):
-        steps.load(sentence(num), func2)
-
-    # func2 should have replaced func1 everywhere
-    for num in range(step_count):
-        assert_matches(steps, sentence(num), (func2, (), {}))
-
-
-def test_StepDict_load_a_step_return_the_given_function():
-    """
-    aloe.STEP_REGISTRY.load(step, func) returns func
-    """
-    steps = StepDict()
-
-    def func():  # pylint:disable=missing-docstring
-        return ""
-
-    assert_equal(steps.load("another step", func), func)
-
-
-def test_StepDict_can_extract_a_step_sentence_from_function_name():
-    """
-    aloe.STEP_REGISTRY.extract_sentence(func) parse func name and return
-    a sentence
-    """
-    steps = StepDict()
-
-    def a_step_sentence():  # pylint:disable=missing-docstring
-        pass
-    assert_equal("A step sentence", steps.extract_sentence(a_step_sentence))
-
-
-def test_StepDict_can_extract_a_step_sentence_from_function_doc():
-    """
-    aloe.STEP_REGISTRY.extract_sentence(func) parse func doc and return
-    a sentence
-    """
-    steps = StepDict()
-
-    def a_step_func():
-        """A step sentence"""
-        pass
-    assert_equal("A step sentence", steps.extract_sentence(a_step_func))
-
-
-def test_StepDict_can_load_a_step_from_a_function():
-    """
-    aloe.STEP_REGISTRY.load_func(func) append item(step, func) to
-    STEP_REGISTRY
-    """
-    steps = StepDict()
-
-    def a_step_to_test():  # pylint:disable=missing-docstring
-        pass
-
-    steps.load_func(a_step_to_test)
-
-    assert_matches(steps, "A step to test", (a_step_to_test, (), {}))
-
-
-def test_StepDict_can_load_steps_from_an_object():
-    """
-    aloe.STEP_REGISTRY.load_steps(obj) append all obj methods to
-    STEP_REGISTRY
-    """
-    steps = StepDict()
-
-    class LotsOfSteps(object):
-        """A class defining some steps."""
-
-        def step_1(self):  # pylint:disable=missing-docstring
+        def func1():
+            """First function to register as a step."""
             pass
 
-        def step_2(self):
-            """Doing something"""
+        def func2():
+            """Second function to register as a step."""
             pass
 
-    step_list = LotsOfSteps()
-    steps.load_steps(step_list)
+        steps = StepDict()
 
-    assert_matches(steps, "Step 1", (step_list.step_1, (), {}))
-    assert_matches(steps, "Doing something", (step_list.step_2, (), {}))
+        # This has to be more than re._MAXCACHE; currently 100 on Python 2.7 and
+        # 512 on Python 3.5
+        step_count = 1024
 
+        sentence = "sentence {0}".format
 
-def test_StepDict_can_exclude_methods_when_load_steps():
-    """
-    aloe.STEP_REGISTRY.load_steps(obj) don't load exluded attr in
-    STEP_REGISTRY
-    """
-    steps = StepDict()
+        # Register some steps
+        for num in range(step_count):
+            steps.load(sentence(num), func1)
 
-    class LotsOfSteps(object):
-        """A class defining some steps."""
-        exclude = ["step_1"]
+        # Register the same steps again
+        for num in range(step_count):
+            steps.load(sentence(num), func2)
 
-        def step_1(self):  # pylint:disable=missing-docstring
+        # func2 should have replaced func1 everywhere
+        for num in range(step_count):
+            self.assert_matches(steps, sentence(num), (func2, (), {}))
+
+    def test_load_a_step_return_the_given_function(self):
+        """
+        aloe.STEP_REGISTRY.load(step, func) returns func
+        """
+        steps = StepDict()
+
+        def func():  # pylint:disable=missing-docstring
+            return ""
+
+        self.assertEqual(steps.load("another step", func), func)
+
+    def test_can_extract_a_step_sentence_from_function_name(self):
+        """
+        aloe.STEP_REGISTRY.extract_sentence(func) parse func name and return
+        a sentence
+        """
+        steps = StepDict()
+
+        def a_step_sentence():  # pylint:disable=missing-docstring
+            pass
+        self.assertEqual("A step sentence",
+                         steps.extract_sentence(a_step_sentence))
+
+    def test_can_extract_a_step_sentence_from_function_doc(self):
+        """
+        aloe.STEP_REGISTRY.extract_sentence(func) parse func doc and return
+        a sentence
+        """
+        steps = StepDict()
+
+        def a_step_func():
+            """A step sentence"""
+            pass
+        self.assertEqual("A step sentence", steps.extract_sentence(a_step_func))
+
+    def test_can_load_a_step_from_a_function(self):
+        """
+        aloe.STEP_REGISTRY.load_func(func) append item(step, func) to
+        STEP_REGISTRY
+        """
+        steps = StepDict()
+
+        def a_step_to_test():  # pylint:disable=missing-docstring
             pass
 
-        def step_2(self):
-            """Doing something"""
-            pass
+        steps.load_func(a_step_to_test)
 
-    step_list = LotsOfSteps()
-    steps.load_steps(step_list)
+        self.assert_matches(steps, "A step to test", (a_step_to_test, (), {}))
 
-    assert_no_match(steps, "Step 1")
-    assert_matches(steps, "Doing something", (step_list.step_2, (), {}))
+    def test_can_load_steps_from_an_object(self):
+        """
+        aloe.STEP_REGISTRY.load_steps(obj) append all obj methods to
+        STEP_REGISTRY
+        """
+        steps = StepDict()
 
+        class LotsOfSteps(object):
+            """A class defining some steps."""
 
-def test_StepDict_can_exclude_callable_object_when_load_steps():
-    """
-    aloe.STEP_REGISTRY.load_steps(obj) don't load callable objets in
-    STEP_REGISTRY
-    """
-    steps = StepDict()
-
-    class NoStep(object):
-        """A class defining something that's not a step."""
-        class NotAStep(object):
-            """A callable which isn't a step."""
-            def __call__(self):
+            def step_1(self):  # pylint:disable=missing-docstring
                 pass
 
-    no_step = NoStep()
-    steps.load_steps(no_step)
+            def step_2(self):
+                """Doing something"""
+                pass
 
-    assert len(steps) == 0
+        step_list = LotsOfSteps()
+        steps.load_steps(step_list)
 
+        self.assert_matches(steps, "Step 1", (step_list.step_1, (), {}))
+        self.assert_matches(steps, "Doing something",
+                            (step_list.step_2, (), {}))
 
-def test_unload_reload():
-    """
-    Test unloading and then reloading the step.
-    """
+    def test_can_exclude_methods_when_load_steps(self):
+        """
+        aloe.STEP_REGISTRY.load_steps(obj) don't load exluded attr in
+        STEP_REGISTRY
+        """
+        steps = StepDict()
 
-    def step():  # pylint:disable=missing-docstring
-        pass
+        class LotsOfSteps(object):
+            """A class defining some steps."""
+            exclude = ["step_1"]
 
-    steps = StepDict()
+            def step_1(self):  # pylint:disable=missing-docstring
+                pass
 
-    # Load
-    steps.step(r'My step (\d)')(step)
-    steps.step(r'Another step (\d)')(step)
+            def step_2(self):
+                """Doing something"""
+                pass
 
-    assert_matches(steps, "My step 1", (step, ('1',), {}))
-    assert_matches(steps, "Another step 1", (step, ('1',), {}))
+        step_list = LotsOfSteps()
+        steps.load_steps(step_list)
 
-    # Members added to step by registering it
-    # pylint:disable=no-member
+        self.assert_no_match(steps, "Step 1")
+        self.assert_matches(steps, "Doing something",
+                            (step_list.step_2, (), {}))
 
-    # Unload
-    step.unregister()
+    def test_can_exclude_callable_object_when_load_steps(self):
+        """
+        aloe.STEP_REGISTRY.load_steps(obj) don't load callable objets in
+        STEP_REGISTRY
+        """
+        steps = StepDict()
 
-    assert_no_match(steps, "My step 1")
-    assert_no_match(steps, "Another step 1")
+        class NoStep(object):
+            """A class defining something that's not a step."""
+            class NotAStep(object):
+                """A callable which isn't a step."""
+                def __call__(self):
+                    pass
 
-    # Should be a no-op
-    step.unregister()
+        no_step = NoStep()
+        steps.load_steps(no_step)
 
-    assert_no_match(steps, "My step 1")
-    assert_no_match(steps, "Another step 1")
+        assert len(steps) == 0
 
-    # Reload
-    steps.step(r'My step (\d)')(step)
+    def test_unload_reload(self):
+        """
+        Test unloading and then reloading the step.
+        """
 
-    assert_matches(steps, "My step 1", (step, ('1',), {}))
+        def step():  # pylint:disable=missing-docstring
+            pass
+
+        steps = StepDict()
+
+        # Load
+        steps.step(r'My step (\d)')(step)
+        steps.step(r'Another step (\d)')(step)
+
+        self.assert_matches(steps, "My step 1", (step, ('1',), {}))
+        self.assert_matches(steps, "Another step 1", (step, ('1',), {}))
+
+        # Members added to step by registering it
+        # pylint:disable=no-member
+
+        # Unload
+        step.unregister()
+
+        self.assert_no_match(steps, "My step 1")
+        self.assert_no_match(steps, "Another step 1")
+
+        # Should be a no-op
+        step.unregister()
+
+        self.assert_no_match(steps, "My step 1")
+        self.assert_no_match(steps, "Another step 1")
+
+        # Reload
+        steps.step(r'My step (\d)')(step)
+
+        self.assert_matches(steps, "My step 1", (step, ('1',), {}))
 
 
 class CallbackDictTest(unittest.TestCase):

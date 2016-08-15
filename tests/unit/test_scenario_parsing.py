@@ -11,13 +11,10 @@ from __future__ import absolute_import
 from builtins import zip
 # pylint:enable=redefined-builtin
 
-from unittest import skip
+import unittest
 
 from aloe.parser import Step, Scenario, Feature
 from aloe.exceptions import AloeSyntaxError
-
-from nose.tools import assert_equal
-from nose.tools import assert_raises
 
 
 SCENARIO1 = """
@@ -232,362 +229,357 @@ def solved_steps(scenario):
     )
 
 
-def test_scenario_has_name():
-    """
-    It should extract the name of the scenario
-    """
+class ScenarioParsingTest(unittest.TestCase):
+    """Test scenario parsing."""
 
-    scenario = parse_scenario(SCENARIO1)
+    def test_scenario_has_name(self):
+        """
+        It should extract the name of the scenario
+        """
 
-    assert isinstance(scenario, Scenario)
+        scenario = parse_scenario(SCENARIO1)
 
-    assert_equal(
-        scenario.name,
-        "Adding some students to my university database"
-    )
+        assert isinstance(scenario, Scenario)
 
-
-def test_scenario_has_repr():
-    """
-    Scenario implements __repr__ nicely
-    """
-
-    scenario = parse_scenario(SCENARIO1)
-    assert_equal(
-        repr(scenario),
-        '<Scenario: "Adding some students to my university database">'
-    )
-
-
-def test_scenario_has_steps():
-    """
-    A scenario object should have a list of steps
-    """
-
-    scenario = parse_scenario(SCENARIO1)
-
-    assert_equal(type(scenario.steps), tuple)
-    assert_equal(len(scenario.steps), 4, "It should have 4 steps")
-
-    expected_sentences = [
-        "Given I have the following courses in my university:",
-        "When I consolidate the database into 'courses.txt'",
-        "Then I see the 1st line of 'courses.txt' has 'Computer Science:5'",
-        "And I see the 2nd line of 'courses.txt' has 'Nutrition:4'",
-    ]
-
-    for step, expected_sentence in zip(scenario.steps, expected_sentences):
-        assert_equal(type(step), Step)
-        assert_equal(step.sentence, expected_sentence)
-
-    assert_equal(scenario.steps[0].keys, ('Name', 'Duration'))
-    assert_equal(
-        scenario.steps[0].hashes,
-        (
-            {'Name': 'Computer Science', 'Duration': '5 years'},
-            {'Name': 'Nutrition', 'Duration': '4 years'},
+        self.assertEqual(
+            scenario.name,
+            "Adding some students to my university database"
         )
-    )
 
+    def test_scenario_has_repr(self):
+        """
+        Scenario implements __repr__ nicely
+        """
 
-def test_scenario_may_own_outlines():
-    """
-    A scenario may own outlines
-    """
-
-    scenario = parse_scenario(OUTLINED_SCENARIO)
-
-    assert_equal(len(scenario.steps), 4)
-    expected_sentences = [
-        'Given I have entered <input_1> into the calculator',
-        'And I have entered <input_2> into the calculator',
-        'When I press <button>',
-        'Then the result should be <output> on the screen',
-    ]
-
-    for step, expected_sentence in zip(scenario.steps, expected_sentences):
-        assert_equal(type(step), Step)
-        assert_equal(step.sentence, expected_sentence)
-
-    assert_equal(scenario.name, "Add two numbers")
-    assert_equal(
-        scenario.outlines,
-        (
-            {'input_1': '20', 'input_2': '30',
-             'button': 'add', 'output': '50'},
-            {'input_1': '2', 'input_2': '5',
-             'button': 'add', 'output': '7'},
-            {'input_1': '0', 'input_2': '40',
-             'button': 'add', 'output': '40'},
+        scenario = parse_scenario(SCENARIO1)
+        self.assertEqual(
+            repr(scenario),
+            '<Scenario: "Adding some students to my university database">'
         )
-    )
 
+    def test_scenario_has_steps(self):
+        """
+        A scenario object should have a list of steps
+        """
 
-def test_steps_parsed_by_scenarios_has_scenarios():
-    """
-    Steps parsed by scenarios has scenarios
-    """
+        scenario = parse_scenario(SCENARIO1)
 
-    scenario = parse_scenario(SCENARIO1)
-    for step in scenario.steps:
-        assert_equal(step.scenario, scenario)
+        self.assertEqual(type(scenario.steps), tuple)
+        self.assertEqual(len(scenario.steps), 4, "It should have 4 steps")
 
+        expected_sentences = [
+            "Given I have the following courses in my university:",
+            "When I consolidate the database into 'courses.txt'",
+            "Then I see the 1st line of 'courses.txt' has 'Computer Science:5'",
+            "And I see the 2nd line of 'courses.txt' has 'Nutrition:4'",
+        ]
 
-def test_scenario_sentences_can_be_solved():
-    """
-    A scenario with outlines may solve its sentences
-    """
-    scenario = parse_scenario(OUTLINED_SCENARIO)
-    solved = solved_steps(scenario)
+        for step, expected_sentence in zip(scenario.steps, expected_sentences):
+            self.assertEqual(type(step), Step)
+            self.assertEqual(step.sentence, expected_sentence)
 
-    assert_equal(len(solved), 12)
-    expected_sentences = [
-        'Given I have entered 20 into the calculator',
-        'And I have entered 30 into the calculator',
-        'When I press add',
-        'Then the result should be 50 on the screen',
-        'Given I have entered 2 into the calculator',
-        'And I have entered 5 into the calculator',
-        'When I press add',
-        'Then the result should be 7 on the screen',
-        'Given I have entered 0 into the calculator',
-        'And I have entered 40 into the calculator',
-        'When I press add',
-        'Then the result should be 40 on the screen',
-    ]
-
-    for step, expected in zip(solved, expected_sentences):
-        assert_equal(type(step), Step)
-        assert_equal(step.sentence, expected)
-
-
-def test_scenario_tables_are_solved_against_outlines():
-    """
-    Outline substitution should apply to tables within a scenario
-    """
-
-    expected_hashes_per_step = [
-        # a = 1, b = 2
-        ({'Parameter': 'a', 'Value': '1'},
-         {'Parameter': 'b', 'Value': '2'}),  # Given ...
-        (),  # When I run the program
-        (),  # Then I crash hard-core
-
-        # a = 2, b = 4
-        ({'Parameter': 'a', 'Value': '2'},
-         {'Parameter': 'b', 'Value': '4'}),
-        (),
-        ()
-    ]
-
-    scenario = parse_scenario(OUTLINED_SCENARIO_WITH_SUBSTITUTIONS_IN_TABLE)
-    solved = solved_steps(scenario)
-    for step, expected in zip(solved, expected_hashes_per_step):
-        assert_equal(type(step), Step)
-        assert_equal(step.hashes, expected)
-
-
-def test_scenario_multilines_are_solved_against_outlines():
-    """
-    Outline substitution should apply to multiline strings within a scenario
-    """
-
-    expected_multiline = '<div>outline value</div>'
-
-    scenario = parse_scenario(
-        OUTLINED_SCENARIO_WITH_SUBSTITUTIONS_IN_MULTILINE)
-    step = solved_steps(scenario)[0]
-
-    assert_equal(type(step), Step)
-    assert_equal(step.multiline, expected_multiline)
-
-
-def test_solved_steps_also_have_scenario_as_attribute():
-    """
-    Steps solved in scenario outlines also have scenario as attribute
-    """
-
-    scenario = parse_scenario(OUTLINED_SCENARIO)
-    for step in solved_steps(scenario):
-        assert_equal(step.scenario, scenario)
-
-
-def test_scenario_outlines_within_feature():
-    """
-    Solving scenario outlines within a feature
-    """
-
-    feature = Feature.from_string(OUTLINED_FEATURE)
-    scenario = feature.scenarios[0]
-    solved = solved_steps(scenario)
-
-    assert_equal(len(solved), 12)
-    expected_sentences = [
-        'Given I have entered 20 into the calculator',
-        'And I have entered 30 into the calculator',
-        'When I press add',
-        'Then the result should be 50 on the screen',
-        'Given I have entered 2 into the calculator',
-        'And I have entered 5 into the calculator',
-        'When I press add',
-        'Then the result should be 7 on the screen',
-        'Given I have entered 0 into the calculator',
-        'And I have entered 40 into the calculator',
-        'When I press add',
-        'Then the result should be 40 on the screen',
-    ]
-
-    for step, expected in zip(solved, expected_sentences):
-        assert_equal(type(step), Step)
-        assert_equal(step.sentence, expected)
-
-
-def test_full_featured_feature():
-    """
-    Solving scenarios within a full-featured feature
-    """
-
-    feature = Feature.from_string(OUTLINED_FEATURE_WITH_MANY)
-    scenario1, scenario2, scenario3, scenario4 = feature.scenarios
-
-    assert_equal(scenario1.name, 'Do something')
-    assert_equal(scenario2.name, 'Do something else')
-    assert_equal(scenario3.name, 'Worked!')
-    assert_equal(scenario4.name, 'Add two numbers wisely')
-
-    solved = solved_steps(scenario1)
-
-    assert_equal(len(solved), 2)
-    expected_sentences = [
-        'Given I have entered ok into the fail',
-        'Given I have entered fail into the ok',
-    ]
-    for step, expected in zip(solved, expected_sentences):
-        assert_equal(step.sentence, expected)
-
-    expected_evaluated = (
-        (
-            {'button': 'add', 'input_1': '20',
-             'input_2': '30', 'output': '50'},
-            [
-                'Given I have entered 20 into the calculator',
-                'And I have entered 30 into the calculator',
-                'When I press add',
-                'Then the result should be 50 on the screen',
-            ]
-        ),
-        (
-            {'button': 'add', 'input_1': '2',
-             'input_2': '5', 'output': '7'},
-            [
-                'Given I have entered 2 into the calculator',
-                'And I have entered 5 into the calculator',
-                'When I press add',
-                'Then the result should be 7 on the screen',
-            ]
-        ),
-        (
-            {'button': 'add', 'input_1': '0',
-             'input_2': '40', 'output': '40'},
-            [
-                'Given I have entered 0 into the calculator',
-                'And I have entered 40 into the calculator',
-                'When I press add',
-                'Then the result should be 40 on the screen',
-            ],
-        ),
-        (
-            {'button': 'add', 'input_1': '5',
-             'input_2': '7', 'output': '12'},
-            [
-                'Given I have entered 5 into the calculator',
-                'And I have entered 7 into the calculator',
-                'When I press add',
-                'Then the result should be 12 on the screen',
-            ],
+        self.assertEqual(scenario.steps[0].keys, ('Name', 'Duration'))
+        self.assertEqual(
+            scenario.steps[0].hashes,
+            (
+                {'Name': 'Computer Science', 'Duration': '5 years'},
+                {'Name': 'Nutrition', 'Duration': '4 years'},
+            )
         )
-    )
-    for ((got_examples, got_steps), (expected_examples, expected_steps)) \
-            in zip(scenario4.evaluated, expected_evaluated):
-        assert_equal(got_examples, expected_examples)
-        assert_equal([x.sentence for x in got_steps],
-                     expected_steps)
 
+    def test_scenario_may_own_outlines(self):
+        """
+        A scenario may own outlines
+        """
 
-@skip("FIXME: Gherkin parser allows this")
-def test_scenario_with_table_and_no_step_fails():
-    "A step table imediately after the scenario line, without step line fails"
+        scenario = parse_scenario(OUTLINED_SCENARIO)
 
-    with assert_raises(AloeSyntaxError):
-        parse_scenario(SCENARIO_FAILED)
+        self.assertEqual(len(scenario.steps), 4)
+        expected_sentences = [
+            'Given I have entered <input_1> into the calculator',
+            'And I have entered <input_2> into the calculator',
+            'When I press <button>',
+            'Then the result should be <output> on the screen',
+        ]
 
+        for step, expected_sentence in zip(scenario.steps, expected_sentences):
+            self.assertEqual(type(step), Step)
+            self.assertEqual(step.sentence, expected_sentence)
 
-def test_scenario_ignore_commented_lines_from_examples():
-    "Comments on scenario example should be ignored"
-    scenario = parse_scenario(OUTLINED_SCENARIO_WITH_COMMENTS_ON_EXAMPLES)
-
-    assert_equal(
-        scenario.outlines,
-        (
-            {'input_1': '20', 'input_2': '30',
-             'button': 'add', 'output': '50'},
-            {'input_1': '0', 'input_2': '40',
-             'button': 'add', 'output': '40'},
+        self.assertEqual(scenario.name, "Add two numbers")
+        self.assertEqual(
+            scenario.outlines,
+            (
+                {'input_1': '20', 'input_2': '30',
+                 'button': 'add', 'output': '50'},
+                {'input_1': '2', 'input_2': '5',
+                 'button': 'add', 'output': '7'},
+                {'input_1': '0', 'input_2': '40',
+                 'button': 'add', 'output': '40'},
+            )
         )
-    )
 
+    def test_steps_parsed_by_scenarios_has_scenarios(self):
+        """
+        Steps parsed by scenarios has scenarios
+        """
 
-def test_scenario_aggregate_all_examples_blocks():
-    "All scenario's examples block should be translated to outlines"
-    scenario = parse_scenario(
-        OUTLINED_SCENARIO_WITH_MORE_THAN_ONE_EXAMPLES_BLOCK)
+        scenario = parse_scenario(SCENARIO1)
+        for step in scenario.steps:
+            self.assertEqual(step.scenario, scenario)
 
-    assert_equal(
-        scenario.outlines,
-        (
-            {'input_1': '20', 'input_2': '30',
-             'button': 'add', 'output': '50'},
-            {'input_1': '2', 'input_2': '5',
-             'button': 'add', 'output': '7'},
-            {'input_1': '0', 'input_2': '40',
-             'button': 'add', 'output': '40'},
-            {'input_1': '20', 'input_2': '33',
-             'button': 'add', 'output': '53'},
-            {'input_1': '12', 'input_2': '40',
-             'button': 'add', 'output': '52'},
+    def test_scenario_sentences_can_be_solved(self):
+        """
+        A scenario with outlines may solve its sentences
+        """
+        scenario = parse_scenario(OUTLINED_SCENARIO)
+        solved = solved_steps(scenario)
+
+        self.assertEqual(len(solved), 12)
+        expected_sentences = [
+            'Given I have entered 20 into the calculator',
+            'And I have entered 30 into the calculator',
+            'When I press add',
+            'Then the result should be 50 on the screen',
+            'Given I have entered 2 into the calculator',
+            'And I have entered 5 into the calculator',
+            'When I press add',
+            'Then the result should be 7 on the screen',
+            'Given I have entered 0 into the calculator',
+            'And I have entered 40 into the calculator',
+            'When I press add',
+            'Then the result should be 40 on the screen',
+        ]
+
+        for step, expected in zip(solved, expected_sentences):
+            self.assertEqual(type(step), Step)
+            self.assertEqual(step.sentence, expected)
+
+    def test_scenario_tables_are_solved_against_outlines(self):
+        """
+        Outline substitution should apply to tables within a scenario
+        """
+
+        expected_hashes_per_step = [
+            # a = 1, b = 2
+            ({'Parameter': 'a', 'Value': '1'},
+             {'Parameter': 'b', 'Value': '2'}),  # Given ...
+            (),  # When I run the program
+            (),  # Then I crash hard-core
+
+            # a = 2, b = 4
+            ({'Parameter': 'a', 'Value': '2'},
+             {'Parameter': 'b', 'Value': '4'}),
+            (),
+            ()
+        ]
+
+        scenario = parse_scenario(OUTLINED_SCENARIO_WITH_SUBSTITUTIONS_IN_TABLE)
+        solved = solved_steps(scenario)
+        for step, expected in zip(solved, expected_hashes_per_step):
+            self.assertEqual(type(step), Step)
+            self.assertEqual(step.hashes, expected)
+
+    def test_scenario_multilines_are_solved_against_outlines(self):
+        """
+        Outline substitution should apply to multiline strings within a scenario
+        """
+
+        expected_multiline = '<div>outline value</div>'
+
+        scenario = parse_scenario(
+            OUTLINED_SCENARIO_WITH_SUBSTITUTIONS_IN_MULTILINE)
+        step = solved_steps(scenario)[0]
+
+        self.assertEqual(type(step), Step)
+        self.assertEqual(step.multiline, expected_multiline)
+
+    def test_solved_steps_also_have_scenario_as_attribute(self):
+        """
+        Steps solved in scenario outlines also have scenario as attribute
+        """
+
+        scenario = parse_scenario(OUTLINED_SCENARIO)
+        for step in solved_steps(scenario):
+            self.assertEqual(step.scenario, scenario)
+
+    def test_scenario_outlines_within_feature(self):
+        """
+        Solving scenario outlines within a feature
+        """
+
+        feature = Feature.from_string(OUTLINED_FEATURE)
+        scenario = feature.scenarios[0]
+        solved = solved_steps(scenario)
+
+        self.assertEqual(len(solved), 12)
+        expected_sentences = [
+            'Given I have entered 20 into the calculator',
+            'And I have entered 30 into the calculator',
+            'When I press add',
+            'Then the result should be 50 on the screen',
+            'Given I have entered 2 into the calculator',
+            'And I have entered 5 into the calculator',
+            'When I press add',
+            'Then the result should be 7 on the screen',
+            'Given I have entered 0 into the calculator',
+            'And I have entered 40 into the calculator',
+            'When I press add',
+            'Then the result should be 40 on the screen',
+        ]
+
+        for step, expected in zip(solved, expected_sentences):
+            self.assertEqual(type(step), Step)
+            self.assertEqual(step.sentence, expected)
+
+    def test_full_featured_feature(self):
+        """
+        Solving scenarios within a full-featured feature
+        """
+
+        feature = Feature.from_string(OUTLINED_FEATURE_WITH_MANY)
+        scenario1, scenario2, scenario3, scenario4 = feature.scenarios
+
+        self.assertEqual(scenario1.name, 'Do something')
+        self.assertEqual(scenario2.name, 'Do something else')
+        self.assertEqual(scenario3.name, 'Worked!')
+        self.assertEqual(scenario4.name, 'Add two numbers wisely')
+
+        solved = solved_steps(scenario1)
+
+        self.assertEqual(len(solved), 2)
+        expected_sentences = [
+            'Given I have entered ok into the fail',
+            'Given I have entered fail into the ok',
+        ]
+        for step, expected in zip(solved, expected_sentences):
+            self.assertEqual(step.sentence, expected)
+
+        expected_evaluated = (
+            (
+                {'button': 'add', 'input_1': '20',
+                 'input_2': '30', 'output': '50'},
+                [
+                    'Given I have entered 20 into the calculator',
+                    'And I have entered 30 into the calculator',
+                    'When I press add',
+                    'Then the result should be 50 on the screen',
+                ]
+            ),
+            (
+                {'button': 'add', 'input_1': '2',
+                 'input_2': '5', 'output': '7'},
+                [
+                    'Given I have entered 2 into the calculator',
+                    'And I have entered 5 into the calculator',
+                    'When I press add',
+                    'Then the result should be 7 on the screen',
+                ]
+            ),
+            (
+                {'button': 'add', 'input_1': '0',
+                 'input_2': '40', 'output': '40'},
+                [
+                    'Given I have entered 0 into the calculator',
+                    'And I have entered 40 into the calculator',
+                    'When I press add',
+                    'Then the result should be 40 on the screen',
+                ],
+            ),
+            (
+                {'button': 'add', 'input_1': '5',
+                 'input_2': '7', 'output': '12'},
+                [
+                    'Given I have entered 5 into the calculator',
+                    'And I have entered 7 into the calculator',
+                    'When I press add',
+                    'Then the result should be 12 on the screen',
+                ],
+            )
         )
-    )
+        for ((got_examples, got_steps), (expected_examples, expected_steps)) \
+                in zip(scenario4.evaluated, expected_evaluated):
+            self.assertEqual(got_examples, expected_examples)
+            self.assertEqual([x.sentence for x in got_steps],
+                             expected_steps)
 
+    @unittest.skip("FIXME: Gherkin parser allows this")
+    def test_scenario_with_table_and_no_step_fails(self):
+        """
+        A step table imediately after the scenario line, without step line
+        fails
+        """
 
-def test_commented_scenarios():
-    "A scenario string that contains lines starting with '#' will be commented"
-    scenario = parse_scenario(COMMENTED_SCENARIO)
-    assert_equal(scenario.name,
-                 'Adding some students to my university database')
-    assert_equal(len(scenario.steps), 4)
+        with self.assertRaises(AloeSyntaxError):
+            parse_scenario(SCENARIO_FAILED)
 
+    def test_scenario_ignore_commented_lines_from_examples(self):
+        "Comments on scenario example should be ignored"
+        scenario = parse_scenario(OUTLINED_SCENARIO_WITH_COMMENTS_ON_EXAMPLES)
 
-def test_scenario_with_hash_within_double_quotes():
-    ("Scenarios have hashes within double quotes and yet don't "
-     "consider them as comments")
+        self.assertEqual(
+            scenario.outlines,
+            (
+                {'input_1': '20', 'input_2': '30',
+                 'button': 'add', 'output': '50'},
+                {'input_1': '0', 'input_2': '40',
+                 'button': 'add', 'output': '40'},
+            )
+        )
 
-    scenario = parse_scenario(
-        INLINE_COMMENTS_IGNORED_WITHIN_DOUBLE_QUOTES)
+    def test_scenario_aggregate_all_examples_blocks(self):
+        "All scenario's examples block should be translated to outlines"
+        scenario = parse_scenario(
+            OUTLINED_SCENARIO_WITH_MORE_THAN_ONE_EXAMPLES_BLOCK)
 
-    step1, step2 = scenario.steps
+        self.assertEqual(
+            scenario.outlines,
+            (
+                {'input_1': '20', 'input_2': '30',
+                 'button': 'add', 'output': '50'},
+                {'input_1': '2', 'input_2': '5',
+                 'button': 'add', 'output': '7'},
+                {'input_1': '0', 'input_2': '40',
+                 'button': 'add', 'output': '40'},
+                {'input_1': '20', 'input_2': '33',
+                 'button': 'add', 'output': '53'},
+                {'input_1': '12', 'input_2': '40',
+                 'button': 'add', 'output': '52'},
+            )
+        )
 
-    assert step1.sentence == u'Given I am logged in on twitter'
-    assert step2.sentence == u'When I search for the hashtag "#hammer"'
+    def test_commented_scenarios(self):
+        """
+        A scenario string that contains lines starting with '#' will be
+        commented
+        """
+        scenario = parse_scenario(COMMENTED_SCENARIO)
+        self.assertEqual(scenario.name,
+                         'Adding some students to my university database')
+        self.assertEqual(len(scenario.steps), 4)
 
+    def test_scenario_with_hash_within_double_quotes(self):
+        """
+        Scenarios have hashes within double quotes and yet don't consider them
+        as comments
+        """
 
-def test_scenario_with_hash_within_single_quotes():
-    ("Scenarios have hashes within single quotes and yet don't "
-     "consider them as comments")
+        scenario = parse_scenario(
+            INLINE_COMMENTS_IGNORED_WITHIN_DOUBLE_QUOTES)
 
-    scenario = parse_scenario(
-        INLINE_COMMENTS_IGNORED_WITHIN_SINGLE_QUOTES)
+        step1, step2 = scenario.steps
 
-    step1, step2 = scenario.steps
+        assert step1.sentence == u'Given I am logged in on twitter'
+        assert step2.sentence == u'When I search for the hashtag "#hammer"'
 
-    assert step1.sentence == u'Given I am logged in on twitter'
-    assert step2.sentence == u"When I search for the hashtag '#hammer'"
+    def test_scenario_with_hash_within_single_quotes(self):
+        ("Scenarios have hashes within single quotes and yet don't "
+         "consider them as comments")
+
+        scenario = parse_scenario(
+            INLINE_COMMENTS_IGNORED_WITHIN_SINGLE_QUOTES)
+
+        step1, step2 = scenario.steps
+
+        assert step1.sentence == u'Given I am logged in on twitter'
+        assert step2.sentence == u"When I search for the hashtag '#hammer'"
