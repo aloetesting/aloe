@@ -15,6 +15,7 @@ import itertools
 import os
 import unittest
 
+from aloe.exceptions import AloeSyntaxError
 from aloe.fs import FeatureLoader
 from aloe.registry import CALLBACK_REGISTRY
 
@@ -108,7 +109,12 @@ class GherkinLoader(unittest.loader.TestLoader):
         tests contained.
         """
 
-        test = self.test_class.from_file(file_)
+        try:
+            test = self.test_class.from_file(file_)
+        except AloeSyntaxError as exc:
+            # pylint:disable=protected-access
+            yield unittest.loader._FailedTest('feature', exc)
+            return
 
         # About to run a feature - ensure "before all" callbacks have run
         self.run_before_callbacks()
