@@ -9,6 +9,8 @@
 - The options to select test via tags have changed from `-a tag` and `-a !tag`
   to `--tag tag` and `--exclude-tag tag`. This is consistent with Django's
   implementation.
+- The environment variable to set base test class has changed from
+  `NOSE_GHERKIN_CLASS` to `GHERKIN_TEST_CASE`.
 
 ## 0.1.8
 

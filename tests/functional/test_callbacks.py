@@ -119,12 +119,12 @@ class CallbackTest(FeatureTest):
     def test_testcase_methods(self):
         """Test setUp and tearDown on the test class."""
 
-        os.environ['NOSE_GHERKIN_CLASS'] = \
+        os.environ['GHERKIN_TEST_CASE'] = \
             'tests.callbacks_app.features.steps.CallbackTestCase'
         try:
             self.assert_feature_success('features/testcase_methods.feature')
         finally:
-            del os.environ['NOSE_GHERKIN_CLASS']
+            del os.environ['GHERKIN_TEST_CASE']
 
         # Each scenario and outline example must be a separate test, preceded
         # by setUp() and followed by tearDown().

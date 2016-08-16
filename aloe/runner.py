@@ -75,11 +75,8 @@ class TestProgram(unittest.TestProgram):
 
         test_class_name = \
             '{c.__module__}.{c.__name__}'.format(c=self.test_class)
-        # Accept the old NOSE_GHERKIN_CLASS environment variable as well as
-        # GHERKIN_CLASS
-        for test_class_var in ('NOSE_GHERKIN_CLASS', 'GHERKIN_CLASS'):
-            if test_class_var in os.environ:
-                test_class_name = os.environ[test_class_var]
+        if 'GHERKIN_TEST_CASE' in os.environ:
+            test_class_name = os.environ['GHERKIN_TEST_CASE']
 
         parser.add_argument(
             '--test-class', action='store',
