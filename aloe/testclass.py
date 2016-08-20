@@ -17,6 +17,8 @@ import ast
 import unittest
 from contextlib import contextmanager
 
+from future.utils import as_native_str, python_2_unicode_compatible
+
 from aloe.codegen import make_function
 from aloe.fs import path_to_module_name
 from aloe.parser import (
@@ -91,6 +93,7 @@ class TestFeature(Feature):
     scenario_class = TestScenario
 
 
+@python_2_unicode_compatible
 class TestCase(unittest.TestCase):
     """
     The base test class for tests compiled from Gherkin features.
@@ -145,6 +148,7 @@ class TestCase(unittest.TestCase):
                                *definition['args'],
                                **definition['kwargs'])
 
+    @as_native_str()
     def shortDescription(self):
         return str(self)
 
