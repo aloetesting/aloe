@@ -11,11 +11,10 @@ from __future__ import absolute_import
 import sys
 from inspect import getsourcefile
 
-from nose.importer import Importer
-
 from aloe import world
 from aloe.exceptions import StepDiscoveryError
 
+from aloe.fs import Importer
 from aloe.testing import (
     FeatureTest,
     in_directory,
