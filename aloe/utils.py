@@ -27,7 +27,7 @@ def dummy_cm():
     pass
 
 
-PY3 = sys.version_info >= (3, 0)
+PY2 = sys.version_info < (3, 0)
 
 
 def identifier(value):
@@ -38,15 +38,13 @@ def identifier(value):
     encoded.
     """
 
-    if PY3:
-        return value
-    else:
+    if PY2:
         return value.encode('unicode_escape')
+    else:
+        return value
 
 
-if PY3:
-    TestWrapperIO = io.StringIO  # pylint:disable=invalid-name
-else:
+if PY2:
     class TestWrapperIO(io.StringIO):
         """A wrapper for capturing output in tests."""
 
@@ -63,6 +61,8 @@ else:
             except TypeError:
                 super().write(str_.decode('utf-8'))
             # pylint:enable=super-on-old-class
+else:
+    TestWrapperIO = io.StringIO  # pylint:disable=invalid-name
 
 
 def unwrap_function(func):

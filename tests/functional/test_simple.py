@@ -20,7 +20,7 @@ from aloe.testing import (
     FeatureTest,
     in_directory,
 )
-from aloe.utils import PY3, TestWrapperIO
+from aloe.utils import PY2, TestWrapperIO
 
 # Pylint cannot infer the attributes on world
 # pylint:disable=no-member
@@ -152,14 +152,7 @@ AssertionError
 
         self.assertIn(error_header, output)
 
-        if PY3:
-            feature_stack_frame = """
-  File "{feature}", line 12, in 添加两个数值
-    那么结果应该是40
-            """.strip().format(feature=failing_feature)
-
-            self.assertIn(feature_stack_frame, output)
-        else:
+        if PY2:
             # Cannot use non-ASCII method names in Python 2
             feature_stack_frame = """
   File "{feature}", line 12, in
@@ -169,6 +162,13 @@ AssertionError
 
             feature_code_line = "那么结果应该是40"
             self.assertIn(feature_code_line, output)
+        else:
+            feature_stack_frame = """
+  File "{feature}", line 12, in 添加两个数值
+    那么结果应该是40
+            """.strip().format(feature=failing_feature)
+
+            self.assertIn(feature_stack_frame, output)
 
         step_file = self.step_module_filename('features.steps')
 

@@ -10,7 +10,7 @@ from __future__ import absolute_import
 from builtins import super
 # pylint:enable=redefined-builtin
 
-from aloe.utils import PY3
+from aloe.utils import PY2
 
 
 class AloeSyntaxError(SyntaxError):
@@ -48,7 +48,7 @@ class NoDefinitionFound(Exception):
 # Step definitions can contain Unicode, and that will propagate to the
 # exception message. On Python 2, this makes handling such exceptions tricky,
 # so force encoding the message as Unicode.
-if not PY3:
+if PY2:
     NoDefinitionFound.__str__ = lambda self: self.message.encode('utf-8')
 
 
