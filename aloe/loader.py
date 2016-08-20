@@ -18,6 +18,7 @@ import unittest
 from aloe.exceptions import AloeSyntaxError
 from aloe.fs import FeatureLoader
 from aloe.registry import CALLBACK_REGISTRY
+from aloe.utils import identifier
 
 
 def _make_failed_test(exception):
@@ -28,7 +29,7 @@ def _make_failed_test(exception):
         raise exception
 
     attrs = {'test_failure': test_failure}
-    test_class = type('AloeFailedTest', (unittest.TestCase,), attrs)
+    test_class = type(identifier('AloeFailedTest'), (unittest.TestCase,), attrs)
     return test_class('test_failure')
 
 
