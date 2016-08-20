@@ -278,7 +278,31 @@ AssertionError
         Test that the Python test does not get picked up.
         """
 
-        self.assert_feature_success('tests')
+        self.assert_feature_success('discover', 'test')
+
+    def test_python_test_included(self):
+        """Test that the Python test is included if asked."""
+
+        stream = TestWrapperIO()
+        self.assert_feature_fail(
+            'discover', '--no-ignore-python', 'test',
+            stream=stream,
+        )
+
+        output = stream.getvalue()
+        self.assertIn("A Python test is run.", output)
+
+    def test_run_python_test_only(self):
+        """Test running a Python test explicitly."""
+
+        stream = TestWrapperIO()
+        self.assert_feature_fail(
+            '--no-ignore-python', 'test.test_python',
+            stream=stream,
+        )
+
+        output = stream.getvalue()
+        self.assertIn("A Python test is run.", output)
 
     def test_non_ascii_files(self):
         """

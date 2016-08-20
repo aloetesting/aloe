@@ -141,10 +141,10 @@ class TestProgram(unittest.TestProgram):
             ),
         )
 
-    def _getMainArgParser(self, parent):  # pylint:disable=invalid-name
+    def _getParentArgParser(self):  # pylint:disable=invalid-name
         """Add arguments specific to Aloe."""
 
-        parser = super()._getMainArgParser(parent)  # pylint:disable=no-member
+        parser = super()._getParentArgParser()  # pylint:disable=no-member
         self.add_aloe_options(parser)
         return parser
 
@@ -155,12 +155,15 @@ class TestProgram(unittest.TestProgram):
 
         return super().createTests()
 
-    def _do_discovery(self, *args, **kwargs):
+    def _do_discovery(self, argv, Loader=None):
         """Set up loader before running discovery."""
 
-        self.setup_loader()
+        if PY2:
+            parser = argparse.ArgumentParser(add_help=False)
+            self.add_aloe_options(parser)
+            _, argv = parser.parse_known_args(argv, self)
 
-        return super()._do_discovery(*args, **kwargs)
+        return super()._do_discovery(argv, Loader=self.setup_loader)
 
     def setup_loader(self):
         """Pass extra options to the test loader."""
@@ -182,6 +185,8 @@ class TestProgram(unittest.TestProgram):
 
         self.testLoader.tags = set(self.tags or ())
         self.testLoader.exclude_tags = set(self.exclude_tags or ())
+
+        return self.testLoader
 
     def runTests(self):
         """Run the "all" level callbacks."""

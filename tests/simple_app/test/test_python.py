@@ -25,4 +25,4 @@ class NormalTestCase(unittest.TestCase):
         A test to check whether the Python tests are running.
         """
 
-        raise AssertionError("This test should not be run.")
+        raise AssertionError("A Python test is run.")

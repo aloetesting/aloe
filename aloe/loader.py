@@ -44,6 +44,7 @@ class GherkinLoader(unittest.loader.TestLoader):
         super().__init__()
 
         # Will be set by the main test program
+        self.ignore_python = True
         self.scenario_indices = None
         self.tags = None
         self.exclude_tags = None
@@ -70,10 +71,15 @@ class GherkinLoader(unittest.loader.TestLoader):
 
         self.load_steps()
 
-        tests = itertools.chain.from_iterable(
-            self.tests_from_directory(feature_dir)
-            for feature_dir in self.feature_dirs
-        )
+        # tests is an iterable, Pylint warns about generator/chain
+        # pylint:disable=redefined-variable-type
+        tests = self.tests_from_directory(start_dir)
+
+        if not self.ignore_python:
+            python_tests = super().discover(start_dir, pattern=pattern,
+                                            top_level_dir=top_level_dir)
+            tests = itertools.chain(tests, python_tests)
+
         return self.suiteClass(tests)
 
     def loadTestsFromName(self, name, module=None):
@@ -81,15 +87,20 @@ class GherkinLoader(unittest.loader.TestLoader):
 
         self.load_steps()
 
+        # tests is an iterable, Pylint warns about generator/list/chain
+        # pylint:disable=redefined-variable-type
         if os.path.isdir(name):
             tests = self.tests_from_directory(name)
-        else:
+        elif os.path.isfile(name):
             tests = self.tests_from_file(name)
-        return self.suiteClass(tests)
+        else:
+            tests = []
 
-    def loadTestsFromModule(self, *args, **kwargs):
-        """Ignore Python tests."""
-        return self.suiteClass([])
+        if not self.ignore_python:
+            python_tests = super().loadTestsFromName(name, module=module)
+            tests = itertools.chain(tests, python_tests)
+
+        return self.suiteClass(tests)
 
     def is_feature_directory(self, directory):
         """
@@ -163,7 +174,7 @@ class GherkinLoader(unittest.loader.TestLoader):
         An iterable of all the feature files within a specified directory.
         """
 
-        for path, _, files in os.walk(directory):
+        for path, _, files in os.walk(directory, followlinks=True):
             if self.is_feature_directory(path):
                 for filename in fnmatch.filter(files, '*.feature'):
                     yield os.path.join(path, filename)

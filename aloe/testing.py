@@ -178,7 +178,7 @@ class TestTestProgram(TestProgram):
 
         self.testLoader.tests_run = self.tests_run
 
-        super().setup_loader()
+        return super().setup_loader()
 
     def extra_runner_args(self):
         """Pass the stream to the test runner."""
