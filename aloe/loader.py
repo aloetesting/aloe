@@ -81,13 +81,11 @@ class GherkinLoader(unittest.loader.TestLoader):
 
         self.load_steps()
 
-        if isinstance(name, str):
-            if os.path.isdir(name):
-                tests = self.tests_from_directory(name)
-            else:
-                tests = self.tests_from_file(name)
-            return self.suiteClass(tests)
-        raise NotImplementedError
+        if os.path.isdir(name):
+            tests = self.tests_from_directory(name)
+        else:
+            tests = self.tests_from_file(name)
+        return self.suiteClass(tests)
 
     def loadTestsFromModule(self, *args, **kwargs):
         """Ignore Python tests."""
