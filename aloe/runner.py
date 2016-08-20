@@ -10,6 +10,7 @@ from __future__ import absolute_import
 from builtins import super
 # pylint:enable=redefined-builtin
 
+import argparse
 import os
 import unittest
 
@@ -18,7 +19,7 @@ from importlib import import_module
 from aloe.loader import GherkinLoader
 from aloe.result import AloeTestResult
 from aloe.testclass import TestCase
-from aloe.utils import callable_type
+from aloe.utils import callable_type, PY2
 
 
 class GherkinRunner(unittest.runner.TextTestRunner):
@@ -68,10 +69,21 @@ class TestProgram(unittest.TestProgram):
             'force_color': self.force_color,
         }
 
-    def _getMainArgParser(self, parent):
-        """Add arguments specific to Aloe."""
+    def parseArgs(self, argv):
+        """
+        On Python 2, extract the Aloe arguments from the command line before
+        passing on.
+        """
 
-        parser = super()._getMainArgParser(parent)
+        if PY2:
+            parser = argparse.ArgumentParser(add_help=False)
+            self.add_aloe_options(parser)
+            _, argv = parser.parse_known_args(argv, self)
+
+        return super().parseArgs(argv)
+
+    def add_aloe_options(self, parser):
+        """Add Aloe options to the parser."""
 
         test_class_name = \
             '{c.__module__}.{c.__name__}'.format(c=self.test_class)
@@ -123,6 +135,11 @@ class TestProgram(unittest.TestProgram):
             ),
         )
 
+    def _getMainArgParser(self, parent):
+        """Add arguments specific to Aloe."""
+
+        parser = super()._getMainArgParser(parent)
+        self.add_aloe_options(parser)
         return parser
 
     def createTests(self):

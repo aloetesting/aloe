@@ -183,7 +183,8 @@ class TestTestProgram(TestProgram):
     def extra_runner_args(self):
         """Pass the stream to the test runner."""
         kwargs = super().extra_runner_args()
-        kwargs['stream'] = self.stream
+        if self.stream:
+            kwargs['stream'] = self.stream
         return kwargs
 
     def __init__(self, *args, **kwargs):
