@@ -46,10 +46,23 @@ class TestProgram(unittest.TestProgram):
     gherkin_loader = GherkinLoader
     test_class = TestCase
 
+    # Options set by parsing arguments
+    force_color = False
+    ignore_python = True
+    scenario_indices = ''
+    tags = []
+    exclude_tags = []
+
     def __init__(self, *args, **kwargs):
         """
         Enable Gherkin loading plugins and run the tests.
         """
+
+        if 'GHERKIN_TEST_CASE' in os.environ:
+            self.test_class_name = os.environ['GHERKIN_TEST_CASE']
+        else:
+            self.test_class_name = \
+                '{c.__module__}.{c.__name__}'.format(c=self.test_class)
 
         kwargs.setdefault('testLoader', self.gherkin_loader())
         kwargs.setdefault('testRunner', callable_type(self.make_runner))
@@ -63,8 +76,6 @@ class TestProgram(unittest.TestProgram):
     def extra_runner_args(self):
         """Extra arguments to pass to the test runner."""
 
-        # These options are put onto self by parseArgs from the base class
-        # pylint:disable=no-member
         return {
             'force_color': self.force_color,
         }
@@ -85,28 +96,23 @@ class TestProgram(unittest.TestProgram):
     def add_aloe_options(self, parser):
         """Add Aloe options to the parser."""
 
-        test_class_name = \
-            '{c.__module__}.{c.__name__}'.format(c=self.test_class)
-        if 'GHERKIN_TEST_CASE' in os.environ:
-            test_class_name = os.environ['GHERKIN_TEST_CASE']
-
         parser.add_argument(
             '--test-class', action='store',
             dest='test_class_name',
-            default=test_class_name,
+            default=self.test_class_name,
             metavar='TEST_CLASS',
             help='Base class to use for the generated tests',
         )
         parser.add_argument(
             '--no-ignore-python', action='store_false',
             dest='ignore_python',
-            default=True,
+            default=self.ignore_python,
             help='Run Python and Gherkin tests together',
         )
         parser.add_argument(
             '-n', '--scenario-indices', action='store',
             dest='scenario_indices',
-            default='',
+            default=self.scenario_indices,
             help='Only run scenarios with these indices (comma-separated)',
         )
         parser.add_argument(
@@ -117,7 +123,7 @@ class TestProgram(unittest.TestProgram):
         parser.add_argument(
             '--color', action='store_true',
             dest='force_color',
-            default=False,
+            default=self.force_color,
             help='Force colored output',
         )
         parser.add_argument(
@@ -159,8 +165,6 @@ class TestProgram(unittest.TestProgram):
     def setup_loader(self):
         """Pass extra options to the test loader."""
 
-        # These options are put onto self by parseArgs from the base class
-        # pylint:disable=no-member
         self.testLoader.force_color = self.force_color
         self.testLoader.ignore_python = self.ignore_python
 

@@ -43,7 +43,7 @@ class StepLoadingTest(FeatureTest):
         nor features not in directories named "features" should be run.
         """
 
-        result = self.assert_feature_success()
+        result = self.assert_feature_success('discover')
         self.assert_tests_run(
             result,
             'features/single.feature',

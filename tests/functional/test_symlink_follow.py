@@ -24,7 +24,7 @@ class SymlinkLoadingTest(FeatureTest):
         Test that we can discover feature in a symlinked module.
         """
 
-        result = self.assert_feature_success()
+        result = self.assert_feature_success('discover')
         self.assert_tests_run(
             result,
             'common_app/features/symlinked.feature',

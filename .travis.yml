@@ -18,7 +18,7 @@ script:
     - pep8 .
     - pylint aloe aloe_sphinx tests
     - coverage erase
-    - coverage run -m unittest -v -b
+    - coverage run -m unittest discover -v -b
     - coverage report
     - ./tools/check_installs
     - make -C docs coverage

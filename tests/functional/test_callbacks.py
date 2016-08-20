@@ -113,7 +113,7 @@ class CallbackTest(FeatureTest):
 
         # Run all the features; some will fail because they expect only a
         # subset to be run
-        self.run_features()
+        self.run_features('discover')
         self.assertEqual(''.join(world.all), '{[ABCD]}')
 
     def test_testcase_methods(self):
@@ -246,7 +246,7 @@ class MultipleDirectoriesCallbackTest(FeatureTest):
         directories.
         """
 
-        self.assert_feature_success()
+        self.assert_feature_success('discover')
 
         self.assertEqual(world.started_callbacks_one, {
             'one': True,
