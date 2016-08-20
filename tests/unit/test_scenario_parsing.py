@@ -438,14 +438,14 @@ class ScenarioParsingTest(unittest.TestCase):
         """
 
         feature = Feature.from_string(OUTLINED_FEATURE_WITH_MANY)
-        scenario1, scenario2, scenario3, scenario4 = feature.scenarios
+        scenarios = feature.scenarios
 
-        self.assertEqual(scenario1.name, 'Do something')
-        self.assertEqual(scenario2.name, 'Do something else')
-        self.assertEqual(scenario3.name, 'Worked!')
-        self.assertEqual(scenario4.name, 'Add two numbers wisely')
+        self.assertEqual(scenarios[0].name, 'Do something')
+        self.assertEqual(scenarios[1].name, 'Do something else')
+        self.assertEqual(scenarios[2].name, 'Worked!')
+        self.assertEqual(scenarios[3].name, 'Add two numbers wisely')
 
-        solved = solved_steps(scenario1)
+        solved = solved_steps(scenarios[0])
 
         self.assertEqual(len(solved), 2)
         expected_sentences = [
@@ -498,7 +498,7 @@ class ScenarioParsingTest(unittest.TestCase):
             )
         )
         for ((got_examples, got_steps), (expected_examples, expected_steps)) \
-                in zip(scenario4.evaluated, expected_evaluated):
+                in zip(scenarios[3].evaluated, expected_evaluated):
             self.assertEqual(got_examples, expected_examples)
             self.assertEqual([x.sentence for x in got_steps],
                              expected_steps)

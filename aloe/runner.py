@@ -135,10 +135,10 @@ class TestProgram(unittest.TestProgram):
             ),
         )
 
-    def _getMainArgParser(self, parent):
+    def _getMainArgParser(self, parent):  # pylint:disable=invalid-name
         """Add arguments specific to Aloe."""
 
-        parser = super()._getMainArgParser(parent)
+        parser = super()._getMainArgParser(parent)  # pylint:disable=no-member
         self.add_aloe_options(parser)
         return parser
 
