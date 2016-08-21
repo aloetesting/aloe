@@ -20,12 +20,12 @@ from functools import wraps
 from aloe import world
 from aloe.fs import path_to_module_name
 from aloe.loader import GherkinLoader
+from aloe.main import TestProgram
 from aloe.registry import (
     CALLBACK_REGISTRY,
     PriorityClass,
     STEP_REGISTRY,
 )
-from aloe.runner import TestProgram
 
 
 @contextmanager

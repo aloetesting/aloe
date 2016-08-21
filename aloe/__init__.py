@@ -30,7 +30,7 @@ def main(argv=None):  # pragma: no cover
     if argv is None:
         argv = sys.argv
 
-    from aloe.runner import TestProgram
+    from aloe.main import TestProgram
     TestProgram(module=None, argv=argv)
 
 if __name__ == '__main__':  # pragma: no cover
