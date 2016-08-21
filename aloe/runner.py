@@ -58,8 +58,8 @@ class TestProgram(unittest.TestProgram):
         Enable Gherkin loading plugins and run the tests.
         """
 
-        if 'GHERKIN_TEST_CASE' in os.environ:
-            self.test_class_name = os.environ['GHERKIN_TEST_CASE']
+        if 'GHERKIN_TEST_CLASS' in os.environ:
+            self.test_class_name = os.environ['GHERKIN_TEST_CLASS']
         else:
             self.test_class_name = \
                 '{c.__module__}.{c.__name__}'.format(c=self.test_class)

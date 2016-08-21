@@ -10,7 +10,7 @@
   to `--tag tag` and `--exclude-tag tag`. This is consistent with Django's
   implementation.
 - The environment variable to set base test class has changed from
-  `NOSE_GHERKIN_CLASS` to `GHERKIN_TEST_CASE`.
+  `NOSE_GHERKIN_CLASS` to `GHERKIN_TEST_CLASS`.
 
 ## 0.1.8
 
