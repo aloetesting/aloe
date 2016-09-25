@@ -19,6 +19,7 @@ try:
 except ImportError:
     from repoze.lru import lru_cache
 from contextlib import contextmanager
+from importlib import import_module
 
 
 @contextmanager
@@ -142,3 +143,14 @@ def callable_type(func):
             return func(*args, **kwargs)
 
     return FuncClass
+
+
+def module_attribute(path):
+    """
+    Resolve an attribute of a module given its dotted path such as
+    'unittest.TestCase' or 'sys.path'.
+    """
+
+    module_name, class_name = path.rsplit('.', 1)
+    module = import_module(module_name)
+    return getattr(module, class_name)

@@ -126,6 +126,8 @@ class GherkinLoader(unittest.loader.TestLoader):
         @scenario_name The scenario name
         """
 
+        # pylint:disable=unsupported-membership-test
+        # scenario_indices is either None or an iterable
         if self.scenario_indices:
             if scenario_index not in self.scenario_indices:
                 return False
@@ -146,6 +148,8 @@ class GherkinLoader(unittest.loader.TestLoader):
         """
 
         try:
+            # pylint:disable=no-member
+            # test_class is set by AloeOptions
             test = self.test_class.from_file(file_)
         except AloeSyntaxError as exc:
             yield _make_failed_test(exc)

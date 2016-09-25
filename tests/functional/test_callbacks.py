@@ -8,7 +8,6 @@ from __future__ import division
 from __future__ import absolute_import
 
 import operator
-import os
 from functools import reduce  # pylint:disable=redefined-builtin
 
 from aloe import world
@@ -16,7 +15,9 @@ from aloe.testclass import TestCase
 from aloe.testing import (
     FeatureTest,
     in_directory,
+    TestTestProgram,
 )
+from aloe.utils import module_attribute
 
 # Pylint cannot infer the attributes on world
 # pylint:disable=no-member
@@ -119,12 +120,12 @@ class CallbackTest(FeatureTest):
     def test_testcase_methods(self):
         """Test setUp and tearDown on the test class."""
 
-        os.environ['GHERKIN_TEST_CLASS'] = \
-            'tests.callbacks_app.features.steps.CallbackTestCase'
+        TestTestProgram.test_class = module_attribute(
+            'tests.callbacks_app.features.steps.CallbackTestCase')
         try:
             self.assert_feature_success('features/testcase_methods.feature')
         finally:
-            del os.environ['GHERKIN_TEST_CLASS']
+            delattr(TestTestProgram, 'test_class')
 
         # Each scenario and outline example must be a separate test, preceded
         # by setUp() and followed by tearDown().

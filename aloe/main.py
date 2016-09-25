@@ -13,89 +13,54 @@ from builtins import super
 import argparse
 import os
 import unittest
-from importlib import import_module
 
 from aloe.loader import GherkinLoader
 from aloe.runner import GherkinRunner
 from aloe.testclass import TestCase
-from aloe.utils import callable_type, PY2
+from aloe.utils import callable_type, module_attribute, PY2
 
 
-class TestProgram(unittest.TestProgram):
-    """
-    A test program loading Gherkin tests.
-    """
+def test_class_name(test_class):
+    """The test class name, possibly overridden by GHERKIN_TEST_CLASS."""
+    if 'GHERKIN_TEST_CLASS' in os.environ:
+        return os.environ['GHERKIN_TEST_CLASS']
+    else:
+        return '{c.__module__}.{c.__name__}'.format(c=test_class)
 
-    gherkin_loader = GherkinLoader
-    test_class = TestCase
+
+class AloeOptions(object):
+    """A mixin for parsing Aloe-specific options and passing them through."""
 
     # Options set by parsing arguments
+    test_class = TestCase
     force_color = False
     ignore_python = True
     scenario_indices = ''
     tags = []
     exclude_tags = []
 
-    def __init__(self, *args, **kwargs):
-        """
-        Enable Gherkin loading plugins and run the tests.
-        """
-
-        if 'GHERKIN_TEST_CLASS' in os.environ:
-            self.test_class_name = os.environ['GHERKIN_TEST_CLASS']
-        else:
-            self.test_class_name = \
-                '{c.__module__}.{c.__name__}'.format(c=self.test_class)
-
-        kwargs.setdefault('testLoader', self.gherkin_loader())
-        kwargs.setdefault('testRunner', callable_type(self.make_runner))
-        super().__init__(*args, **kwargs)
-
-    def make_runner(self, *args, **kwargs):
-        """Pass extra arguments to the test runner."""
-        kwargs.update(self.extra_runner_args())
-        return GherkinRunner(*args, **kwargs)
-
-    def extra_runner_args(self):
-        """Extra arguments to pass to the test runner."""
-
-        return {
-            'force_color': self.force_color,
-        }
-
-    def parseArgs(self, argv):
-        """
-        On Python 2, extract the Aloe arguments from the command line before
-        passing on.
-        """
-
-        if PY2:
-            parser = argparse.ArgumentParser(add_help=False)
-            self.add_aloe_options(parser)
-            _, argv = parser.parse_known_args(argv, self)
-
-        return super().parseArgs(argv)
-
-    def add_aloe_options(self, parser):
+    @classmethod
+    def add_aloe_options(cls, parser):
         """Add Aloe options to the parser."""
 
         parser.add_argument(
             '--test-class', action='store',
-            dest='test_class_name',
-            default=self.test_class_name,
+            dest='test_class',
+            default=test_class_name(cls.test_class),
+            type=module_attribute,
             metavar='TEST_CLASS',
             help='Base class to use for the generated tests',
         )
         parser.add_argument(
             '--no-ignore-python', action='store_false',
             dest='ignore_python',
-            default=self.ignore_python,
+            default=cls.ignore_python,
             help='Run Python and Gherkin tests together',
         )
         parser.add_argument(
             '-n', '--scenario-indices', action='store',
             dest='scenario_indices',
-            default=self.scenario_indices,
+            default=cls.scenario_indices,
             help='Only run scenarios with these indices (comma-separated)',
         )
         parser.add_argument(
@@ -106,7 +71,7 @@ class TestProgram(unittest.TestProgram):
         parser.add_argument(
             '--color', action='store_true',
             dest='force_color',
-            default=self.force_color,
+            default=cls.force_color,
             help='Force colored output',
         )
         parser.add_argument(
@@ -123,6 +88,72 @@ class TestProgram(unittest.TestProgram):
                 'Can be used multiple times.'
             ),
         )
+
+    def configure_loader(self, test_loader):
+        """
+        Pass extra options to the test loader.
+
+        The options are assumed to have been put onto self by parsing the
+        arguments in add_aloe_options.
+        """
+
+        test_loader.force_color = self.force_color
+        test_loader.ignore_python = self.ignore_python
+
+        if self.scenario_indices:
+            test_loader.scenario_indices = tuple(
+                int(index)
+                for index in self.scenario_indices.split(',')
+            )
+        else:
+            test_loader.scenario_indices = None
+
+        test_loader.test_class = self.test_class
+
+        test_loader.tags = set(self.tags or ())
+        test_loader.exclude_tags = set(self.exclude_tags or ())
+
+    def extra_runner_args(self):
+        """Extra arguments to pass to the test runner."""
+
+        return {
+            'force_color': self.force_color,
+        }
+
+
+class TestProgram(AloeOptions, unittest.TestProgram):
+    """
+    A test program loading Gherkin tests.
+    """
+
+    gherkin_loader = GherkinLoader
+
+    def __init__(self, *args, **kwargs):
+        """
+        Enable Gherkin loading plugins and run the tests.
+        """
+
+        kwargs.setdefault('testLoader', self.gherkin_loader())
+        kwargs.setdefault('testRunner', callable_type(self.make_runner))
+        super().__init__(*args, **kwargs)
+
+    def make_runner(self, *args, **kwargs):
+        """Pass extra arguments to the test runner."""
+        kwargs.update(self.extra_runner_args())
+        return GherkinRunner(*args, **kwargs)
+
+    def parseArgs(self, argv):
+        """
+        On Python 2, extract the Aloe arguments from the command line before
+        passing on.
+        """
+
+        if PY2:
+            parser = argparse.ArgumentParser(add_help=False)
+            self.add_aloe_options(parser)
+            _, argv = parser.parse_known_args(argv, self)
+
+        return super().parseArgs(argv)
 
     def _getParentArgParser(self):  # pylint:disable=invalid-name
         """Add arguments specific to Aloe."""
@@ -151,24 +182,7 @@ class TestProgram(unittest.TestProgram):
     def setup_loader(self):
         """Pass extra options to the test loader."""
 
-        self.testLoader.force_color = self.force_color
-        self.testLoader.ignore_python = self.ignore_python
-
-        if self.scenario_indices:
-            self.testLoader.scenario_indices = tuple(
-                int(index)
-                for index in self.scenario_indices.split(',')
-            )
-        else:
-            self.testLoader.scenario_indices = None
-
-        module_name, class_name = self.test_class_name.rsplit('.', 1)
-        module = import_module(module_name)
-        self.testLoader.test_class = getattr(module, class_name)
-
-        self.testLoader.tags = set(self.tags or ())
-        self.testLoader.exclude_tags = set(self.exclude_tags or ())
-
+        self.configure_loader(self.testLoader)
         return self.testLoader
 
     def runTests(self):
