@@ -39,7 +39,7 @@ Common regular expressions for capturing data
 
         @step(r'I visit ([^\s]+)')
 
-Step Loading
+Step loading
 ------------
 
 Steps can and should be defined in separate modules to the main application
@@ -48,6 +48,10 @@ directories.
 
 Additional 3rd-party steps (such as `aloe_django`_) can be imported in from
 your ``__init__.py``.
+
+An imported step can be overridden by using :meth:`unregister()` on the
+function registered as a step. It can be then reused by defining a new step
+with the same or different sentence.
 
 .. include:: links.rst
 
