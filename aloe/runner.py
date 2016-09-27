@@ -12,6 +12,7 @@ from builtins import super
 
 import unittest
 
+from aloe.registry import CALLBACK_REGISTRY
 from aloe.result import AloeTestResult
 
 
@@ -29,3 +30,8 @@ class GherkinRunner(unittest.runner.TextTestRunner):
         """Construct an overridden result with extra arguments."""
         kwargs['force_color'] = self.force_color
         return AloeTestResult(*args, **kwargs)
+
+    def run(self, test):
+        """Run the "all" level callbacks."""
+
+        return CALLBACK_REGISTRY.wrap('all', super().run)(test)

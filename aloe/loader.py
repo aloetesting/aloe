@@ -19,7 +19,6 @@ import unittest
 
 from aloe.exceptions import AloeSyntaxError
 from aloe.fs import FeatureLoader
-from aloe.registry import CALLBACK_REGISTRY
 from aloe.utils import identifier
 
 
@@ -155,9 +154,6 @@ class GherkinLoader(unittest.loader.TestLoader):
             yield _make_failed_test(exc)
             return
 
-        # About to run a feature - ensure "before all" callbacks have run
-        self.run_before_callbacks()
-
         # Filter the scenarios, if asked
         for idx, scenario_name in test.scenarios():
             if self.scenario_matches(test, idx, scenario_name):
@@ -182,18 +178,3 @@ class GherkinLoader(unittest.loader.TestLoader):
             if self.is_feature_directory(path):
                 for filename in fnmatch.filter(files, '*.feature'):
                     yield os.path.join(path, filename)
-
-    def run_before_callbacks(self):
-        """Run the "before all" callbacks."""
-
-        if not hasattr(self, 'after_hook'):
-            before_all, after_all = CALLBACK_REGISTRY.before_after('all')
-            before_all()
-            self.after_hook = after_all
-
-    def run_after_callbacks(self):
-        """Run the "after all" callbacks."""
-
-        if hasattr(self, 'after_hook'):
-            self.after_hook()
-            delattr(self, 'after_hook')
