@@ -2,10 +2,12 @@
 Unittest main working with Gherkin tests.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 # pylint:disable=redefined-builtin
 from builtins import super
 # pylint:enable=redefined-builtin

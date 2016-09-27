@@ -178,4 +178,4 @@ def check_types(self):
                         ('bool', bool),
                         ('date', date)):
         # pylint:disable=unidiomatic-typecheck
-        assert type(getattr(MyWeirdObject.ref, attr)) == type_
+        assert type(getattr(MyWeirdObject.ref, attr)) is type_

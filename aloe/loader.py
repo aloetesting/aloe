@@ -2,10 +2,12 @@
 Loader for tests written in Gherkin.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 # pylint:disable=redefined-builtin,wildcard-import,unused-wildcard-import
 from builtins import *
 # pylint:enable=redefined-builtin,wildcard-import,unused-wildcard-import
@@ -57,10 +59,8 @@ class GherkinLoader(unittest.loader.TestLoader):
         if self.steps_loaded:
             return
 
-        self.feature_dirs = [
-            dir_
-            for dir_ in FeatureLoader.find_feature_directories('.')
-        ]
+        self.feature_dirs = list(FeatureLoader.find_feature_directories('.'))
+
         for feature_dir in self.feature_dirs:
             FeatureLoader.find_and_load_step_definitions(feature_dir)
 
