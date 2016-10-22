@@ -639,7 +639,10 @@ class Description(Node):
         """
 
         line = self.lines[idx]
-        result = ' ' * self.indent + line
+        if line:
+            result = ' ' * self.indent + line
+        else:
+            result = ''
 
         return result
 

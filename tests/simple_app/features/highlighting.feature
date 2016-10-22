@@ -5,6 +5,8 @@ Feature: Highlighting
   I want to see my scenarios with pretty highlighting
   So my output is easy to read
 
+  非ASCII字显示得正常
+
   # Comments are not shown
 
   Background:
