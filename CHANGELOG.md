@@ -1,11 +1,21 @@
 # Change Log
 
-## 0.1.9
+## 0.1.11
+
+### Fixed
+
+- Fix de-synchornized release process
+
+## 0.1.10
 
 ### Fixed
 
 - Steps with non-ASCII characters can be run in verbose output mode on
   Python 2.7 (#123).
+
+## 0.1.9
+
+Never released due to issues with the release process
 
 ## 0.1.8
 
