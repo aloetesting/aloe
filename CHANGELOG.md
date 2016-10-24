@@ -1,5 +1,12 @@
 # Change Log
 
+## Unreleased
+
+### Fixed
+
+- Steps with non-ASCII characters can be run in verbose output mode on
+  Python 2.7 (#123).
+
 ## 0.1.8
 
 ### Fixed

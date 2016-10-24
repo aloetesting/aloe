@@ -22,7 +22,7 @@ from aloe.registry import (
 )
 from aloe.strings import ljust, represent_table
 from aloe.tools import hook_not_reentrant
-from aloe.utils import memoizedproperty
+from aloe.utils import memoizedproperty, PY3
 from nose.result import TextTestResult
 
 # A decorator to add callbacks which wrap the steps looser than all the other
@@ -83,6 +83,11 @@ class Terminal(blessings.Terminal):
         :param return_: if True return the cursor back to where it was
             before the write.
         """
+
+        # On Python 2, the default output encoding is ASCII
+        if not PY3:
+            arg = arg.encode('utf-8')
+
         self.stream.write(arg)
 
         if return_:

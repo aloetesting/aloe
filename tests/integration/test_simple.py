@@ -32,6 +32,17 @@ class SimpleIntegrationTest(unittest.TestCase):
         exitcode, _ = self.run_feature('features/calculator.feature')
         self.assertEqual(exitcode, 0, "Feature run successfully.")
 
+    def test_success_zh(self):
+        """
+        Test running a simple feature with non-ASCII characters, with verbose
+        output.
+        """
+
+        exitcode, out = self.run_feature('features/calculator_zh.feature',
+                                         '--verbosity=3')
+        print(out)
+        self.assertEqual(exitcode, 0, "Feature run successfully.")
+
     def test_failure(self):
         """
         Test running a failing feature.
