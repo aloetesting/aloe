@@ -1,5 +1,12 @@
 # Change Log
 
+## Unreleased
+
+### Fixed
+
+- Steps with non-ASCII characters can be run in the terminal on Python 2.7
+  (#124).
+
 ## 0.1.11
 
 ### Fixed
