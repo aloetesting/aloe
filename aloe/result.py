@@ -85,10 +85,7 @@ class Terminal(blessings.Terminal):
         """
 
         # On Python 2, the default output encoding is ASCII
-        if not PY3:
-            arg = arg.encode('utf-8')
-
-        self.stream.write(arg)
+        self.stream.write(arg if PY3 else arg.encode('utf-8'))
 
         if return_:
             self.stream.write(self.move_up * arg.count('\n'))
