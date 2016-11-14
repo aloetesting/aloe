@@ -33,7 +33,7 @@ if __name__ == '__main__':
                     'aloe = aloe.plugin:GherkinPlugin',
                 ],
                 'console_scripts': [
-                    'aloe = aloe:main',
+                    'aloe = aloe.__main__:main',
                 ],
             },
 
