@@ -59,7 +59,7 @@ def multi_manager(*managers):
     Returns a tuple with all the manager results.
     """
 
-    if len(managers) == 0:
+    if not managers:
         source = dedent(
             """
             def null_manager(*args, **kwargs):

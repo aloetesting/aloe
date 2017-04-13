@@ -308,7 +308,7 @@ def run_example(self):
         in the feature file.
         """
 
-        assert len(steps) > 0
+        assert steps
 
         step_definitions = [
             cls.prepare_step(step)

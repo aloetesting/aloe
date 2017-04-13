@@ -111,8 +111,8 @@ class GherkinPlugin(Plugin):
         super().configure(options, conf)
 
         module_name, class_name = options.test_class_name.rsplit('.', 1)
-        module = import_module(module_name)
-        self.test_class = getattr(module, class_name)
+        test_class_module = import_module(module_name)
+        self.test_class = getattr(test_class_module, class_name)
         self.ignore_python = options.ignore_python
 
         conf.force_color = options.force_color

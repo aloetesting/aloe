@@ -201,8 +201,8 @@ class TestRunner(Runner):
 
         super().__init__(*args, **kwargs)
 
-    def makeConfig(self, *args, **kwargs):
-        config = super().makeConfig(*args, **kwargs)
+    def makeConfig(self, env, plugins=None):
+        config = super().makeConfig(env, plugins=plugins)
 
         if self.stream:
             config.stream = self.stream

@@ -46,7 +46,6 @@ def guess_types(data):  # pylint:disable=too-complex
         data = data.decode()
 
     if isinstance(data, str):
-        # pylint:disable=redefined-variable-type
         if data == "true":
             data = True
         elif data == "false":
@@ -62,7 +61,6 @@ def guess_types(data):  # pylint:disable=too-complex
             pass
 
         return data
-        # pylint:enable=redefined-variable-type
 
     # if it's a dict, recurse as a dict
     if isinstance(data, dict):
@@ -105,7 +103,7 @@ def hook_not_reentrant(func):
         so replace it with a no-op.
         """
 
-        def generator():
+        def generator_func():
             """
             Hide the generator in a separate function
             because Python 2 can't support "returning from generators"
@@ -121,7 +119,7 @@ def hook_not_reentrant(func):
                     entered[0] = False
 
         if inspect.isgeneratorfunction(func):
-            return generator()
+            return generator_func()
         else:
             if not entered[0]:
                 try:
