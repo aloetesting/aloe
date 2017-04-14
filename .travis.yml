@@ -16,7 +16,7 @@ cache:
         - $HOME/virtualenv
 
 script:
-    - pep8 .
+    - pycodestyle .
     - pylint aloe aloe_sphinx tests
     - coverage erase
     - coverage run -m nose
