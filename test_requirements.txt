@@ -1,7 +1,7 @@
 coverage
 factory_boy
 mock
-pep8
+pycodestyle
 pylint>=1.7.0
 pylint-mccabe
 setuptools_scm
