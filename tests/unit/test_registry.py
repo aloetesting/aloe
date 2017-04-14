@@ -232,7 +232,7 @@ def test_StepDict_can_exclude_callable_object_when_load_steps():
     no_step = NoStep()
     steps.load_steps(no_step)
 
-    assert len(steps) == 0
+    assert not steps
 
 
 def test_unload_reload():
