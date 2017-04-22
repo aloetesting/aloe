@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Test level 3 outputter
 """
@@ -96,12 +97,14 @@ Feature: Highlighting
   I want to see my scenarios with pretty highlighting
   So my output is easy to read
 
-  Scenario: behave_as works                            # features/highlighting.feature:13
+  非ASCII字显示得正常
+
+  Scenario: behave_as works                            # features/highlighting.feature:15
     Given I have a table
     Given I have entered 10 into the calculator
     And I press [+]
 
-  Scenario Outline: Scenario outlines                  # features/highlighting.feature:17
+  Scenario Outline: Scenario outlines                  # features/highlighting.feature:19
       | number |
       | 30     |
 
@@ -109,7 +112,7 @@ Feature: Highlighting
     Given I have entered 30 into the calculator
     And I press add
 
-  Scenario Outline: Scenario outlines                  # features/highlighting.feature:17
+  Scenario Outline: Scenario outlines                  # features/highlighting.feature:19
       | number |
       | 40     |
 
@@ -118,7 +121,7 @@ Feature: Highlighting
     And I press add
 
   @tables
-  Scenario: Scenario with table                        # features/highlighting.feature:27
+  Scenario: Scenario with table                        # features/highlighting.feature:29
     Given I have a table
     Given I have a table:
       | value |
@@ -126,7 +129,7 @@ Feature: Highlighting
       | 1     |
       | 2     |
 
-  Scenario: Scenario with a multiline                  # features/highlighting.feature:34
+  Scenario: Scenario with a multiline                  # features/highlighting.feature:36
     Given I have a table
     Given I have a table:
       \"\"\"
@@ -152,12 +155,14 @@ Feature: Highlighting
   I want to see my scenarios with pretty highlighting
   So my output is easy to read
 
-  Scenario: behave_as works                            t.grey(# features/highlighting.feature:13)
+  非ASCII字显示得正常
+
+  Scenario: behave_as works                            t.grey(# features/highlighting.feature:15)
 t.green(Given I have a table)
 t.green(Given I have entered 10 into the calculator)
 t.green(And I press [+])
 
-  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:17)
+  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:19)
       | number |
       | 30     |
 
@@ -165,7 +170,7 @@ t.green(Given I have a table)
 t.green(Given I have entered 30 into the calculator)
 t.green(And I press add)
 
-  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:17)
+  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:19)
       | number |
       | 40     |
 
@@ -174,7 +179,7 @@ t.green(Given I have entered 40 into the calculator)
 t.green(And I press add)
 
 t.cyan(@tables)
-  Scenario: Scenario with table                        t.grey(# features/highlighting.feature:27)
+  Scenario: Scenario with table                        t.grey(# features/highlighting.feature:29)
 t.green(Given I have a table)
 t.green(Given I have a table:)
       | t.green(value) |
@@ -182,7 +187,7 @@ t.green(Given I have a table:)
       | t.green(1) |
       | t.green(2) |
 
-  Scenario: Scenario with a multiline                  t.grey(# features/highlighting.feature:34)
+  Scenario: Scenario with a multiline                  t.grey(# features/highlighting.feature:36)
 t.green(Given I have a table)
 t.green(Given I have a table:)
       \"\"\"
@@ -223,12 +228,14 @@ Feature: Highlighting
   I want to see my scenarios with pretty highlighting
   So my output is easy to read
 
-  Scenario: behave_as works                            t.grey(# features/highlighting.feature:13)
+  非ASCII字显示得正常
+
+  Scenario: behave_as works                            t.grey(# features/highlighting.feature:15)
 t.blue(Given I have a table)
 t.blue(Given I have entered 10 into the calculator)
 t.blue(And I press [+])
 
-  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:17)
+  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:19)
       | number |
       | 30     |
 
@@ -236,7 +243,7 @@ t.blue(Given I have a table)
 t.blue(Given I have entered 30 into the calculator)
 t.blue(And I press add)
 
-  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:17)
+  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:19)
       | number |
       | 40     |
 
@@ -245,7 +252,7 @@ t.blue(Given I have entered 40 into the calculator)
 t.blue(And I press add)
 
 t.cyan(@tables)
-  Scenario: Scenario with table                        t.grey(# features/highlighting.feature:27)
+  Scenario: Scenario with table                        t.grey(# features/highlighting.feature:29)
 t.blue(Given I have a table)
 t.blue(Given I have a table:)
       | t.blue(value) |
@@ -253,7 +260,7 @@ t.blue(Given I have a table:)
       | t.blue(1) |
       | t.blue(2) |
 
-  Scenario: Scenario with a multiline                  t.grey(# features/highlighting.feature:34)
+  Scenario: Scenario with a multiline                  t.grey(# features/highlighting.feature:36)
 t.blue(Given I have a table)
 t.blue(Given I have a table:)
       \"\"\"
@@ -284,7 +291,9 @@ Feature: Highlighting
   I want to see my scenarios with pretty highlighting
   So my output is easy to read
 
-  Scenario: behave_as works                            t.grey(# features/highlighting.feature:13)
+  非ASCII字显示得正常
+
+  Scenario: behave_as works                            t.grey(# features/highlighting.feature:15)
 t.grey(Given I have a table
     Given I have entered 10 into the calculator
     And I press [+])

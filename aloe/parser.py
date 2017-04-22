@@ -639,7 +639,10 @@ class Description(Node):
         """
 
         line = self.lines[idx]
-        result = ' ' * self.indent + line
+        if line:
+            result = ' ' * self.indent + line
+        else:
+            result = ''
 
         return result
 
@@ -715,15 +718,12 @@ class Feature(HeaderNode, TaggedNode):
         """
 
         parser = Parser()
-        # pylint:disable=redefined-variable-type
-        # https://bitbucket.org/logilab/pylint/issues/710
         if language:
             if language == 'pt-br':
                 language = 'pt'
             token_matcher = LanguageTokenMatcher(language)
         else:
             token_matcher = TokenMatcher()
-        # pylint:enable=redefined-variable-type
 
         if string:
             token_scanner = TokenScanner(string=string)

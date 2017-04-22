@@ -12,6 +12,30 @@
 - The environment variable to set base test class has changed from
   `NOSE_GHERKIN_CLASS` to `GHERKIN_TEST_CLASS`.
 
+## 0.1.12
+
+### Fixed
+
+- Steps with non-ASCII characters can be run in the terminal on Python 2.7
+  (#124).
+
+## 0.1.11
+
+### Fixed
+
+- Fix de-synchornized release process
+
+## 0.1.10
+
+### Fixed
+
+- Steps with non-ASCII characters can be run in verbose output mode on
+  Python 2.7 (#123).
+
+## 0.1.9
+
+Never released due to issues with the release process
+
 ## 0.1.8
 
 ### Fixed

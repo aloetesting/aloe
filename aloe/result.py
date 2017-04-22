@@ -23,7 +23,7 @@ from aloe.registry import (
 )
 from aloe.strings import ljust, represent_table
 from aloe.tools import hook_not_reentrant
-from aloe.utils import memoizedproperty
+from aloe.utils import memoizedproperty, PY2
 
 # A decorator to add callbacks which wrap the steps looser than all the other
 # callbacks.
@@ -83,7 +83,9 @@ class Terminal(blessings.Terminal):
         :param return_: if True return the cursor back to where it was
             before the write.
         """
-        self.stream.write(arg)
+
+        # On Python 2, the default output encoding is ASCII
+        self.stream.write(arg.encode('utf-8') if PY2 else arg)
 
         if return_:
             self.stream.write(self.move_up * arg.count('\n'))

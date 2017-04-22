@@ -33,5 +33,6 @@ def main(argv=None):  # pragma: no cover
     from aloe.main import TestProgram
     TestProgram(module=None, argv=argv)
 
+
 if __name__ == '__main__':  # pragma: no cover
     main()

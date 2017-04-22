@@ -55,13 +55,10 @@ if PY2:
             and unicode.
             """
 
-            # pylint:disable=super-on-old-class
-            # https://bitbucket.org/logilab/pylint/issues/721
             try:
                 super().write(str_)
             except TypeError:
                 super().write(str_.decode('utf-8'))
-            # pylint:enable=super-on-old-class
 else:
     TestWrapperIO = io.StringIO  # pylint:disable=invalid-name
 
@@ -152,5 +149,5 @@ def module_attribute(path):
     """
 
     module_name, class_name = path.rsplit('.', 1)
-    module = import_module(module_name)
+    module = import_module(module_name)  # pylint:disable=redefined-outer-name
     return getattr(module, class_name)

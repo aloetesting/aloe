@@ -4,6 +4,7 @@ python:
     - "2.7"
     - "3.4"
     - "3.5"
+    - "3.6"
 
 install:
     - pip install -r requirements.txt
@@ -15,7 +16,7 @@ cache:
         - $HOME/virtualenv
 
 script:
-    - pep8 .
+    - pycodestyle .
     - pylint aloe aloe_sphinx tests
     - coverage erase
     - coverage run -m unittest discover -v -b

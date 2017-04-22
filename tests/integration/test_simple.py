@@ -8,6 +8,7 @@ from __future__ import division
 from __future__ import absolute_import
 
 import os
+import pty
 import subprocess
 import unittest
 
@@ -34,6 +35,19 @@ class SimpleIntegrationTest(unittest.TestCase):
             print(output)
             raise AssertionError("Feature should have passed.")
 
+    def test_success_zh(self):
+        """
+        Test running a simple feature with non-ASCII characters, with verbose
+        output.
+        """
+
+        exitcode, out = self.run_feature('features/calculator_zh.feature',
+                                         '--verbose',
+                                         '--progress',
+                                         terminal=True)
+        print(out)
+        self.assertEqual(exitcode, 0, "Feature run successfully.")
+
     def test_failure(self):
         """
         Test running a failing feature.
@@ -45,21 +59,55 @@ class SimpleIntegrationTest(unittest.TestCase):
             print(output)
             raise AssertionError("Feature should have failed.")
 
-    def run_feature(self, *args):
+    def run_feature(self, *args, **kwargs):
         """
         Run a feature and return the (exitcode, output) tuple.
+        :param args: Arguments to pass to the Aloe subprocess
+        :param terminal: Whether to run in a terminal
+        :returns: (exit code, output)
         """
 
-        # Ensure Aloe itself is on the path
-        env = os.environ.copy()
-        env['PYTHONPATH'] = ROOT_PATH
+        # Python 2 doesn't support named kwargs after star-args
+        terminal = kwargs.pop('terminal', False)
+        if kwargs:
+            raise TypeError("Invalid arguments.")
 
+        args = [MAIN] + list(args)
+
+        # Ensure Aloe itself is on the path
+        old_pythonpath = os.environ.get('PYTHONPATH', None)
+        os.environ['PYTHONPATH'] = ROOT_PATH
         try:
-            output = subprocess.check_output(
-                (MAIN,) + args,
-                stderr=subprocess.STDOUT,
-                env=env,
-            )
-            return 0, output
-        except subprocess.CalledProcessError as ex:
-            return ex.returncode, ex.output
+
+            if terminal:
+
+                chunks = [b'']
+
+                def read(file_desc):
+                    """Store the subprocess output."""
+                    data = os.read(file_desc, 1024)
+                    chunks.append(data)
+                    return data
+
+                status = pty.spawn(args, read)  # pylint:disable=assignment-from-no-return
+
+                # On Python 2, pty.spawn doesn't return the exit code
+                if status is None:
+                    (_, status) = os.wait()
+
+                return status, b''.join(chunks)
+
+            try:
+                output = subprocess.check_output(
+                    args,
+                    stderr=subprocess.STDOUT,
+                )
+                return 0, output
+            except subprocess.CalledProcessError as ex:
+                return ex.returncode, ex.output
+
+        finally:
+            if old_pythonpath is None:
+                del os.environ['PYTHONPATH']
+            else:
+                os.environ['PYTHONPATH'] = old_pythonpath

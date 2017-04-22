@@ -71,7 +71,6 @@ class GherkinLoader(unittest.loader.TestLoader):
         self.load_steps()
 
         # tests is an iterable, Pylint warns about generator/chain
-        # pylint:disable=redefined-variable-type
         tests = self.tests_from_directory(start_dir)
 
         if not self.ignore_python:
@@ -81,13 +80,12 @@ class GherkinLoader(unittest.loader.TestLoader):
 
         return self.suiteClass(tests)
 
-    def loadTestsFromName(self, name, module=None):
+    def loadTestsFromName(self, name, module=None):  # pylint:disable=redefined-outer-name
         """Load features from a file or a directory containing them."""
 
         self.load_steps()
 
         # tests is an iterable, Pylint warns about generator/list/chain
-        # pylint:disable=redefined-variable-type
         if os.path.isdir(name):
             tests = self.tests_from_directory(name)
         elif os.path.isfile(name):

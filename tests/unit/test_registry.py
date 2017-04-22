@@ -223,7 +223,7 @@ class StepRegistryTest(unittest.TestCase):
         no_step = NoStep()
         steps.load_steps(no_step)
 
-        assert len(steps) == 0
+        assert not steps
 
     def test_unload_reload(self):
         """
