@@ -3,6 +3,7 @@ Setup script.
 """
 
 from setuptools import setup, find_packages
+import versioneer
 
 if __name__ == '__main__':
     with \
@@ -11,7 +12,8 @@ if __name__ == '__main__':
             open('README.md') as readme:
         setup(
             name='aloe',
-            use_scm_version=True,
+            version=versioneer.get_version(),
+            cmdclass=versioneer.get_cmdclass(),
             description='Gherkin runner compatible with Lettuce',
             author='Alexey Kotlyarov',
             author_email='a@koterpillar.com',
