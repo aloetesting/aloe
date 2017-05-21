@@ -19,6 +19,10 @@ from aloe.registry import (
     step,
 )
 
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
+
 world = threading.local()  # pylint:disable=invalid-name
 
 
@@ -37,6 +41,3 @@ def main(argv=None):  # pragma: no cover
 if __name__ == '__main__':  # pragma: no cover
     main()
 
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
