@@ -16,7 +16,6 @@ from aloe.testing import in_directory
 
 
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-MAIN = os.path.join(ROOT_PATH, 'aloe', '__init__.py')
 
 
 @in_directory('tests/simple_app')
@@ -66,7 +65,7 @@ class SimpleIntegrationTest(unittest.TestCase):
         if kwargs:
             raise TypeError("Invalid arguments.")
 
-        args = [MAIN] + list(args)
+        args = ['python', '-m', 'aloe'] + list(args)
 
         # Ensure Aloe itself is on the path
         old_pythonpath = os.environ.get('PYTHONPATH', None)
