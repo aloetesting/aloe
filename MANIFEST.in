@@ -1,0 +1,13 @@
+include *.md
+include *.txt
+include .coveragerc
+include COPYING
+include LICENSE
+include pylintrc
+recursive-include docs *.py
+recursive-include docs *.rst
+recursive-include docs Makefile
+graft tests
+graft tools`
+include versioneer.py
+include aloe/_version.py
