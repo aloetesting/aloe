@@ -25,6 +25,7 @@ from gherkin.token_scanner import TokenScanner as BaseTokenScanner
 from aloe import strings
 from aloe.exceptions import AloeSyntaxError
 from aloe.utils import memoizedproperty
+from aloe.registry import STEP_REGISTRY, CALLBACK_REGISTRY
 
 # Pylint can't figure out methods vs. properties and which classes are
 # abstract
@@ -540,6 +541,18 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
                 Outline(keys, row)
                 for row in example_table['tableBody']
             )
+
+            def step_scenario(step, *args, **kwargs):
+                for step in self.steps:
+                    if kwargs != {}:
+                        st = step.resolve_substitutions(kwargs)
+                    if args != ():
+                        st = step.resolve_substitutions(dict(zip(keys, args)))
+                    (fun, ar, kw) = STEP_REGISTRY.match_step(st)
+                    fun = CALLBACK_REGISTRY.wrap('step', fun, step)
+                    fun(st, *ar, **kw)
+
+            STEP_REGISTRY.load(self.name, step_scenario)
 
     indent = 2
 
