@@ -11,12 +11,11 @@ from __future__ import absolute_import
 from builtins import zip
 # pylint:enable=redefined-builtin
 
-import tempfile
-
 from nose.tools import assert_equal, assert_raises
 
 from aloe.parser import Feature, Scenario, Background
 from aloe.exceptions import AloeSyntaxError
+from aloe.testing import named_temporary_file
 
 FEATURE1 = """
 Feature: Rent movies
@@ -881,11 +880,11 @@ PARSE ERROR
 def test_syntax_error_malformed_feature_from_file():
     """Parsing a malformed feature in a filecauses a syntax error."""
 
-    with tempfile.NamedTemporaryFile() as feature_file:
+    with named_temporary_file() as feature_file:
         feature_file.write(b"""
 PARSE ERROR
 """)
-        feature_file.flush()
+        feature_file.close()
 
         with assert_raises(AloeSyntaxError) as error:
             Feature.from_file(feature_file.name)
