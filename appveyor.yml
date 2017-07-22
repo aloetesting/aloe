@@ -1,0 +1,32 @@
+environment:
+
+  COVERALLS_REPO_TOKEN: RLLUueWfpObjXUdst49CKrGeh9XFQt3Fu
+
+  matrix:
+    - PYTHON: "C:\\Python36-x64"
+    - PYTHON: "C:\\Python35-x64"
+    - PYTHON: "C:\\Python34-x64"
+    - PYTHON: "C:\\Python27"
+
+install:
+  - git config core.symlinks true
+  - git reset --hard
+  - set PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%
+  - python -m pip install -U pip
+  - python -m easy_install -U setuptools
+  - pip install -r requirements.txt
+  - pip install -r test_requirements.txt
+  - pip install coveralls
+
+build: off
+
+test_script:
+  - pycodestyle .
+  - pylint aloe aloe_sphinx tests
+  - coverage erase
+  - coverage run -m nose
+  - coverage report
+  - tools\\check_installs.bat
+
+on_success:
+  - coveralls
