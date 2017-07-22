@@ -2,6 +2,7 @@ Aloe
 ====
 
 [![Build status](https://img.shields.io/travis/aloetesting/aloe.svg)](https://travis-ci.org/aloetesting/aloe)
+[![Build status](https://img.shields.io/appveyor/ci/aloetesting/aloe.svg)](https://ci.appveyor.com/project/aloetesting/aloe)
 [![Coverage](https://img.shields.io/coveralls/aloetesting/aloe.svg)](https://coveralls.io/github/aloetesting/aloe)
 [![PyPI](https://img.shields.io/pypi/v/aloe.svg)](https://pypi.python.org/pypi/aloe)
 
