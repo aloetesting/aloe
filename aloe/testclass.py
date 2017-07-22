@@ -250,16 +250,16 @@ def run_example(self):
                     scenario,
                     index,
                 )
-        else:
-            yield cls.make_example(
-                cls.make_steps(
+        if scenario.outline_header is None:
+                yield cls.make_example(
+                    cls.make_steps(
+                        scenario,
+                        scenario.steps,
+                        is_background=False,
+                    ),
                     scenario,
-                    scenario.steps,
-                    is_background=False,
-                ),
-                scenario,
-                index,
-            )
+                    index,
+                )
 
     @classmethod
     def make_example(cls, method, scenario, index):

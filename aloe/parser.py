@@ -12,9 +12,11 @@ from builtins import *
 # pylint:enable=redefined-builtin,wildcard-import,unused-wildcard-import
 
 import os
+import re
 from collections import OrderedDict
 from copy import copy
 from io import StringIO
+
 
 from gherkin.dialect import Dialect
 from gherkin.errors import ParserError
@@ -109,6 +111,14 @@ class Node(object):
         result = ' ' * self.indent + self.text.strip()
 
         return result
+
+
+def replace_vars(outline, string):
+            """Replace all the variables in a string."""
+            for key, value in outline.items():
+                key = '<{key}>'.format(key=key)
+                string = string.replace(key, value)
+            return string
 
 
 class Step(Node):
@@ -361,22 +371,15 @@ class Step(Node):
 
         replaced = copy(self)
 
-        def replace_vars(string):
-            """Replace all the variables in a string."""
-            for key, value in outline.items():
-                key = '<{key}>'.format(key=key)
-                string = string.replace(key, value)
-            return string
-
-        replaced.sentence = replace_vars(self.sentence)
+        replaced.sentence = replace_vars(outline, self.sentence)
 
         if self.multiline:
-            replaced.multiline = replace_vars(self.multiline)
+            replaced.multiline = replace_vars(outline, self.multiline)
 
         if self.table:
             replaced.table = tuple(
                 tuple(
-                    replace_vars(cell)
+                    replace_vars(outline, cell)
                     for cell in row
                 )
                 for row in self.table
@@ -532,14 +535,15 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
         # A single scenario can have multiple example blocks, the returned
         # token is a list of table tokens
         self.outlines = ()
+        self.outline_header = None
 
         for example_table in parsed.get('examples', ()):
             # the first row of the table is the column headings
             keys = cell_values(example_table['tableHeader'])
-
+            self.outline_header = keys
             self.outlines += tuple(
                 Outline(keys, row)
-                for row in example_table['tableBody']
+                for row in example_table['tableBody'] if cell_values(row) != keys
             )
 
             def step_scenario(step, *args, **kwargs):
@@ -549,10 +553,11 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
                     if args != ():
                         st = step.resolve_substitutions(dict(zip(keys, args)))
                     (fun, ar, kw) = STEP_REGISTRY.match_step(st)
-                    fun = CALLBACK_REGISTRY.wrap('step', fun, step)
+                    fun = CALLBACK_REGISTRY.wrap('step', fun, st)
                     fun(st, *ar, **kw)
 
             STEP_REGISTRY.load(self.name, step_scenario)
+            self.name = re.sub(r'\([^)]*\)', '<%s>', self.name) % keys
 
     indent = 2
 
