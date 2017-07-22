@@ -73,9 +73,13 @@ where each named parameter must be present in the table.
 
 Scenario outlines have a name and may optionally have tags_.
 
+Scenario outlines can be used as Steps if you defined the scenario name as a
+regular expression that matches the parameters. When called the regex are mapped to
+parameters.
+
 .. code-block:: gherkin
 
-        Scenario Outline: Search is correctly escaped
+        Scenario Outline: Search phrase "([^"]*)" should match "([^"]*)"
             When I search for "<Phrase>" and press enter
             Then I should be at <URL>
 
@@ -83,6 +87,10 @@ Scenario outlines have a name and may optionally have tags_.
                 | Phrase   | URL                |
                 | pets     | /search/pets       |
                 | pet food | /search/pet%20food |
+
+        Scenario: Searches
+          Given Search phrase "pets" should match "/search/pets"
+          Given Search phrase "pet food" should match "/search/pets%20food"
 
 Tags
 ----
