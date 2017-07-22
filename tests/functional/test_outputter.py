@@ -69,14 +69,15 @@ class OutputterTest(FeatureTest):
 
     maxDiff = None
 
+    feature = os.path.join('features', 'highlighting.feature')
+
     def test_uncolored_output(self):
         """Test streamed output"""
 
         stream = TestWrapperIO()
 
         with patch('aloe.result.AloeTestResult.printSummary'):
-            self.run_features('features/highlighting.feature',
-                              verbosity=3, stream=stream)
+            self.run_features(self.feature, verbosity=3, stream=stream)
 
             self.assertEqual(stream.getvalue(), """
 Feature: Highlighting
@@ -87,12 +88,12 @@ Feature: Highlighting
 
   非ASCII字显示得正常
 
-  Scenario: behave_as works                            # features/highlighting.feature:15
+  Scenario: behave_as works                            # {feature}:15
     Given I have a table
     Given I have entered 10 into the calculator
     And I press [+]
 
-  Scenario Outline: Scenario outlines                  # features/highlighting.feature:19
+  Scenario Outline: Scenario outlines                  # {feature}:19
       | number |
       | 30     |
 
@@ -100,7 +101,7 @@ Feature: Highlighting
     Given I have entered 30 into the calculator
     And I press add
 
-  Scenario Outline: Scenario outlines                  # features/highlighting.feature:19
+  Scenario Outline: Scenario outlines                  # {feature}:19
       | number |
       | 40     |
 
@@ -109,7 +110,7 @@ Feature: Highlighting
     And I press add
 
   @tables
-  Scenario: Scenario with table                        # features/highlighting.feature:29
+  Scenario: Scenario with table                        # {feature}:29
     Given I have a table
     Given I have a table:
       | value |
@@ -117,14 +118,14 @@ Feature: Highlighting
       | 1     |
       | 2     |
 
-  Scenario: Scenario with a multiline                  # features/highlighting.feature:36
+  Scenario: Scenario with a multiline                  # {feature}:36
     Given I have a table
     Given I have a table:
       \"\"\"
       Not actually a table :-P
       \"\"\"
 
-""".lstrip())
+""".lstrip().format(feature=self.feature))
 
     def test_color_output(self):
         """Test streamed output with color"""
@@ -134,7 +135,7 @@ Feature: Highlighting
         with \
                 patch('aloe.result.Terminal', new=MockTerminal), \
                 patch('aloe.result.AloeTestResult.printSummary'):
-            self.run_features('features/highlighting.feature',
+            self.run_features(self.feature,
                               verbosity=3, stream=stream,
                               force_color=True)
 
@@ -147,12 +148,12 @@ Feature: Highlighting
 
   非ASCII字显示得正常
 
-  Scenario: behave_as works                            t.grey(# features/highlighting.feature:15)
+  Scenario: behave_as works                            t.grey(# {feature}:15)
 t.green(Given I have a table)
 t.green(Given I have entered 10 into the calculator)
 t.green(And I press [+])
 
-  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:19)
+  Scenario Outline: Scenario outlines                  t.grey(# {feature}:19)
       | number |
       | 30     |
 
@@ -160,7 +161,7 @@ t.green(Given I have a table)
 t.green(Given I have entered 30 into the calculator)
 t.green(And I press add)
 
-  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:19)
+  Scenario Outline: Scenario outlines                  t.grey(# {feature}:19)
       | number |
       | 40     |
 
@@ -169,7 +170,7 @@ t.green(Given I have entered 40 into the calculator)
 t.green(And I press add)
 
 t.cyan(@tables)
-  Scenario: Scenario with table                        t.grey(# features/highlighting.feature:29)
+  Scenario: Scenario with table                        t.grey(# {feature}:29)
 t.green(Given I have a table)
 t.green(Given I have a table:)
       | t.green(value) |
@@ -177,14 +178,14 @@ t.green(Given I have a table:)
       | t.green(1) |
       | t.green(2) |
 
-  Scenario: Scenario with a multiline                  t.grey(# features/highlighting.feature:36)
+  Scenario: Scenario with a multiline                  t.grey(# {feature}:36)
 t.green(Given I have a table)
 t.green(Given I have a table:)
       \"\"\"
       t.green(Not actually a table :-P)
       \"\"\"
 
-""".lstrip())
+""".lstrip().format(feature=self.feature))
 
     @contextmanager
     def environment_override(self, key, value):
@@ -209,7 +210,7 @@ t.green(Given I have a table:)
             with \
                     patch('aloe.result.Terminal', new=MockTerminal), \
                     patch('aloe.result.AloeTestResult.printSummary'):
-                self.run_features('features/highlighting.feature',
+                self.run_features(self.feature,
                                   verbosity=3, stream=stream,
                                   force_color=True)
 
@@ -222,12 +223,12 @@ Feature: Highlighting
 
   非ASCII字显示得正常
 
-  Scenario: behave_as works                            t.grey(# features/highlighting.feature:15)
+  Scenario: behave_as works                            t.grey(# {feature}:15)
 t.blue(Given I have a table)
 t.blue(Given I have entered 10 into the calculator)
 t.blue(And I press [+])
 
-  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:19)
+  Scenario Outline: Scenario outlines                  t.grey(# {feature}:19)
       | number |
       | 30     |
 
@@ -235,7 +236,7 @@ t.blue(Given I have a table)
 t.blue(Given I have entered 30 into the calculator)
 t.blue(And I press add)
 
-  Scenario Outline: Scenario outlines                  t.grey(# features/highlighting.feature:19)
+  Scenario Outline: Scenario outlines                  t.grey(# {feature}:19)
       | number |
       | 40     |
 
@@ -244,7 +245,7 @@ t.blue(Given I have entered 40 into the calculator)
 t.blue(And I press add)
 
 t.cyan(@tables)
-  Scenario: Scenario with table                        t.grey(# features/highlighting.feature:29)
+  Scenario: Scenario with table                        t.grey(# {feature}:29)
 t.blue(Given I have a table)
 t.blue(Given I have a table:)
       | t.blue(value) |
@@ -252,14 +253,14 @@ t.blue(Given I have a table:)
       | t.blue(1) |
       | t.blue(2) |
 
-  Scenario: Scenario with a multiline                  t.grey(# features/highlighting.feature:36)
+  Scenario: Scenario with a multiline                  t.grey(# {feature}:36)
 t.blue(Given I have a table)
 t.blue(Given I have a table:)
       \"\"\"
       t.blue(Not actually a table :-P)
       \"\"\"
 
-""".lstrip())
+""".lstrip().format(feature=self.feature))
 
     def test_tty_output(self):
         """Test streamed output with tty control codes"""
@@ -272,7 +273,7 @@ t.blue(Given I have a table:)
 
             mock_term.is_a_tty = True
             self.run_features('-n', '1',
-                              'features/highlighting.feature',
+                              self.feature,
                               verbosity=3, stream=stream)
 
             # we are going to see the scenario written out 3 times
@@ -287,7 +288,7 @@ Feature: Highlighting
 
   非ASCII字显示得正常
 
-  Scenario: behave_as works                            t.grey(# features/highlighting.feature:15)
+  Scenario: behave_as works                            t.grey(# {feature}:15)
 t.grey(Given I have a table
     Given I have entered 10 into the calculator
     And I press [+])
@@ -298,11 +299,11 @@ t.yellow(Given I have entered 10 into the calculator)
 t.yellow(And I press [+])
 <t.move_up>t.green(And I press [+])
 
-""".lstrip())
+""".lstrip().format(feature=self.feature))
 
     def test_full_color_output_no_mocks(self):
         """Test full color output with no mocks"""
 
         self.assert_feature_success('--color',
-                                    'features/highlighting.feature',
+                                    self.feature,
                                     verbosity=3)

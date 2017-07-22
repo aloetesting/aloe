@@ -108,7 +108,8 @@ class InDirectoryTest(unittest.TestCase):
         Test in_directory on the containing class.
         """
 
-        self.assertTrue(os.getcwd().endswith('tests/functional'))
+        self.assertTrue(os.getcwd().endswith(
+            os.path.join('tests', 'functional')))
 
     @in_directory(relative('../../tests'))
     def test_in_directory_on_method(self):
