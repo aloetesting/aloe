@@ -66,7 +66,7 @@ class SimpleIntegrationTest(unittest.TestCase):
         if kwargs:
             raise TypeError("Invalid arguments.")
 
-        args = [MAIN] + list(args)
+        args = [sys.executable, '-c', 'import aloe; aloe.main()'] + list(args)
 
         # Ensure Aloe itself is on the path
         old_pythonpath = os.environ.get('PYTHONPATH', None)
