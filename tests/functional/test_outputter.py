@@ -12,13 +12,11 @@ from builtins import *
 import os
 from contextlib import contextmanager
 
-import blessings
-
+from aloe.result import Terminal
 from aloe.testing import (
     FeatureTest,
     in_directory,
 )
-from aloe.result import Terminal
 from aloe.utils import TestWrapperIO
 from mock import patch
 
@@ -46,9 +44,14 @@ class MockTermElement(object):
         return str(self) * other
 
 
-MOCK_ATTTRIBUTES = blessings.COLORS | set((
+MOCK_ATTTRIBUTES = set((
+    'blue',
+    'cyan',
+    'green',
     'grey',
     'move_up',
+    'red',
+    'yellow',
 ))
 
 
