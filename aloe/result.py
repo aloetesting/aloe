@@ -43,7 +43,7 @@ try:
 except ImportError:
     # When curses is unavailable, fall back to not coloring the output.
 
-    class NullCallableString(str):
+    class NullCallableString(str):  # pragma: no cover
         """Empty string that returns its argument when called."""
 
         def __new__(cls):
@@ -53,7 +53,7 @@ except ImportError:
         def __call__(self, *args):
             return args[0]
 
-    class BaseTerminal(object):
+    class BaseTerminal(object):  # pragma: no cover
         """Basic terminal functionality without curses."""
 
         def __init__(self, kind=None, stream=None, force_styling=False):
