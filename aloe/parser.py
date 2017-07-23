@@ -114,11 +114,11 @@ class Node(object):
 
 
 def replace_vars(outline, string):
-            """Replace all the variables in a string."""
-            for key, value in outline.items():
-                key = '<{key}>'.format(key=key)
-                string = string.replace(key, value)
-            return string
+    """Replace all the variables in a string."""
+    for key, value in outline.items():
+        key = '<{key}>'.format(key=key)
+        string = string.replace(key, value)
+    return string
 
 
 class Step(Node):
@@ -543,21 +543,24 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
             self.outline_header = keys
             self.outlines += tuple(
                 Outline(keys, row)
-                for row in example_table['tableBody'] if cell_values(row) != keys
+                for row in example_table['tableBody']
+                if cell_values(row) != keys
             )
 
-            def step_scenario(step, *args, **kwargs):
+            def step_scenario(selfstep, *args, **kwargs):
+                """ Create a step that executes the scenario steps """
                 for step in self.steps:
                     if kwargs != {}:
-                        st = step.resolve_substitutions(kwargs)
+                        subs = step.resolve_substitutions(kwargs)
                     if args != ():
-                        st = step.resolve_substitutions(dict(zip(keys, args)))
-                    (fun, ar, kw) = STEP_REGISTRY.match_step(st)
-                    fun = CALLBACK_REGISTRY.wrap('step', fun, st)
-                    fun(st, *ar, **kw)
+                        subs = step.resolve_substitutions(dict(zip(keys, args)))
+                    (fun, args, kwarg) = STEP_REGISTRY.match_step(subs)
+                    fun = CALLBACK_REGISTRY.wrap('step', fun, subs)
+                    fun(subs, *args, **kwarg)
 
             STEP_REGISTRY.load(self.name, step_scenario)
-            self.name = re.sub(r'\([^)]*\)', '<%s>', self.name) % keys
+            if re.match(r'\([^)]*\)', self.name):
+                self.name = re.sub(r'\([^)]*\)', '<%s>', self.name) % keys
 
     indent = 2
 
