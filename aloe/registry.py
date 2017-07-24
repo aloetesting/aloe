@@ -30,6 +30,7 @@ HOOK_WHAT = (
     'all',
     'feature',
     'example',
+    'outline',
     'step',
 )
 
@@ -453,6 +454,7 @@ class CallbackDecorator(object):
 
     each_step = make_decorator('step')
     each_example = make_decorator('example')
+    each_outline = make_decorator('outline')
     each_feature = make_decorator('feature')
     all = make_decorator('all')
 

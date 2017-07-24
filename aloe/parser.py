@@ -537,6 +537,7 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
         self.outlines = ()
         self.outline_header = None
 
+        steps = self.steps
         for example_table in parsed.get('examples', ()):
             # the first row of the table is the column headings
             keys = cell_values(example_table['tableHeader'])
@@ -547,20 +548,30 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
                 if cell_values(row) != keys
             )
 
-            def step_scenario(selfstep, *args, **kwargs):
+            def step_scenario(self, *args, **kwargs):
                 """ Create a step that executes the scenario steps """
-                for step in self.steps:
+                for step in steps:
                     if kwargs != {}:
                         subs = step.resolve_substitutions(kwargs)
                     if args != ():
                         subs = step.resolve_substitutions(dict(zip(keys, args)))
-                    (fun, args, kwarg) = STEP_REGISTRY.match_step(subs)
-                    fun = CALLBACK_REGISTRY.wrap('step', fun, subs)
-                    fun(subs, *args, **kwarg)
+
+                    subs.test = self.test
+                    (fun, argsstep, kwargstep) = STEP_REGISTRY.match_step(subs)
+                    fun(subs, *argsstep, **kwargstep)
 
             STEP_REGISTRY.load(self.name, step_scenario)
-            if re.match(r'\([^)]*\)', self.name):
-                self.name = re.sub(r'\([^)]*\)', '<%s>', self.name) % keys
+            sub = re.sub(r'\([^)]*\)', '<%s>', self.name)
+            if sub.count("<%s>") == len(keys):
+                self.name =  sub % keys
+
+        if self.outline_header is None:
+            def step_scenario(self, *args, **kwargs):
+                """ Create a step that executes the scenario steps """
+                for step in steps:
+                    (fun, argsstep, kwargstep) = STEP_REGISTRY.match_step(step)
+                    fun(step, *argsstep, **kwargstep)
+            STEP_REGISTRY.load(self.name, step_scenario)
 
     indent = 2
 
