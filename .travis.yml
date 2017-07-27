@@ -34,7 +34,6 @@ deploy:
     user: koterpillar
     password:
         secure: "PVNJN8mqJTiJhvSXDC0oi8GZwOySl8o8tAzrsiqk4uNkRwBAciHnUGSnAtt92SBC4eQmrxsnjhxCdfXOVA+SxaVoUBEnIu233EE0/k+ylueiv3VI305iBZWG2Vf0ioISCm2Mxc3Ec9ujwbwFQWXFxUHydNG9PZRjbupVF7Bnn0c="
-    server: https://pypi.python.org/pypi
     on:
         tags: true
         all_branches: true
