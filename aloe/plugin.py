@@ -21,7 +21,11 @@ from nose.plugins.attrib import AttributeSelector
 from aloe.fs import FeatureLoader
 from aloe.registry import CALLBACK_REGISTRY
 from aloe.testclass import TestCase
-from aloe.result import AloeTestResult
+if os.name == "nt":
+    # We are running on Windows, fall back to plain nose result output
+    from nose.result import TextTestResult as TestResult
+else:
+    from aloe.result import AloeTestResult as TestResult
 
 
 class GherkinPlugin(Plugin):
@@ -246,10 +250,10 @@ class GherkinPlugin(Plugin):
         """
         def _makeResult():
             """Build our result"""
-            return AloeTestResult(runner.stream,
-                                  runner.descriptions,
-                                  runner.verbosity,
-                                  runner.config)
+            return TestResult(runner.stream,
+                              runner.descriptions,
+                              runner.verbosity,
+                              runner.config)
 
         runner._makeResult = _makeResult  # pylint:disable=protected-access
 
