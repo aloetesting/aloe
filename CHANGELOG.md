@@ -1,10 +1,14 @@
 # Change Log
 
-## 0.1.13
+## 0.1.14
 
 ### Fixed
 
 - Limited support for running on Windows (#135).
+
+## 0.1.13
+
+Never released due to issues with the release process
 
 ## 0.1.12
 
