@@ -163,6 +163,24 @@ def in_directory(directory):
     return wrapper
 
 
+@contextmanager
+def named_temporary_file(*args, **kwargs):
+    """
+    Create a named temporary file that is removed on exiting the context
+    manager.
+    """
+
+    kwargs['delete'] = False
+    with tempfile.NamedTemporaryFile(*args, **kwargs) as file_:
+        try:
+            yield file_
+        finally:
+            try:
+                os.unlink(file_.name)
+            except OSError:
+                pass
+
+
 class TestGherkinPlugin(GherkinPlugin):
     """
     Test Gherkin plugin.
@@ -235,10 +253,10 @@ class FeatureTest(unittest.TestCase):
             raise ValueError(
                 "Features directory not found in {0}".format(os.getcwd()))
 
-        with tempfile.NamedTemporaryFile(suffix='.feature', dir='features') \
+        with named_temporary_file(suffix='.feature', dir='features') \
                 as feature_file:
             feature_file.write(feature_string.encode('utf-8'))
-            feature_file.flush()
+            feature_file.close()
             return self.run_features(os.path.relpath(feature_file.name))
 
     def run_features(self, *features, **kwargs):

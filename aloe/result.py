@@ -11,10 +11,10 @@ from builtins import *
 # pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
 
 import os
+import sys
 from contextlib import contextmanager
 from functools import wraps
 
-import blessings
 from aloe.registry import (
     CallbackDecorator,
     CALLBACK_REGISTRY,
@@ -38,8 +38,39 @@ outer_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
 # started, which is when the stream is passed in.
 TERMINAL = [None]
 
+try:
+    from blessings import Terminal as BaseTerminal
+except ImportError:
+    # When curses is unavailable, fall back to not coloring the output.
 
-class Terminal(blessings.Terminal):
+    class NullCallableString(str):  # pragma: no cover
+        """Empty string that returns its argument when called."""
+
+        def __new__(cls):
+            new = str.__new__(cls, '')
+            return new
+
+        def __call__(self, *args):
+            return args[0]
+
+    class BaseTerminal(object):  # pragma: no cover
+        """Basic terminal functionality without curses."""
+
+        def __init__(self, kind=None, stream=None, force_styling=False):
+            if stream is None:
+                stream = sys.__stdout__
+            self.stream = stream
+
+        def __getattr__(self, attr):
+            return NullCallableString()
+
+        def __nonzero__(self):
+            return True
+
+        is_a_tty = False
+
+
+class Terminal(BaseTerminal):
     """
     Wrapped Terminal object for display hooks.
 

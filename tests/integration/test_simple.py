@@ -8,15 +8,14 @@ from __future__ import division
 from __future__ import absolute_import
 
 import os
-import pty
 import subprocess
+import sys
 import unittest
 
 from aloe.testing import in_directory
 
 
 ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-MAIN = os.path.join(ROOT_PATH, 'aloe', '__init__.py')
 
 
 @in_directory('tests/simple_app')
@@ -66,7 +65,7 @@ class SimpleIntegrationTest(unittest.TestCase):
         if kwargs:
             raise TypeError("Invalid arguments.")
 
-        args = [MAIN] + list(args)
+        args = [sys.executable, '-c', 'import aloe; aloe.main()'] + list(args)
 
         # Ensure Aloe itself is on the path
         old_pythonpath = os.environ.get('PYTHONPATH', None)
@@ -74,6 +73,10 @@ class SimpleIntegrationTest(unittest.TestCase):
         try:
 
             if terminal:
+                try:
+                    import pty
+                except ImportError:
+                    raise unittest.SkipTest("PTY support unavailable.")
 
                 chunks = [b'']
 
@@ -87,7 +90,7 @@ class SimpleIntegrationTest(unittest.TestCase):
 
                 # On Python 2, pty.spawn doesn't return the exit code
                 if status is None:
-                    (_, status) = os.wait()
+                    (_, status) = os.wait()  # pylint:disable=no-member
 
                 return status, b''.join(chunks)
 

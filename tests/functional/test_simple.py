@@ -363,7 +363,8 @@ class BadStepsTest(FeatureTest):
         # The file that caused the problem should be visible
         self.assertEqual(
             str(raised.exception),
-            "Cannot load step definition file: 'features/steps/__init__.py'"
+            "Cannot load step definition file: '{}'".format(
+                os.path.join('features', 'steps', '__init__.py'))
         )
 
         # The original exception, with an unhelpful error message. Real cause:

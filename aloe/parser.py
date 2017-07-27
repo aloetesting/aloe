@@ -14,13 +14,11 @@ from builtins import *
 import os
 from collections import OrderedDict
 from copy import copy
-from io import StringIO
 
 from gherkin.dialect import Dialect
 from gherkin.errors import ParserError
 from gherkin.parser import Parser
 from gherkin.token_matcher import TokenMatcher
-from gherkin.token_scanner import TokenScanner as BaseTokenScanner
 
 from aloe import strings
 from aloe.exceptions import AloeSyntaxError
@@ -29,25 +27,6 @@ from aloe.utils import memoizedproperty
 # Pylint can't figure out methods vs. properties and which classes are
 # abstract
 # pylint:disable=abstract-method
-
-
-class TokenScanner(BaseTokenScanner):
-    """Gherkin 3 token scanner that explicitly takes a string or a filename."""
-
-    # pylint:disable=super-init-not-called
-    def __init__(self, string=None, filename=None):
-        if string:
-            if filename:
-                raise ValueError(
-                    "Cannot provide string and filename together.")
-            self.io = StringIO(string)
-        elif filename:
-            self.io = open(filename, 'r')
-        else:
-            raise ValueError("Must provide either string or filename.")
-
-        self.line_number = 0
-    # pylint:enable=super-init-not-called
 
 
 class LanguageTokenMatcher(TokenMatcher):
@@ -725,14 +704,9 @@ class Feature(HeaderNode, TaggedNode):
         else:
             token_matcher = TokenMatcher()
 
-        if string:
-            token_scanner = TokenScanner(string=string)
-        else:
-            token_scanner = TokenScanner(filename=filename)
-
         try:
             return cls(
-                parser.parse(token_scanner, token_matcher=token_matcher),
+                parser.parse(string or filename, token_matcher=token_matcher),
                 filename=filename,
             )
         except ParserError as ex:
