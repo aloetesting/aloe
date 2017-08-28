@@ -17,6 +17,8 @@ import ast
 import unittest
 from contextlib import contextmanager
 
+import re
+import os
 from nose.plugins.attrib import attr
 
 from aloe.codegen import make_function
@@ -165,7 +167,6 @@ class TestCase(unittest.TestCase):
         """
         Construct a test class from a feature file.
         """
-
         feature = TestFeature.from_file(file_)
 
         background = cls.make_background(feature.background)
@@ -219,7 +220,8 @@ class TestCase(unittest.TestCase):
         index is the 1-based number of the scenario in the feature.
         """
 
-        if scenario.outlines:
+        print(scenario.keyword)
+        if scenario.outlines :
             outline_example = []
             for i, (outline, steps) in enumerate(scenario.evaluated, 1):
                 # Create a function calling the real scenario example to show
@@ -269,8 +271,9 @@ def run_example(self):
                     scenario,
                     index,
                     ))
-
-        if scenario.outline_header is None:
+        if scenario.keyword == 'Scenario Outline':
+            pass
+        elif scenario.outline_header is None:
             yield cls.make_example(
                 cls.make_steps(
                     scenario,

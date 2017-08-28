@@ -563,7 +563,16 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
             STEP_REGISTRY.load(self.name, step_scenario)
             sub = re.sub(r'\([^)]*\)', '<%s>', self.name)
             if sub.count("<%s>") == len(keys):
-                self.name =  sub % keys
+                self.name = sub % keys
+            else:
+                raise AloeSyntaxError(
+                    self.filename,
+                    "{line}:{col} {klass} Different amount of parameters and keys {sub} {keys}".format(
+                        line=self.line,
+                        col=self.col,
+                        klass=self.__class__.__name__,
+                        sub = sub, 
+                        keys = keys ))
 
         if self.outline_header is None:
             def step_scenario(self, *args, **kwargs):
@@ -784,7 +793,24 @@ class Feature(HeaderNode, TaggedNode):
         Parse a file or filename into a :class:`Feature`.
         """
 
-        return cls.parse(filename=filename, language=language)
+        imports = []
+        with open(filename) as f:
+            line = f.readline()
+            is_import= True
+            while is_import:
+            if re.match(r'^Import:.*',line):
+                imports.append(line)
+            else:
+                is_import = False
+            notimports = f.read();
+
+        for v in  list(imports):
+            # load features
+            import_name = os.path.dirname(filename) +'/' + v[7:].strip() + '.feature'
+            print(import_name)
+            Feature.from_file(import_name)
+
+        return cls.parse(string=notimports , filename = filename,language=language)
 
     @property
     def description(self):
