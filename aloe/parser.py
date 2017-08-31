@@ -27,12 +27,13 @@ from gherkin.token_scanner import TokenScanner as BaseTokenScanner
 from aloe import strings
 from aloe.exceptions import AloeSyntaxError
 from aloe.utils import memoizedproperty
-from aloe.registry import STEP_REGISTRY, CALLBACK_REGISTRY
+from aloe.registry import STEP_REGISTRY, CALLBACK_REGISTRY, step
 
 # Pylint can't figure out methods vs. properties and which classes are
 # abstract
 # pylint:disable=abstract-method
 
+LOADED_FEATURES = set()
 
 class TokenScanner(BaseTokenScanner):
     """Gherkin 3 token scanner that explicitly takes a string or a filename."""
@@ -536,6 +537,7 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
         # token is a list of table tokens
         self.outlines = ()
         self.outline_header = None
+        self.regex_name = None
 
         steps = self.steps
         for example_table in parsed.get('examples', ()):
@@ -547,14 +549,19 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
                 for row in example_table['tableBody']
                 if cell_values(row) != keys
             )
+            self.regex_name = self.name
 
             def step_scenario(self, *args, **kwargs):
                 """ Create a step that executes the scenario steps """
                 for step in steps:
+                    teststep = copy(self)
+                    teststep.sentence = step.sentence
+                    teststep.table = step.table
+                    teststep.multiline = step.multiline
                     if kwargs != {}:
-                        subs = step.resolve_substitutions(kwargs)
+                        subs = teststep.resolve_substitutions(kwargs)
                     if args != ():
-                        subs = step.resolve_substitutions(dict(zip(keys, args)))
+                        subs = teststep.resolve_substitutions(dict(zip(keys, args)))
 
                     subs.test = self.test
                     (fun, argsstep, kwargstep) = STEP_REGISTRY.match_step(subs)
@@ -795,22 +802,24 @@ class Feature(HeaderNode, TaggedNode):
 
         imports = []
         with open(filename) as f:
-            line = f.readline()
             is_import= True
             while is_import:
-            if re.match(r'^Import:.*',line):
-                imports.append(line)
-            else:
-                is_import = False
+                line = f.readline()
+                if re.match(r'^Import:.*',line):
+                    imports.append(line)
+                else:
+                    is_import = False
             notimports = f.read();
 
         for v in  list(imports):
             # load features
             import_name = os.path.dirname(filename) +'/' + v[7:].strip() + '.feature'
-            print(import_name)
-            Feature.from_file(import_name)
+            if not v in LOADED_FEATURES:
+                LOADED_FEATURES.add(Feature.from_file(import_name))
 
-        return cls.parse(string=notimports , filename = filename,language=language)
+
+
+        return cls.parse(string=line + notimports , filename = filename,language=language)
 
     @property
     def description(self):

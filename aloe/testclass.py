@@ -220,7 +220,6 @@ class TestCase(unittest.TestCase):
         index is the 1-based number of the scenario in the feature.
         """
 
-        print(scenario.keyword)
         if scenario.outlines :
             outline_example = []
             for i, (outline, steps) in enumerate(scenario.evaluated, 1):
