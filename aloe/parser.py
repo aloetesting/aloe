@@ -585,8 +585,12 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
             def step_scenario(self, *args, **kwargs):
                 """ Create a step that executes the scenario steps """
                 for step in steps:
-                    (fun, argsstep, kwargstep) = STEP_REGISTRY.match_step(step)
-                    fun(step, *argsstep, **kwargstep)
+                    teststep = copy(self)
+                    teststep.sentence = step.sentence
+                    teststep.table = step.table
+                    teststep.multiline = step.multiline
+                    (fun, argsstep, kwargstep) = STEP_REGISTRY.match_step(teststep)
+                    fun(teststep, *argsstep, **kwargstep)
             STEP_REGISTRY.load(self.name, step_scenario)
 
     indent = 2
