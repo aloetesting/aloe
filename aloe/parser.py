@@ -34,6 +34,7 @@ from aloe.registry import STEP_REGISTRY, CALLBACK_REGISTRY, step
 # pylint:disable=abstract-method
 
 LOADED_FEATURES = set()
+STEP_PREFIX = r'(?:Given|And|Then|When) '
 
 class TokenScanner(BaseTokenScanner):
     """Gherkin 3 token scanner that explicitly takes a string or a filename."""
@@ -567,7 +568,7 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
                     (fun, argsstep, kwargstep) = STEP_REGISTRY.match_step(subs)
                     fun(subs, *argsstep, **kwargstep)
 
-            STEP_REGISTRY.load(self.name, step_scenario)
+            STEP_REGISTRY.load(STEP_PREFIX + self.name, step_scenario)
             sub = re.sub(r'\([^)]*\)', '<%s>', self.name)
             if sub.count("<%s>") == len(keys):
                 self.name = sub % keys
@@ -591,7 +592,7 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
                     teststep.multiline = step.multiline
                     (fun, argsstep, kwargstep) = STEP_REGISTRY.match_step(teststep)
                     fun(teststep, *argsstep, **kwargstep)
-            STEP_REGISTRY.load(self.name, step_scenario)
+            STEP_REGISTRY.load(STEP_PREFIX + self.name, step_scenario)
 
     indent = 2
 
