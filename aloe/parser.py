@@ -558,6 +558,7 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
                 """ Create a step that executes the scenario steps """
                 for step in steps:
                     teststep = copy(self)
+                    teststep.depth += 1
                     teststep.sentence = step.sentence
                     teststep.table = step.table
                     teststep.multiline = step.multiline
@@ -593,6 +594,7 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
                 """ Create a step that executes the scenario steps """
                 for step in steps:
                     teststep = copy(self)
+                    teststep.depth += 1
                     teststep.sentence = step.sentence
                     teststep.table = step.table
                     teststep.multiline = step.multiline
