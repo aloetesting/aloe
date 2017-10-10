@@ -552,10 +552,13 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
             )
             self.regex_name = self.name
 
+            
+            @step(STEP_PREFIX + self.name)
             def step_scenario(self, *args, **kwargs):
                 """ Create a step that executes the scenario steps """
                 for step in steps:
                     teststep = copy(self)
+                    teststep.depth += 1
                     teststep.sentence = step.sentence
                     teststep.table = step.table
                     teststep.multiline = step.multiline
@@ -565,10 +568,13 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
                         subs = teststep.resolve_substitutions(dict(zip(keys, args)))
 
                     subs.test = self.test
-                    (fun, argsstep, kwargstep) = STEP_REGISTRY.match_step(subs)
-                    fun(subs, *argsstep, **kwargstep)
+                    definition = self.test.prepare_step(subs)
+                    definition['func'](definition['step'],
+                                       *definition['args'],
+                                       **definition['kwargs'])
 
-            STEP_REGISTRY.load(STEP_PREFIX + self.name, step_scenario)
+
+            # STEP_REGISTRY.load(STEP_PREFIX + self.name, step_scenario)
             sub = re.sub(r'\([^)]*\)', '<%s>', self.name)
             if sub.count("<%s>") == len(keys):
                 self.name = sub % keys
@@ -583,16 +589,21 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
                         keys = keys ))
 
         if self.outline_header is None:
+            @step(STEP_PREFIX + self.name)
             def step_scenario(self, *args, **kwargs):
                 """ Create a step that executes the scenario steps """
                 for step in steps:
                     teststep = copy(self)
+                    teststep.depth += 1
                     teststep.sentence = step.sentence
                     teststep.table = step.table
                     teststep.multiline = step.multiline
-                    (fun, argsstep, kwargstep) = STEP_REGISTRY.match_step(teststep)
-                    fun(teststep, *argsstep, **kwargstep)
-            STEP_REGISTRY.load(STEP_PREFIX + self.name, step_scenario)
+                    definition = self.test.prepare_step(teststep)
+                    definition['func'](definition['step'],
+                                       *definition['args'],
+                                       **definition['kwargs'])
+
+            # STEP_REGISTRY.load(STEP_PREFIX + self.name, step_scenario)
 
     indent = 2
 

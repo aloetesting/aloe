@@ -60,6 +60,7 @@ class TestStep(Step):
         """Initialize the step status."""
         self.failed = None
         self.passed = None
+        self.depth = 0
         super().__init__(*args, **kwargs)
 
     def behave_as(self, string):
@@ -137,6 +138,8 @@ class TestCase(unittest.TestCase):
         # Copy necessary attributes onto new steps
         for step in steps:
             step.test = self
+            step.depth = context_step.depth
+            step.depth+=1
 
             try:
                 step.scenario = context_step.scenario
