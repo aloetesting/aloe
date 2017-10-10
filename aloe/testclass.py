@@ -17,6 +17,8 @@ import ast
 import unittest
 from contextlib import contextmanager
 
+import re
+import os
 from nose.plugins.attrib import attr
 
 from aloe.codegen import make_function
@@ -165,7 +167,6 @@ class TestCase(unittest.TestCase):
         """
         Construct a test class from a feature file.
         """
-
         feature = TestFeature.from_file(file_)
 
         background = cls.make_background(feature.background)
@@ -219,7 +220,8 @@ class TestCase(unittest.TestCase):
         index is the 1-based number of the scenario in the feature.
         """
 
-        if scenario.outlines:
+        if scenario.outlines :
+            outline_example = []
             for i, (outline, steps) in enumerate(scenario.evaluated, 1):
                 # Create a function calling the real scenario example to show
                 # the right location in the outline
@@ -237,10 +239,11 @@ def run_example(self):
                     'outline': cls.make_steps(scenario,
                                               steps,
                                               is_background=False,
+                                              is_outline=True,
                                               outline=outline)
                 }
 
-                yield cls.make_example(
+                outline_example.append(cls.make_example(
                     make_function(
                         source=source,
                         context=context,
@@ -249,17 +252,36 @@ def run_example(self):
                     ),
                     scenario,
                     index,
-                )
-        if scenario.outline_header is None:
-                yield cls.make_example(
-                    cls.make_steps(
-                        scenario,
-                        scenario.steps,
-                        is_background=False,
-                    ),
+                ))
+            source = """
+def run_example(self):
+    for outline  in outlines:
+      outline(self)
+                    """
+            context = {'outlines' : outline_example}
+
+            yield(cls.make_example(
+                    CALLBACK_REGISTRY.wrap('example',make_function(
+                        source=source,
+                        context=context,
+                        source_file=scenario.feature.filename,
+                        name='{}: Example {}'.format(scenario.name,index),
+                    ),scenario,None,scenario.steps),
                     scenario,
                     index,
-                )
+                    ))
+        if scenario.keyword == 'Scenario Outline':
+            pass
+        elif scenario.outline_header is None:
+            yield cls.make_example(
+                cls.make_steps(
+                    scenario,
+                    scenario.steps,
+                    is_background=False,
+                ),
+                scenario,
+                index,
+            )
 
     @classmethod
     def make_example(cls, method, scenario, index):
@@ -299,7 +321,7 @@ def run_example(self):
 
     @classmethod
     def make_steps(cls, step_container, steps,
-                   is_background, outline=None):
+                   is_background, outline=None,is_outline=False):
         """
         Construct either a scenario or a background calling the specified
         steps.
@@ -361,6 +383,9 @@ def run_example(self):
         )
 
         if not is_background:
+            run_steps = CALLBACK_REGISTRY.wrap('outline', run_steps,
+                                               step_container, outline, steps)
+        if not is_background and not is_outline:
             run_steps = CALLBACK_REGISTRY.wrap('example', run_steps,
                                                step_container, outline, steps)
 

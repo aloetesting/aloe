@@ -27,12 +27,14 @@ from gherkin.token_scanner import TokenScanner as BaseTokenScanner
 from aloe import strings
 from aloe.exceptions import AloeSyntaxError
 from aloe.utils import memoizedproperty
-from aloe.registry import STEP_REGISTRY, CALLBACK_REGISTRY
+from aloe.registry import STEP_REGISTRY, CALLBACK_REGISTRY, step
 
 # Pylint can't figure out methods vs. properties and which classes are
 # abstract
 # pylint:disable=abstract-method
 
+LOADED_FEATURES = set()
+STEP_PREFIX = r'(?:Given|And|Then|When) '
 
 class TokenScanner(BaseTokenScanner):
     """Gherkin 3 token scanner that explicitly takes a string or a filename."""
@@ -114,11 +116,11 @@ class Node(object):
 
 
 def replace_vars(outline, string):
-            """Replace all the variables in a string."""
-            for key, value in outline.items():
-                key = '<{key}>'.format(key=key)
-                string = string.replace(key, value)
-            return string
+    """Replace all the variables in a string."""
+    for key, value in outline.items():
+        key = '<{key}>'.format(key=key)
+        string = string.replace(key, value)
+    return string
 
 
 class Step(Node):
@@ -536,28 +538,61 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
         # token is a list of table tokens
         self.outlines = ()
         self.outline_header = None
+        self.regex_name = None
 
+        steps = self.steps
         for example_table in parsed.get('examples', ()):
             # the first row of the table is the column headings
             keys = cell_values(example_table['tableHeader'])
             self.outline_header = keys
             self.outlines += tuple(
                 Outline(keys, row)
-                for row in example_table['tableBody'] if cell_values(row) != keys
+                for row in example_table['tableBody']
+                if cell_values(row) != keys
             )
+            self.regex_name = self.name
 
-            def step_scenario(step, *args, **kwargs):
-                for step in self.steps:
+            def step_scenario(self, *args, **kwargs):
+                """ Create a step that executes the scenario steps """
+                for step in steps:
+                    teststep = copy(self)
+                    teststep.sentence = step.sentence
+                    teststep.table = step.table
+                    teststep.multiline = step.multiline
                     if kwargs != {}:
-                        st = step.resolve_substitutions(kwargs)
+                        subs = teststep.resolve_substitutions(kwargs)
                     if args != ():
-                        st = step.resolve_substitutions(dict(zip(keys, args)))
-                    (fun, ar, kw) = STEP_REGISTRY.match_step(st)
-                    fun = CALLBACK_REGISTRY.wrap('step', fun, st)
-                    fun(st, *ar, **kw)
+                        subs = teststep.resolve_substitutions(dict(zip(keys, args)))
 
-            STEP_REGISTRY.load(self.name, step_scenario)
-            self.name = re.sub(r'\([^)]*\)', '<%s>', self.name) % keys
+                    subs.test = self.test
+                    (fun, argsstep, kwargstep) = STEP_REGISTRY.match_step(subs)
+                    fun(subs, *argsstep, **kwargstep)
+
+            STEP_REGISTRY.load(STEP_PREFIX + self.name, step_scenario)
+            sub = re.sub(r'\([^)]*\)', '<%s>', self.name)
+            if sub.count("<%s>") == len(keys):
+                self.name = sub % keys
+            else:
+                raise AloeSyntaxError(
+                    self.filename,
+                    "{line}:{col} {klass} Different amount of parameters and keys {sub} {keys}".format(
+                        line=self.line,
+                        col=self.col,
+                        klass=self.__class__.__name__,
+                        sub = sub, 
+                        keys = keys ))
+
+        if self.outline_header is None:
+            def step_scenario(self, *args, **kwargs):
+                """ Create a step that executes the scenario steps """
+                for step in steps:
+                    teststep = copy(self)
+                    teststep.sentence = step.sentence
+                    teststep.table = step.table
+                    teststep.multiline = step.multiline
+                    (fun, argsstep, kwargstep) = STEP_REGISTRY.match_step(teststep)
+                    fun(teststep, *argsstep, **kwargstep)
+            STEP_REGISTRY.load(STEP_PREFIX + self.name, step_scenario)
 
     indent = 2
 
@@ -770,7 +805,26 @@ class Feature(HeaderNode, TaggedNode):
         Parse a file or filename into a :class:`Feature`.
         """
 
-        return cls.parse(filename=filename, language=language)
+        imports = []
+        with open(filename) as f:
+            is_import= True
+            while is_import:
+                line = f.readline()
+                if re.match(r'^Import:.*',line):
+                    imports.append(line)
+                else:
+                    is_import = False
+            notimports = f.read();
+
+        for v in  list(imports):
+            # load features
+            import_name = os.path.dirname(filename) +'/' + v[7:].strip() + '.feature'
+            if not v in LOADED_FEATURES:
+                LOADED_FEATURES.add(Feature.from_file(import_name))
+
+
+
+        return cls.parse(string=line + notimports , filename = filename,language=language)
 
     @property
     def description(self):
