@@ -301,15 +301,23 @@ class StepDict(object):
         Returns a tuple of (function, args, kwargs).
         """
 
+        matches={}
         for regex, func in self.steps.values():
             matched = regex.search(step_.sentence)
             if matched:
-                kwargs = matched.groupdict()
-                if kwargs:
-                    return (func, (), matched.groupdict())
-                else:
-                    args = matched.groups()
-                    return (func, args, {})
+                matches[regex] = (matched,func)
+
+        if matches:
+            sorted_regex = sorted(matches.items(),key = lambda x : (x[1][0].lastindex,len(x[0].pattern)))
+            mregex,(matched,func) = sorted_regex[-1]
+            if len(sorted_regex) > 1:
+                print("Picked Step",mregex, "From " , len(sorted_regex) ," duplicates steps loaded: ", sorted_regex)
+            kwargs = matched.groupdict()
+            if kwargs:
+                return (func, (), matched.groupdict())
+            else:
+                args = matched.groups()
+                return (func, args, {})
 
         return (undefined_step, (), {})
 
