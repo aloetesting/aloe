@@ -20,6 +20,7 @@ from aloe.registry import (
     CALLBACK_REGISTRY,
     PriorityClass,
 )
+from aloe.parser import replace_vars
 from aloe.strings import ljust, represent_table
 from aloe.tools import hook_not_reentrant
 from aloe.utils import memoizedproperty, PY3
@@ -199,7 +200,11 @@ def example_wrapper(term, scenario, outline, steps):
         represented = scenario.represented()
         represented = ljust(represented, scenario.feature.max_length + 2)
 
-        term.write(represented)
+        if not outline:
+            term.write(represented)
+        else:
+            term.write(replace_vars(outline, represented))
+
         term.writeln(term.comment('# ' + scenario.location))
 
         if outline:

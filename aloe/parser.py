@@ -12,8 +12,10 @@ from builtins import *
 # pylint:enable=redefined-builtin,wildcard-import,unused-wildcard-import
 
 import os
+import re
 from collections import OrderedDict
 from copy import copy
+
 
 from gherkin.dialect import Dialect
 from gherkin.errors import ParserError
@@ -23,11 +25,14 @@ from gherkin.token_matcher import TokenMatcher
 from aloe import strings
 from aloe.exceptions import AloeSyntaxError
 from aloe.utils import memoizedproperty
+from aloe.registry import STEP_REGISTRY, CALLBACK_REGISTRY, step
 
 # Pylint can't figure out methods vs. properties and which classes are
 # abstract
 # pylint:disable=abstract-method
 
+LOADED_FEATURES = set()
+STEP_PREFIX = r'(?:Given|And|Then|When) '
 
 class LanguageTokenMatcher(TokenMatcher):
     """Gherkin 3 token matcher that always uses the given language."""
@@ -87,6 +92,14 @@ class Node(object):
         result = ' ' * self.indent + self.text.strip()
 
         return result
+
+
+def replace_vars(outline, string):
+    """Replace all the variables in a string."""
+    for key, value in outline.items():
+        key = '<{key}>'.format(key=key)
+        string = string.replace(key, value)
+    return string
 
 
 class Step(Node):
@@ -339,22 +352,15 @@ class Step(Node):
 
         replaced = copy(self)
 
-        def replace_vars(string):
-            """Replace all the variables in a string."""
-            for key, value in outline.items():
-                key = '<{key}>'.format(key=key)
-                string = string.replace(key, value)
-            return string
-
-        replaced.sentence = replace_vars(self.sentence)
+        replaced.sentence = replace_vars(outline, self.sentence)
 
         if self.multiline:
-            replaced.multiline = replace_vars(self.multiline)
+            replaced.multiline = replace_vars(outline, self.multiline)
 
         if self.table:
             replaced.table = tuple(
                 tuple(
-                    replace_vars(cell)
+                    replace_vars(outline, cell)
                     for cell in row
                 )
                 for row in self.table
@@ -510,15 +516,73 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
         # A single scenario can have multiple example blocks, the returned
         # token is a list of table tokens
         self.outlines = ()
+        self.outline_header = None
+        self.regex_name = None
 
+        steps = self.steps
         for example_table in parsed.get('examples', ()):
             # the first row of the table is the column headings
             keys = cell_values(example_table['tableHeader'])
-
+            self.outline_header = keys
             self.outlines += tuple(
                 Outline(keys, row)
                 for row in example_table['tableBody']
+                if cell_values(row) != keys
             )
+            self.regex_name = self.name
+
+            
+            @step(STEP_PREFIX + self.name)
+            def step_scenario(self, *args, **kwargs):
+                """ Create a step that executes the scenario steps """
+                for step in steps:
+                    teststep = copy(self)
+                    teststep.depth += 1
+                    teststep.sentence = step.sentence
+                    teststep.table = step.table
+                    teststep.multiline = step.multiline
+                    if kwargs != {}:
+                        subs = teststep.resolve_substitutions(kwargs)
+                    if args != ():
+                        subs = teststep.resolve_substitutions(dict(zip(keys, args)))
+
+                    subs.test = self.test
+                    definition = self.test.prepare_step(subs)
+                    definition['func'](definition['step'],
+                                       *definition['args'],
+                                       **definition['kwargs'])
+
+
+            # STEP_REGISTRY.load(STEP_PREFIX + self.name, step_scenario)
+            sub = re.sub(r'\([^)]*\)', '<%s>', self.name)
+            if sub.count("<%s>") == len(keys):
+                self.name = sub % keys
+            else:
+                raise AloeSyntaxError(
+                    self.filename,
+                    "{line}:{col} {klass} Different amount of parameters and keys {sub} {keys}".format(
+                        line=self.line,
+                        col=self.col,
+                        klass=self.__class__.__name__,
+                        sub = sub, 
+                        keys = keys ))
+
+        if self.outline_header is None:
+            @step(STEP_PREFIX + self.name)
+            def step_scenario(self, *args, **kwargs):
+                """ Create a step that executes the scenario steps """
+                for step in steps:
+                    teststep = copy(self)
+                    teststep.depth += 1
+                    teststep.sentence = step.sentence
+                    teststep.table = step.table
+                    teststep.multiline = step.multiline
+                    definition = self.test.prepare_step(teststep)
+                    definition['func'](definition['step'],
+                                       *definition['args'],
+                                       **definition['kwargs'])
+
+            # STEP_REGISTRY.load(STEP_PREFIX + self.name, step_scenario)
 
     indent = 2
 
@@ -726,7 +790,26 @@ class Feature(HeaderNode, TaggedNode):
         Parse a file or filename into a :class:`Feature`.
         """
 
-        return cls.parse(filename=filename, language=language)
+        imports = []
+        with open(filename) as f:
+            is_import= True
+            while is_import:
+                line = f.readline()
+                if re.match(r'^Import:.*',line):
+                    imports.append(line)
+                else:
+                    is_import = False
+            notimports = f.read();
+
+        for v in  list(imports):
+            # load features
+            import_name = os.path.dirname(filename) +'/' + v[7:].strip() + '.feature'
+            if not v in LOADED_FEATURES:
+                LOADED_FEATURES.add(Feature.from_file(import_name))
+
+
+
+        return cls.parse(string=line + notimports , filename = filename,language=language)
 
     @property
     def description(self):
