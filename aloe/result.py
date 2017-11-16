@@ -61,9 +61,30 @@ except ImportError:
             if stream is None:
                 stream = sys.__stdout__
             self.stream = stream
+            self.does_styling = True
 
         def __nonzero__(self):
             return True
+
+        def __getattr__(self, attr):
+            raise AttributeError("No attr: {}".format(attr))
+
+        def color(self, color):
+            if color == 243:
+                return FormattingString(Fore.WHITE) if self.does_styling else str
+            raise ValueError("Unknown color value: {}".format(color))
+
+        def yellow(self, *args, **kwargs):
+            return FormattingString(Fore.YELLOW)(*args, **kwargs) if self.does_styling else str
+
+        def red(self, *args, **kwargs):
+            return FormattingString(Fore.RED)(*args, **kwargs) if self.does_styling else str
+
+        def green(self, *args, **kwargs):
+            return FormattingString(Fore.GREEN)(*args, **kwargs) if self.does_styling else str
+
+        def cyan(self, *args, **kwargs):
+            return FormattingString(Fore.CYAN)(*args, **kwargs) if self.does_styling else str
 
         is_a_tty = False
 
