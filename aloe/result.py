@@ -55,7 +55,7 @@ except ImportError:
 
 
     class BaseTerminal(object):  # pragma: no cover
-        """Basic terminal functionality without curses."""
+        """Alternative non-curses/blessings Terminal implementation."""
 
         def __init__(self, kind=None, stream=None, force_styling=False):
             if stream is None:
