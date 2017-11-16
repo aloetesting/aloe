@@ -74,8 +74,8 @@ except ImportError:
                 return self.get_str_class(Fore.WHITE)
             raise ValueError("Unknown color value: {}".format(color))
 
-        def get_str_class(self, ansi):
-            return FormattingString(ansi) if self.does_styling else str
+        def get_str_class(self, ansi_code):
+            return FormattingString(ansi_code) if self.does_styling else str
 
         def yellow(self, *args, **kwargs):
             return self.get_str_class(Fore.YELLOW)(*args, **kwargs)
