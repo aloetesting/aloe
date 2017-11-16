@@ -71,20 +71,23 @@ except ImportError:
 
         def color(self, color):
             if color == 243:
-                return FormattingString(Fore.WHITE) if self.does_styling else str
+                return self.get_str_class(Fore.WHITE)(*args, **kwargs)
             raise ValueError("Unknown color value: {}".format(color))
 
+        def get_str_class(self, ansi):
+            return FormattingString(ansi) if self.does_styling else str
+
         def yellow(self, *args, **kwargs):
-            return FormattingString(Fore.YELLOW)(*args, **kwargs) if self.does_styling else str
+            return self.get_str_class(Fore.YELLOW)(*args, **kwargs)
 
         def red(self, *args, **kwargs):
-            return FormattingString(Fore.RED)(*args, **kwargs) if self.does_styling else str
+            return self.get_str_class(Fore.RED)(*args, **kwargs)
 
         def green(self, *args, **kwargs):
-            return FormattingString(Fore.GREEN)(*args, **kwargs) if self.does_styling else str
+            return self.get_str_class(Fore.GREEN)(*args, **kwargs)
 
         def cyan(self, *args, **kwargs):
-            return FormattingString(Fore.CYAN)(*args, **kwargs) if self.does_styling else str
+            return self.get_str_class(Fore.CYAN)(*args, **kwargs)
 
         is_a_tty = False
 
