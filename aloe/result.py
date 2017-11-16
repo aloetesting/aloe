@@ -41,6 +41,19 @@ TERMINAL = [None]
 try:
     from blessings import Terminal as BaseTerminal
 except ImportError:
+    from colorama import Fore
+
+
+    class FormattingString(str):
+
+        def __new__(cls, formatting):
+            new = str.__new__(cls, formatting)
+            return new
+
+        def __call__(self, text):
+            return self + text + Fore.RESET
+
+
     class BaseTerminal(object):  # pragma: no cover
         """Basic terminal functionality without curses."""
 
