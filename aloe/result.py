@@ -45,10 +45,10 @@ except ImportError:
 
 
     class FormattingString(str):
+        """Alternative non-curses/blessings FormattingString implementation."""
 
         def __new__(cls, formatting):
-            new = str.__new__(cls, formatting)
-            return new
+            return str.__new__(cls, formatting)
 
         def __call__(self, text):
             return self + text + Fore.RESET
