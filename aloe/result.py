@@ -67,7 +67,15 @@ except ImportError:
             return True
 
         def __getattr__(self, attr):
-            raise AttributeError("No attr: {}".format(attr))
+            try:
+                ansi_code = getattr(Fore, attr.upper())
+            except AttributeError:
+                msg = "'{}' object has no attribute '{}'".format(type(self), attr)
+                raise AttributeError(msg)
+            else:
+                def method(*args, **kwargs):
+                    return self.get_str_class(ansi_code)(*args, **kwargs)
+                return method
 
         def color(self, color):
             if color == 243:
@@ -76,18 +84,6 @@ except ImportError:
 
         def get_str_class(self, ansi_code):
             return FormattingString(ansi_code) if self.does_styling else str
-
-        def yellow(self, *args, **kwargs):
-            return self.get_str_class(Fore.YELLOW)(*args, **kwargs)
-
-        def red(self, *args, **kwargs):
-            return self.get_str_class(Fore.RED)(*args, **kwargs)
-
-        def green(self, *args, **kwargs):
-            return self.get_str_class(Fore.GREEN)(*args, **kwargs)
-
-        def cyan(self, *args, **kwargs):
-            return self.get_str_class(Fore.CYAN)(*args, **kwargs)
 
         is_a_tty = sys.stdout.isatty()
 
