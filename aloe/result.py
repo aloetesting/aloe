@@ -61,7 +61,7 @@ except ImportError:
             if stream is None:
                 stream = sys.__stdout__
             self.stream = stream
-            self.does_styling = True
+            self.does_styling = self.is_a_tty or force_styling
 
         def __nonzero__(self):
             return True
@@ -89,7 +89,7 @@ except ImportError:
         def cyan(self, *args, **kwargs):
             return self.get_str_class(Fore.CYAN)(*args, **kwargs)
 
-        is_a_tty = False
+        is_a_tty = sys.stdout.isatty()
 
 
 class Terminal(BaseTerminal):
