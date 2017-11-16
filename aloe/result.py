@@ -71,7 +71,7 @@ except ImportError:
 
         def color(self, color):
             if color == 243:
-                return self.get_str_class(Fore.WHITE)(*args, **kwargs)
+                return self.get_str_class(Fore.WHITE)
             raise ValueError("Unknown color value: {}".format(color))
 
         def get_str_class(self, ansi):
