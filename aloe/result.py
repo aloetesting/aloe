@@ -73,9 +73,9 @@ except ImportError:
                 msg = "'{}' object has no attribute '{}'".format(type(self), attr)
                 raise AttributeError(msg)
             else:
-                def method(*args, **kwargs):
+                def color_method(*args, **kwargs):
                     return self.get_str_class(ansi_code)(*args, **kwargs)
-                return method
+                return color_method
 
         def color(self, color):
             if color == 243:
