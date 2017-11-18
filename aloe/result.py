@@ -45,9 +45,7 @@ except ImportError:
     from colorama import Fore, Cursor
     from colorama.ansi import CSI
 
-
     colorama.init()
-
 
     class FormattingString(str):
         """Alternative non-curses/blessings FormattingString implementation."""
@@ -57,7 +55,6 @@ except ImportError:
 
         def __call__(self, text):
             return self + text + Fore.RESET
-
 
     class BaseTerminal(object):  # pragma: no cover
         """Alternative non-curses/blessings Terminal implementation."""
