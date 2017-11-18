@@ -41,7 +41,12 @@ TERMINAL = [None]
 try:
     from blessings import Terminal as BaseTerminal
 except ImportError:
-    from colorama import Fore
+    import colorama
+    from colorama import Fore, Cursor
+    from colorama.ansi import CSI
+
+
+    colorama.init()
 
 
     class FormattingString(str):
@@ -56,6 +61,8 @@ except ImportError:
 
     class BaseTerminal(object):  # pragma: no cover
         """Alternative non-curses/blessings Terminal implementation."""
+
+        move_up = Cursor.UP()
 
         def __init__(self, kind=None, stream=None, force_styling=False):
             if stream is None:
@@ -78,9 +85,7 @@ except ImportError:
                 return color_method
 
         def color(self, color):
-            if color == 243:
-                return self.get_str_class(Fore.WHITE)
-            raise ValueError("Unknown color value: {}".format(color))
+            return self.get_str_class(CSI + str(color) + "m")
 
         def get_str_class(self, ansi_code):
             return FormattingString(ansi_code) if self.does_styling else str
