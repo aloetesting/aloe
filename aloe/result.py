@@ -38,7 +38,7 @@ outer_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
 # started, which is when the stream is passed in.
 TERMINAL = [None]
 
-try:
+try:    # pylint: disable=too-complex
     from blessings import Terminal as BaseTerminal
 except ImportError:
     import colorama
