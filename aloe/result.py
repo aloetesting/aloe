@@ -55,6 +55,8 @@ class FormattingString(str):
 class ColoramaTerminal(object):  # pragma: no cover
     """Alternative non-curses/blessings Terminal implementation."""
 
+    is_a_tty = sys.stdout.isatty()
+
     move_up = Cursor.UP()
 
     def __init__(self, kind=None, stream=None, force_styling=False):
@@ -86,8 +88,6 @@ class ColoramaTerminal(object):  # pragma: no cover
     def get_str_class(self, ansi_code):
         """Return a callable that colors strings if styling is enabled."""
         return FormattingString(ansi_code) if self.does_styling else str
-
-    is_a_tty = sys.stdout.isatty()
 
 
 try:
