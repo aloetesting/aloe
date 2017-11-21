@@ -15,6 +15,10 @@ import sys
 from contextlib import contextmanager
 from functools import wraps
 
+import colorama
+from colorama import Fore, Cursor
+from colorama.ansi import CSI
+
 from aloe.registry import (
     CallbackDecorator,
     CALLBACK_REGISTRY,
@@ -38,57 +42,58 @@ outer_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
 # started, which is when the stream is passed in.
 TERMINAL = [None]
 
-try:    # pylint: disable=too-complex
+colorama.init()
+
+
+class FormattingString(str):
+    """Alternative non-curses/blessings FormattingString implementation."""
+
+    def __call__(self, text):
+        return self + text + Fore.RESET
+
+
+class ColoramaTerminal(object):  # pragma: no cover
+    """Alternative non-curses/blessings Terminal implementation."""
+
+    move_up = Cursor.UP()
+
+    def __init__(self, kind=None, stream=None, force_styling=False):
+        if stream is None:
+            stream = sys.__stdout__
+        self.stream = stream
+        self.does_styling = self.is_a_tty or force_styling
+
+    def __nonzero__(self):
+        return True
+
+    def __getattr__(self, attr):
+        """Create and return color methods for coloring output."""
+        try:
+            ansi_code = getattr(Fore, attr.upper())
+        except AttributeError:
+            msg = "'%s' object has no attribute '%s'" % (type(self), attr)
+            raise AttributeError(msg)
+        else:
+            def color_method(*args, **kwargs):
+                """Color the given string."""
+                return self.get_str_class(ansi_code)(*args, **kwargs)
+            return color_method
+
+    def color(self, color):
+        """Return a callable which colors strings that are passed to it."""
+        return self.get_str_class(CSI + str(color) + "m")
+
+    def get_str_class(self, ansi_code):
+        """Return a callable that colors strings if styling is enabled."""
+        return FormattingString(ansi_code) if self.does_styling else str
+
+    is_a_tty = sys.stdout.isatty()
+
+
+try:
     from blessings import Terminal as BaseTerminal
 except ImportError:
-    import colorama
-    from colorama import Fore, Cursor
-    from colorama.ansi import CSI
-
-    colorama.init()
-
-    class FormattingString(str):
-        """Alternative non-curses/blessings FormattingString implementation."""
-
-        def __call__(self, text):
-            return self + text + Fore.RESET
-
-    class BaseTerminal(object):  # pragma: no cover
-        """Alternative non-curses/blessings Terminal implementation."""
-
-        move_up = Cursor.UP()
-
-        def __init__(self, kind=None, stream=None, force_styling=False):
-            if stream is None:
-                stream = sys.__stdout__
-            self.stream = stream
-            self.does_styling = self.is_a_tty or force_styling
-
-        def __nonzero__(self):
-            return True
-
-        def __getattr__(self, attr):
-            """Create and return color methods for coloring output."""
-            try:
-                ansi_code = getattr(Fore, attr.upper())
-            except AttributeError:
-                msg = "'%s' object has no attribute '%s'" % (type(self), attr)
-                raise AttributeError(msg)
-            else:
-                def color_method(*args, **kwargs):
-                    """Color the given string."""
-                    return self.get_str_class(ansi_code)(*args, **kwargs)
-                return color_method
-
-        def color(self, color):
-            """Return a callable which colors strings that are passed to it."""
-            return self.get_str_class(CSI + str(color) + "m")
-
-        def get_str_class(self, ansi_code):
-            """Return a callable that colors strings if styling is enabled."""
-            return FormattingString(ansi_code) if self.does_styling else str
-
-        is_a_tty = sys.stdout.isatty()
+    BaseTerminal = ColoramaTerminal
 
 
 class Terminal(BaseTerminal):
