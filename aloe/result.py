@@ -17,7 +17,7 @@ from functools import wraps
 
 import colorama
 from colorama import Fore, Cursor
-from colorama.ansi import CSI
+from colorama.ansi import code_to_chars
 
 from aloe.registry import (
     CallbackDecorator,
@@ -83,7 +83,7 @@ class ColoramaTerminal(object):  # pragma: no cover
 
     def color(self, color):
         """Return a callable which colors strings that are passed to it."""
-        return self.get_str_class(CSI + str(color) + "m")
+        return self.get_str_class(code_to_chars(color))
 
     def get_str_class(self, ansi_code):
         """Return a callable that colors strings if styling is enabled."""
