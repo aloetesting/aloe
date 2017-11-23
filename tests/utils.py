@@ -2,6 +2,7 @@
 Utilities for tests.
 """
 
+import os
 from contextlib import contextmanager
 
 
@@ -32,3 +33,23 @@ def before_after(before, after):
         after(*args, **kwargs)
 
     return around
+
+
+@contextmanager
+def set_environ(key, value):
+    """
+    A context manager setting the environment variable to the given value
+    before the context and restoring it afterwards.
+    """
+
+    old_value = os.environ.get(key, None)
+    os.environ[key] = value
+
+    try:
+        yield
+
+    finally:
+        if old_value is None:
+            del os.environ[key]
+        else:
+            os.environ[key] = old_value
