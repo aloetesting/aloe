@@ -8,7 +8,6 @@ from __future__ import division
 from __future__ import absolute_import
 
 import operator
-import os
 from functools import reduce  # pylint:disable=redefined-builtin
 
 from nose.tools import assert_equal
@@ -19,6 +18,8 @@ from aloe.testing import (
     FeatureTest,
     in_directory,
 )
+
+from tests.utils import set_environ
 
 # Pylint cannot infer the attributes on world
 # pylint:disable=no-member
@@ -121,12 +122,11 @@ class CallbackTest(FeatureTest):
     def test_testcase_methods(self):
         """Test setUp and tearDown on the test class."""
 
-        os.environ['NOSE_GHERKIN_CLASS'] = \
+        with set_environ(
+            'NOSE_GHERKIN_CLASS',
             'tests.callbacks_app.features.steps.CallbackTestCase'
-        try:
+        ):
             self.assert_feature_success('features/testcase_methods.feature')
-        finally:
-            del os.environ['NOSE_GHERKIN_CLASS']
 
         # Each scenario and outline example must be a separate test, preceded
         # by setUp() and followed by tearDown().
