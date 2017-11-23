@@ -21,6 +21,6 @@ nose.config: INFO: Ignoring files matching ['^\\.', '^_', '^setup\\.py$']
 [A[32m    那么结果应该是80(B[m
 
 ----------------------------------------------------------------------
-Ran 1 test in 0.001s
+Ran 1 test in XXXXs
 
 OK

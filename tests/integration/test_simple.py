@@ -8,6 +8,7 @@ from __future__ import division
 from __future__ import absolute_import
 
 import os
+import re
 import subprocess
 import sys
 import unittest
@@ -47,6 +48,9 @@ class SimpleIntegrationTest(unittest.TestCase):
                                          terminal=True)
 
         self.assertEqual(exitcode, 0, "Feature run successfully.")
+
+        # Remove timing information from the output as unstable
+        out = re.sub(b'in [0-9.]+s', b'in XXXXs', out)
 
         with open(os.path.join(TEST_PATH, 'calculator.txt'), 'rb') as expected:
             expected_out = expected.read()
