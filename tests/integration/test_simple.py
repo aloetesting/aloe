@@ -15,7 +15,9 @@ import unittest
 from aloe.testing import in_directory
 
 
-ROOT_PATH = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+TEST_PATH = os.path.dirname(__file__)
+
+ROOT_PATH = os.path.dirname(os.path.dirname(TEST_PATH))
 
 
 @in_directory('tests/simple_app')
@@ -41,8 +43,12 @@ class SimpleIntegrationTest(unittest.TestCase):
         exitcode, out = self.run_feature('features/calculator_zh.feature',
                                          '--verbosity=3',
                                          terminal=True)
-        print(out)
+
         self.assertEqual(exitcode, 0, "Feature run successfully.")
+
+        with open(os.path.join(TEST_PATH, 'calculator.txt'), 'rb') as expected:
+            expected_out = expected.read()
+        self.assertEqual(out, expected_out, "Output matches expected.")
 
     def test_failure(self):
         """
