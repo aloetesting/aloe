@@ -14,6 +14,8 @@ import unittest
 
 from aloe.testing import in_directory
 
+from tests.utils import set_environ
+
 
 TEST_PATH = os.path.dirname(__file__)
 
@@ -74,9 +76,7 @@ class SimpleIntegrationTest(unittest.TestCase):
         args = [sys.executable, '-c', 'import aloe; aloe.main()'] + list(args)
 
         # Ensure Aloe itself is on the path
-        old_pythonpath = os.environ.get('PYTHONPATH', None)
-        os.environ['PYTHONPATH'] = ROOT_PATH
-        try:
+        with set_environ('PYTHONPATH', ROOT_PATH):
 
             if terminal:
                 try:
@@ -92,13 +92,15 @@ class SimpleIntegrationTest(unittest.TestCase):
                     chunks.append(data)
                     return data
 
-                status = pty.spawn(args, read)  # pylint:disable=assignment-from-no-return
+                with set_environ('TERM', 'xterm-256color'):
 
-                # On Python 2, pty.spawn doesn't return the exit code
-                if status is None:
-                    (_, status) = os.wait()  # pylint:disable=no-member
+                    status = pty.spawn(args, read)  # pylint:disable=assignment-from-no-return
 
-                return status, b''.join(chunks)
+                    # On Python 2, pty.spawn doesn't return the exit code
+                    if status is None:
+                        (_, status) = os.wait()  # pylint:disable=no-member
+
+                    return status, b''.join(chunks)
 
             try:
                 output = subprocess.check_output(
@@ -108,9 +110,3 @@ class SimpleIntegrationTest(unittest.TestCase):
                 return 0, output
             except subprocess.CalledProcessError as ex:
                 return ex.returncode, ex.output
-
-        finally:
-            if old_pythonpath is None:
-                del os.environ['PYTHONPATH']
-            else:
-                os.environ['PYTHONPATH'] = old_pythonpath
