@@ -22,6 +22,8 @@ TEST_PATH = os.path.dirname(__file__)
 
 ROOT_PATH = os.path.dirname(os.path.dirname(TEST_PATH))
 
+WINDOWS = os.name == 'nt'
+
 
 @in_directory('tests/simple_app')
 class SimpleIntegrationTest(unittest.TestCase):
@@ -52,7 +54,7 @@ class SimpleIntegrationTest(unittest.TestCase):
         # Remove timing information from the output as unstable
         out = re.sub(b'in [0-9.]+s', b'in XXXXs', out)
 
-        if os.name == 'nt':  # Windows uses different escape codes
+        if WINDOWS:  # Windows uses different escape codes
             expected_out_file = 'calculator_windows.txt'
         else:
             expected_out_file = 'calculator.txt'
@@ -87,6 +89,14 @@ class SimpleIntegrationTest(unittest.TestCase):
         with set_environ('PYTHONPATH', ROOT_PATH):
 
             if terminal:
+                if WINDOWS:
+                    try:
+                        output = subprocess.check_output(args,
+                                                         stderr=subprocess.STDOUT)
+                    except OSError:  # Raised when command fails for any reason
+                        return 1, b''
+                    return 0, output
+
                 try:
                     import pty
                 except ImportError:
