@@ -24,3 +24,4 @@ nose.config: INFO: Ignoring files matching ['^\\.', '^_', '^setup\\.py$']
 Ran 1 test in XXXXs
 
 OK
+[0m
