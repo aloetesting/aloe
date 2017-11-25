@@ -9,7 +9,7 @@ from __future__ import absolute_import
 
 import os
 import re
-import subprocess
+from subprocess import check_output, STDOUT, CalledProcessError
 import sys
 import unittest
 
@@ -91,8 +91,7 @@ class SimpleIntegrationTest(unittest.TestCase):
             if terminal:
                 if WINDOWS:
                     try:
-                        output = subprocess.check_output(args,
-                                                         stderr=subprocess.STDOUT)
+                        output = check_output(args, stderr=STDOUT)
                     except OSError:  # Raised when command fails for any reason
                         return 1, b''
                     return 0, output
@@ -121,10 +120,7 @@ class SimpleIntegrationTest(unittest.TestCase):
                     return status, b''.join(chunks)
 
             try:
-                output = subprocess.check_output(
-                    args,
-                    stderr=subprocess.STDOUT,
-                )
+                output = check_output(args, stderr=STDOUT)
                 return 0, output
-            except subprocess.CalledProcessError as ex:
+            except CalledProcessError as ex:
                 return ex.returncode, ex.output
