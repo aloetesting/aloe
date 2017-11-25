@@ -88,13 +88,7 @@ class SimpleIntegrationTest(unittest.TestCase):
         # Ensure Aloe itself is on the path
         with set_environ('PYTHONPATH', ROOT_PATH):
 
-            if terminal:
-                if WINDOWS:
-                    try:
-                        output = check_output(args, stderr=STDOUT)
-                    except OSError:  # Raised when command fails for any reason
-                        return 1, b''
-                    return 0, output
+            if terminal and not WINDOWS:  # No pty on Windows
 
                 try:
                     import pty
