@@ -80,7 +80,7 @@ class SimpleIntegrationTest(unittest.TestCase):
         args = [sys.executable, '-c', 'import aloe; aloe.main()'] + list(args)
 
         # Ensure Aloe itself is on the path
-        with set_environ('PYTHONPATH', ROOT_PATH):
+        with set_environ(PYTHONPATH=ROOT_PATH):
 
             if terminal:
                 try:
@@ -96,7 +96,11 @@ class SimpleIntegrationTest(unittest.TestCase):
                     chunks.append(data)
                     return data
 
-                with set_environ('TERM', 'xterm-256color'):
+                with set_environ(
+                    COLORTERM='',
+                    TERM='xterm-256color',
+                    TERM_PROGRAM='',
+                ):
 
                     status = pty.spawn(args, read)  # pylint:disable=assignment-from-no-return
 
