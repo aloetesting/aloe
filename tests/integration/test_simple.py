@@ -52,7 +52,11 @@ class SimpleIntegrationTest(unittest.TestCase):
         # Remove timing information from the output as unstable
         out = re.sub(b'in [0-9.]+s', b'in XXXXs', out)
 
-        with open(os.path.join(TEST_PATH, 'calculator.txt'), 'rb') as expected:
+        if os.name == 'nt':  # Windows uses different escape codes
+            expected_out_file = 'calculator_windows.txt'
+        else:
+            expected_out_file = 'calculator.txt'
+        with open(os.path.join(TEST_PATH, expected_out_file), 'rb') as expected:
             expected_out = expected.read()
         self.assertEqual(out, expected_out, "Output matches expected.")
 
