@@ -89,7 +89,6 @@ class SimpleIntegrationTest(unittest.TestCase):
         with set_environ('PYTHONPATH', ROOT_PATH):
 
             if terminal and not WINDOWS:  # No pty on Windows
-
                 try:
                     import pty
                 except ImportError:
