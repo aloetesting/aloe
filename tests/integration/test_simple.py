@@ -55,7 +55,10 @@ class SimpleIntegrationTest(unittest.TestCase):
         out = re.sub(b'in [0-9.]+s', b'in XXXXs', out)
 
         if WINDOWS:  # Windows uses different escape codes
-            expected_out_file = 'calculator_windows.txt'
+            if sys.version_info[0] == 2:    # Python 2 decodes output
+                expected_out_file = 'calculator_windows_py2.txt'
+            else:
+                expected_out_file = 'calculator_windows.txt'
         else:
             expected_out_file = 'calculator.txt'
         with open(os.path.join(TEST_PATH, expected_out_file), 'rb') as expected:
