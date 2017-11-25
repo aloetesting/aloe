@@ -62,7 +62,10 @@ class Terminal(object):
     palette = {
         'cyan': (0, 170, 170),
         'green': (0, 170, 0),
-        'grey': (118, 118, 118),
+        # Colorful converts grays to 256 color palette incorrectly unless
+        # components are specified as floating point.
+        # https://github.com/timofurrer/colorful/pull/8
+        'grey': (118.0, 118.0, 118.0),
         'red': (170, 0, 0),
         'yellow': (170, 85, 0),
     }
