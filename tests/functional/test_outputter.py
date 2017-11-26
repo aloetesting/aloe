@@ -44,24 +44,13 @@ class MockTermElement(object):
         return str(self) * other
 
 
-MOCK_ATTTRIBUTES = set((
-    'blue',
-    'cyan',
-    'green',
-    'grey',
-    'move_up',
-    'red',
-    'yellow',
-))
-
-
 class MockTerminal(Terminal):
     """Mock terminal to output printable elements instead of ANSI sequences"""
 
-    def __getattribute__(self, attr):
-        if attr in MOCK_ATTTRIBUTES:
-            return MockTermElement(attr)
-        return super(MockTerminal, self).__getattribute__(attr)
+    def colored(self, color):
+        return MockTermElement(color)
+
+    move_up = MockTermElement('move_up')
 
 
 @in_directory('tests/simple_app')

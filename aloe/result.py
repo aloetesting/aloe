@@ -15,8 +15,9 @@ import sys
 from contextlib import contextmanager
 from functools import wraps
 
-import colorful
+import colorama
 from colorama import Cursor
+import colors
 
 from aloe.registry import (
     CallbackDecorator,
@@ -58,18 +59,6 @@ class Terminal(object):
         'tag': 'cyan',
     }
 
-    # Override default colorful palette for readability
-    palette = {
-        'cyan': (0, 170, 170),
-        'green': (0, 170, 0),
-        # Colorful converts grays to 256 color palette incorrectly unless
-        # components are specified as floating point.
-        # https://github.com/timofurrer/colorful/pull/8
-        'grey': (118.0, 118.0, 118.0),
-        'red': (170, 0, 0),
-        'yellow': (170, 85, 0),
-    }
-
     @memoizedproperty
     def theme(self):
         """The color theme, taking CUCUMBER_COLORS into account."""
@@ -96,7 +85,7 @@ class Terminal(object):
         self.stream = stream
         self.does_styling = self.is_a_tty or force_styling
 
-        colorful.update_palette(self.palette)  # pylint:disable=no-member
+        colorama.init()
 
     def __nonzero__(self):
         return True
@@ -104,16 +93,22 @@ class Terminal(object):
     def __getattr__(self, attr):
         """Create and return color methods for coloring output."""
 
-        if attr in self.theme:  # pylint:disable=unsupported-membership-test
-            return getattr(self, self.theme[attr])  # pylint:disable=unsubscriptable-object
+        color = self.theme[attr]  # pylint:disable=unsubscriptable-object
 
-        try:
-            coloring = getattr(colorful, attr)
-        except AttributeError:
-            raise AttributeError(
-                "{} has no attribute {}".format(type(self), attr))
+        return self.colored(color)
 
-        return lambda s: str(coloring(s))
+    def colored(self, color):
+        """A function to output a string in the given color."""
+
+        if self.does_styling:
+
+            # Grey is not one of the basic 16 colors
+            if color == 'grey':
+                color = 243
+
+            return lambda s: colors.color(s, fg=color)
+        else:
+            return lambda s: s
 
     def write(self, arg='', return_=False):
         """
