@@ -37,6 +37,9 @@ outer_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
 # pylint:enable=invalid-name
 
 
+# Initialize Colorama to support colored output on Windows.
+colorama.init()
+
 # Global reference to the Terminal:
 # This exists because the hooks have to be registered before the test is
 # started, which is when the stream is passed in.
@@ -84,8 +87,6 @@ class Terminal(object):
             stream = sys.__stdout__
         self.stream = stream
         self.does_styling = self.is_a_tty or force_styling
-
-        colorama.init()
 
     def __nonzero__(self):
         return True
