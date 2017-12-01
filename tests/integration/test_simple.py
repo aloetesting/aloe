@@ -56,10 +56,8 @@ class SimpleIntegrationTest(unittest.TestCase):
             expected_out = expected.read()
 
         if out != expected_out:
-            with open(
-                os.path.join(TEST_PATH, 'calculator-actual.txt'),
-                'wb'
-            ) as actual:
+            actual_path = os.path.join(TEST_PATH, 'calculator-actual.txt')
+            with open(actual_path, 'wb') as actual:
                 actual.write(out)
 
         self.assertEqual(out, expected_out, "Output matches expected.")

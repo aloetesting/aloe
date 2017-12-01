@@ -101,15 +101,14 @@ class Terminal(object):
     def colored(self, color):
         """A function to output a string in the given color."""
 
-        if self.does_styling:
-
-            # Grey is not one of the basic 16 colors
-            if color == 'grey':
-                color = 243
-
-            return lambda s: colors.color(s, fg=color)
-        else:
+        if not self.does_styling:
             return lambda s: s
+
+        # Grey is not one of the basic 16 colors
+        if color == 'grey':
+            color = 243
+
+        return lambda s: colors.color(s, fg=color)
 
     def write(self, arg='', return_=False):
         """
