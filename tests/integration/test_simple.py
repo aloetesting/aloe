@@ -54,6 +54,12 @@ class SimpleIntegrationTest(unittest.TestCase):
 
         with open(os.path.join(TEST_PATH, 'calculator.txt'), 'rb') as expected:
             expected_out = expected.read()
+
+        if out != expected_out:
+            actual_path = os.path.join(TEST_PATH, 'calculator-actual.txt')
+            with open(actual_path, 'wb') as actual:
+                actual.write(out)
+
         self.assertEqual(out, expected_out, "Output matches expected.")
 
     def test_failure(self):
@@ -80,7 +86,7 @@ class SimpleIntegrationTest(unittest.TestCase):
         args = [sys.executable, '-c', 'import aloe; aloe.main()'] + list(args)
 
         # Ensure Aloe itself is on the path
-        with set_environ('PYTHONPATH', ROOT_PATH):
+        with set_environ(PYTHONPATH=ROOT_PATH):
 
             if terminal:
                 try:
@@ -96,7 +102,11 @@ class SimpleIntegrationTest(unittest.TestCase):
                     chunks.append(data)
                     return data
 
-                with set_environ('TERM', 'xterm-256color'):
+                with set_environ(
+                    COLORTERM='',
+                    TERM='xterm-256color',
+                    TERM_PROGRAM='',
+                ):
 
                     status = pty.spawn(args, read)  # pylint:disable=assignment-from-no-return
 

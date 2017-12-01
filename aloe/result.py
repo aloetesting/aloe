@@ -15,6 +15,10 @@ import sys
 from contextlib import contextmanager
 from functools import wraps
 
+import colorama
+from colorama import Cursor
+import colors
+
 from aloe.registry import (
     CallbackDecorator,
     CALLBACK_REGISTRY,
@@ -33,54 +37,21 @@ outer_around = CallbackDecorator(CALLBACK_REGISTRY, 'around',
 # pylint:enable=invalid-name
 
 
+# Initialize Colorama to support colored output on Windows.
+colorama.init()
+
 # Global reference to the Terminal:
 # This exists because the hooks have to be registered before the test is
 # started, which is when the stream is passed in.
 TERMINAL = [None]
 
-try:
-    from blessings import Terminal as BaseTerminal
-except ImportError:
-    # When curses is unavailable, fall back to not coloring the output.
 
-    class NullCallableString(str):  # pragma: no cover
-        """Empty string that returns its argument when called."""
-
-        def __new__(cls):
-            new = str.__new__(cls, '')
-            return new
-
-        def __call__(self, *args):
-            return args[0]
-
-    class BaseTerminal(object):  # pragma: no cover
-        """Basic terminal functionality without curses."""
-
-        def __init__(self, kind=None, stream=None, force_styling=False):
-            if stream is None:
-                stream = sys.__stdout__
-            self.stream = stream
-
-        def __getattr__(self, attr):
-            return NullCallableString()
-
-        def __nonzero__(self):
-            return True
-
-        is_a_tty = False
-
-
-class Terminal(BaseTerminal):
+class Terminal(object):
     """
-    Wrapped Terminal object for display hooks.
-
-     * Adds additional features: write and writeln.
-     * Adds a decorator to require the terminal global being set and
-       pass it into hooks.
-     * Works around a bug in blessings.Terminal.
-     * Adds Aloe-specific color wrappers for steps.
+    Output coloring and movement.
     """
 
+    # Coloring of various output parts
     DEFAULT_THEME = {
         'preview': 'grey',
         'pending': 'yellow',
@@ -107,6 +78,38 @@ class Terminal(BaseTerminal):
 
         return theme
 
+    is_a_tty = sys.stdout.isatty()
+
+    move_up = Cursor.UP()
+
+    def __init__(self, kind=None, stream=None, force_styling=False):
+        if stream is None:
+            stream = sys.__stdout__
+        self.stream = stream
+        self.does_styling = self.is_a_tty or force_styling
+
+    def __nonzero__(self):
+        return True
+
+    def __getattr__(self, attr):
+        """Create and return color methods for coloring output."""
+
+        color = self.theme[attr]  # pylint:disable=unsubscriptable-object
+
+        return self.colored(color)
+
+    def colored(self, color):
+        """A function to output a string in the given color."""
+
+        if not self.does_styling:
+            return lambda s: s
+
+        # Grey is not one of the basic 16 colors
+        if color == 'grey':
+            color = 243
+
+        return lambda s: colors.color(s, fg=color)
+
     def write(self, arg='', return_=False):
         """
         Write to the stream.
@@ -124,15 +127,6 @@ class Terminal(BaseTerminal):
     def writeln(self, arg='', return_=False):
         """Convenience function to write a line to the stream."""
         self.write(arg + '\n', return_=return_)
-
-    def color(self, color):  # pylint:disable=arguments-differ
-        """Wrap Terminal.color() to work if styling is not set"""
-        # pylint:disable=too-many-function-args
-        return super(Terminal, self).color(color) if self.does_styling else str
-
-    def grey(self, *args, **kwargs):
-        """Grey is not one of the basic 8 colors."""
-        return self.color(243)(*args, **kwargs)
 
     @classmethod
     def required(cls, func):
@@ -155,14 +149,6 @@ class Terminal(BaseTerminal):
                 return func(TERMINAL[0], *args, **kwargs)
 
         return inner
-
-    def __getattr__(self, attr):
-        """Translate the theme colors."""
-
-        if attr in self.theme:  # pylint:disable=unsupported-membership-test
-            return getattr(self, self.theme[attr])  # pylint:disable=unsubscriptable-object
-
-        return super(Terminal, self).__getattr__(attr)
 
 
 @outer_around.each_feature

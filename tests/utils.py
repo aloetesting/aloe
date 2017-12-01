@@ -36,20 +36,23 @@ def before_after(before, after):
 
 
 @contextmanager
-def set_environ(key, value):
+def set_environ(**kwargs):
     """
-    A context manager setting the environment variable to the given value
-    before the context and restoring it afterwards.
+    A context manager setting environment variable to given values before the
+    context and restoring them afterwards.
     """
 
-    old_value = os.environ.get(key, None)
-    os.environ[key] = value
+    old_values = {}
+    for key, value in kwargs.items():
+        old_values[key] = os.environ.get(key, None)
+        os.environ[key] = value
 
     try:
         yield
 
     finally:
-        if old_value is None:
-            del os.environ[key]
-        else:
-            os.environ[key] = old_value
+        for key, value in old_values.items():
+            if value is None:
+                del os.environ[key]
+            else:
+                os.environ[key] = value
