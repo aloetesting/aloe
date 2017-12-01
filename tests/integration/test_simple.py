@@ -9,7 +9,7 @@ from __future__ import absolute_import
 
 import os
 import re
-import subprocess
+from subprocess import check_output, STDOUT, CalledProcessError
 import sys
 import unittest
 
@@ -21,6 +21,8 @@ from tests.utils import set_environ
 TEST_PATH = os.path.dirname(__file__)
 
 ROOT_PATH = os.path.dirname(os.path.dirname(TEST_PATH))
+
+WINDOWS = os.name == 'nt'
 
 
 @in_directory('tests/simple_app')
@@ -52,7 +54,14 @@ class SimpleIntegrationTest(unittest.TestCase):
         # Remove timing information from the output as unstable
         out = re.sub(b'in [0-9.]+s', b'in XXXXs', out)
 
-        with open(os.path.join(TEST_PATH, 'calculator.txt'), 'rb') as expected:
+        if WINDOWS:  # Windows uses different escape codes
+            if sys.version_info[0] == 2:    # Python 2 decodes output
+                expected_out_file = 'calculator_windows_py2.txt'
+            else:
+                expected_out_file = 'calculator_windows.txt'
+        else:
+            expected_out_file = 'calculator.txt'
+        with open(os.path.join(TEST_PATH, expected_out_file), 'rb') as expected:
             expected_out = expected.read()
 
         if out != expected_out:
@@ -88,7 +97,7 @@ class SimpleIntegrationTest(unittest.TestCase):
         # Ensure Aloe itself is on the path
         with set_environ(PYTHONPATH=ROOT_PATH):
 
-            if terminal:
+            if terminal and not WINDOWS:  # No pty on Windows
                 try:
                     import pty
                 except ImportError:
@@ -117,10 +126,7 @@ class SimpleIntegrationTest(unittest.TestCase):
                     return status, b''.join(chunks)
 
             try:
-                output = subprocess.check_output(
-                    args,
-                    stderr=subprocess.STDOUT,
-                )
+                output = check_output(args, stderr=STDOUT)
                 return 0, output
-            except subprocess.CalledProcessError as ex:
+            except CalledProcessError as ex:
                 return ex.returncode, ex.output
