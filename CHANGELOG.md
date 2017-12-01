@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.15
+
+### Added
+
+- Color support on Windows (#137, #139).
+
 ## 0.1.14
 
 ### Fixed
