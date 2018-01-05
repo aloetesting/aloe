@@ -19,7 +19,7 @@ from datetime import datetime
 from functools import wraps
 
 
-def guess_types(data):  # pylint:disable=too-complex
+def guess_types(data):
     """
     Converts a record or list of records from strings contained in
     outlines, table or hashes into a version with the types guessed.

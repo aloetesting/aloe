@@ -1,5 +1,4 @@
 [MASTER]
-load-plugins=pylint_mccabe
 
 [FORMAT]
 max-line-length=80
