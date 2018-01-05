@@ -12,6 +12,7 @@ disable=
     attribute-defined-outside-init,
     duplicate-code,
     fixme,
+    inconsistent-return-statements,
     locally-disabled,
     locally-enabled,
     missing-super-argument,
