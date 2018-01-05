@@ -2,7 +2,6 @@ coverage
 factory_boy
 mock
 pycodestyle
-pylint>=1.7.0
-pylint-mccabe
+pylint>=1.8.0
 setuptools_scm
 Sphinx

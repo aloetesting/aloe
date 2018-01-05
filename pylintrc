@@ -1,5 +1,4 @@
 [MASTER]
-load-plugins=pylint_mccabe
 
 [FORMAT]
 max-line-length=80
@@ -13,6 +12,7 @@ disable=
     attribute-defined-outside-init,
     duplicate-code,
     fixme,
+    inconsistent-return-statements,
     locally-disabled,
     locally-enabled,
     missing-super-argument,
