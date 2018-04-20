@@ -10,6 +10,7 @@ from __future__ import absolute_import
 
 import sys
 import os
+from contextlib import contextmanager
 from inspect import getsourcefile
 
 from nose.importer import Importer
@@ -25,6 +26,24 @@ from aloe.utils import PY3, TestWrapperIO
 
 # Pylint cannot infer the attributes on world
 # pylint:disable=no-member
+
+
+@contextmanager
+def empty_file(name):
+    """
+    Create an empty file with the given name that is removed on exiting the
+    context manager.
+    """
+
+    try:
+        file_ = open(name, 'w')
+        file_.close()
+        yield
+    finally:
+        try:
+            os.unlink(name)
+        except OSError:
+            pass
 
 
 @in_directory('tests/simple_app')
@@ -289,8 +308,16 @@ AssertionError
         """
 
         # Nose behavior depends on whether there's __init__.py in the directory
-        self.assert_feature_success('features/non_ascii_files')
-        self.assert_feature_success('features/non_ascii_files_2')
+
+        # Files with non-ASCII names are created on the fly rather than checked
+        # in to keep the distribution installable regardless of the system
+        # encoding. The file names are encoded using UTF-8 which causes
+        # problems even logging them when installing on Windows systems.
+
+        with empty_file('features/non_ascii_files/tmp_file_奇怪的文件'):
+            self.assert_feature_success('features/non_ascii_files')
+        with empty_file('features/non_ascii_files_2/tmp_file_странный_файл'):
+            self.assert_feature_success('features/non_ascii_files_2')
 
     def test_scenario_indices(self):
         """
