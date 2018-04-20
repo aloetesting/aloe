@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.16
+
+### Fixed
+
+- Problems with building and installation on Windows (#143).
+
 ## 0.1.15
 
 ### Added
