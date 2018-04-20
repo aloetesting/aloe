@@ -290,8 +290,8 @@ class StepDict(object):
         """Test whether an object is a function or a method."""
         func_dir = dir(func)
         return callable(func) and (
-            'func_name' in func_dir or
-            '__func__' in func_dir)
+            'func_name' in func_dir
+            or '__func__' in func_dir)
 
     def match_step(self, step_):
         """

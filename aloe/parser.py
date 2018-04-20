@@ -539,9 +539,9 @@ class Scenario(HeaderNode, TaggedNode, StepContainer):
         return max(
             0,
             strings.get_terminal_width(self.represented()),
-            *([step.max_length for step in self.steps] +
-              [strings.get_terminal_width(line)
-               for line in self.represent_outlines().splitlines()])
+            *([step.max_length for step in self.steps]
+              + [strings.get_terminal_width(line)
+                 for line in self.represent_outlines().splitlines()])
         )
 
     @memoizedproperty

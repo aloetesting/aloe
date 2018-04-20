@@ -39,9 +39,9 @@ def represent_table(table, indent=0, cell_wrap=str):
     ]
 
     return '\n'.join(
-        ' ' * indent +
-        '| %s |' % ' | '.join(cell_wrap(ljust(cell, length))
-                              for cell, length in zip(row, lengths))
+        ' ' * indent
+        + '| %s |' % ' | '.join(cell_wrap(ljust(cell, length))
+                                for cell, length in zip(row, lengths))
         for row in table
     )
 

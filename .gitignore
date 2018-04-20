@@ -1,5 +1,6 @@
 __pycache__
 *.pyc
+tmp_file_*
 /.eggs
 /aloe.egg-info
 /build/
