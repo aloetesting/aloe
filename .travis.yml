@@ -1,14 +1,20 @@
 language: python
 
-python:
-    - "2.7"
-    - "3.4"
-    - "3.5"
-    - "3.6"
+matrix:
+  include:
+    - python: "3.6"
+      env: PYLINT_FLAGS=
+    - python: "3.5"
+      env: PYLINT_FLAGS=
+    - python: "3.4"
+      env: PYLINT_FLAGS=
+    - python: "2.7"
+      env: PYLINT_FLAGS="--disable bad-continuation"
 
 install:
     - pip install -r requirements.txt
     - pip install -r test_requirements.txt
+    - pip install --upgrade pycodestyle pylint
     - pip install coveralls
 
 cache:
@@ -17,7 +23,7 @@ cache:
 
 script:
     - pycodestyle .
-    - pylint aloe aloe_sphinx tests
+    - pylint $PYLINT_FLAGS aloe aloe_sphinx tests
     - coverage erase
     - coverage run -m nose
     - coverage report

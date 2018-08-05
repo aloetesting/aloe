@@ -103,9 +103,9 @@ class SimpleIntegrationTest(unittest.TestCase):
                     return data
 
                 with set_environ(
-                    COLORTERM='',
-                    TERM='xterm-256color',
-                    TERM_PROGRAM='',
+                        COLORTERM='',
+                        TERM='xterm-256color',
+                        TERM_PROGRAM='',
                 ):
 
                     status = pty.spawn(args, read)  # pylint:disable=assignment-from-no-return
