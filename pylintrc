@@ -20,6 +20,7 @@ disable=
     no-self-use,
     too-few-public-methods,
     too-many-lines,
+    useless-object-inheritance,
     unused-argument,
     wrong-import-order,
     RP0101,
