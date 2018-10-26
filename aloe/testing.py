@@ -82,6 +82,9 @@ def _in_directory(directory):
                     continue
 
             # Is it loaded from a file in the directory?
+            if not path:
+                continue
+
             path = os.path.abspath(path)
             if not path.startswith(unload_path_prefix):
                 continue
