@@ -11,7 +11,7 @@ python setup.py sdist -d check_install_dist
 # Prepare a clean virtual environment
 deactivate || true
 rm -rf check_install_venv
-virtualenv check_install_venv
+virtualenv --python=$(which python) check_install_venv
 . check_install_venv/bin/activate
 
 # Install the package
