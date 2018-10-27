@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.18
+
+### Fixed
+
+- Checking package installation in the correct Python environment (#149).
+
 ## 0.1.17
 
 ### Fixed
