@@ -103,6 +103,7 @@ class memoizedproperty(object):  # pylint:disable=invalid-name
         self.func = func
         self.name = func.__name__
         self.__doc__ = func.__doc__
+        self.__func__ = func  # Compatibility with python-future's newsuper
 
     def __get__(self, instance, owner):
         """Compute the value and cache it in the class dict."""
