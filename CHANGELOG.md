@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.17
+
+### Fixed
+
+- Compatibility problems with Python 2.7 and Python 3.7 (#148).
+
 ## 0.1.16
 
 ### Fixed
