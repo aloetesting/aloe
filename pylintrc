@@ -21,6 +21,7 @@ disable=
     too-few-public-methods,
     too-many-lines,
     useless-object-inheritance,
+    unnecessary-pass,
     unused-argument,
     wrong-import-order,
     RP0101,
