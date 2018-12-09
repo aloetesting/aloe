@@ -2,13 +2,16 @@
 Setup script.
 """
 
+import io
+from os import path
 from setuptools import setup, find_packages
 
 if __name__ == '__main__':
+    this_directory = path.abspath(path.dirname(__file__))
     with \
             open('requirements.txt') as requirements, \
             open('test_requirements.txt') as test_requirements, \
-            open('README.md') as readme:
+            io.open(path.join(this_directory, 'README.md'), encoding='utf-8') as readme:
         setup(
             name='aloe',
             use_scm_version=True,
