@@ -1,7 +1,11 @@
+dist: xenial
+
 language: python
 
 matrix:
   include:
+    - python: "3.7"
+      env: PYLINT_FLAGS=
     - python: "3.6"
       env: PYLINT_FLAGS=
     - python: "3.5"
