@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.1.19
+
+### Fixed
+
+- Possible installation error due to non-ASCII symbols in README (#147).
+
 ## 0.1.18
 
 ### Fixed
