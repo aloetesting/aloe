@@ -9,8 +9,6 @@ environment:
       PYLINT_FLAGS: ""
     - PYTHON: "C:\\Python35-x64"
       PYLINT_FLAGS: ""
-    - PYTHON: "C:\\Python34-x64"
-      PYLINT_FLAGS: ""
     - PYTHON: "C:\\Python27"
       PYLINT_FLAGS: "--disable bad-continuation"
 
