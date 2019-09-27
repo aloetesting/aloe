@@ -90,7 +90,7 @@ class SimpleIntegrationTest(unittest.TestCase):
 
             if terminal:
                 try:
-                    import pty
+                    import pty  # pylint:disable=import-outside-toplevel
                 except ImportError:
                     raise unittest.SkipTest("PTY support unavailable.")
 
