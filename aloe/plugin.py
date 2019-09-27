@@ -56,10 +56,7 @@ class GherkinPlugin(Plugin):
             # Don't try to load anything if only called for information
             return
 
-        self.feature_dirs = [
-            dir_
-            for dir_ in FeatureLoader.find_feature_directories('.')
-        ]
+        self.feature_dirs = list(FeatureLoader.find_feature_directories('.'))
         for feature_dir in self.feature_dirs:
             FeatureLoader.find_and_load_step_definitions(feature_dir)
 

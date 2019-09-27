@@ -10,7 +10,7 @@ environment:
     - PYTHON: "C:\\Python35-x64"
       PYLINT_FLAGS: ""
     - PYTHON: "C:\\Python27"
-      PYLINT_FLAGS: "--disable bad-continuation"
+      PYLINT_FLAGS: "--disable bad-continuation,bad-option-value"
 
 install:
   - git config core.symlinks true
