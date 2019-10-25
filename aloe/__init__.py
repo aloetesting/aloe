@@ -18,6 +18,7 @@ from aloe.registry import (
     before,
     step,
 )
+from aloe.runner import Runner
 
 world = threading.local()  # pylint:disable=invalid-name
 
@@ -30,7 +31,6 @@ def main(argv=None):  # pragma: no cover
     if argv is None:
         argv = sys.argv
 
-    from aloe.runner import Runner
     Runner(argv)
 
 
