@@ -1,5 +1,11 @@
 # Change Log
 
+## 0.2.0
+
+### Removed
+
+- Python 2 compatibility dropped (#159).
+
 ## 0.1.19
 
 ### Fixed
