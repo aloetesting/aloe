@@ -4,15 +4,6 @@ Useful tools for writing Aloe steps.
 See also :class:`aloe.world`.
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-
-# pylint:disable=redefined-builtin, unused-wildcard-import, wildcard-import
-from builtins import *
-# pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
-
 import re
 import inspect
 from datetime import datetime

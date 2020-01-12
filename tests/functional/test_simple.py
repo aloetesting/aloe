@@ -3,11 +3,7 @@
 Basic scenario tests.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-
+import io
 import sys
 import os
 from contextlib import contextmanager
@@ -22,7 +18,6 @@ from aloe.testing import (
     FeatureTest,
     in_directory,
 )
-from aloe.utils import PY3, TestWrapperIO
 
 # Pylint cannot infer the attributes on world
 # pylint:disable=no-member
@@ -86,7 +81,7 @@ class SimpleScenarioTest(FeatureTest):
         Check that the appropriate error messages are printed on failure.
         """
 
-        stream = TestWrapperIO()
+        stream = io.StringIO()
 
         failing_feature = 'features/wrong_expectations.feature'
 
@@ -109,7 +104,7 @@ class SimpleScenarioTest(FeatureTest):
         step_file = self.step_module_filename('features.steps')
 
         step_stack_frame = """
-  File "{step_file}", line 62, in assert_result
+  File "{step_file}", line 57, in assert_result
     assert world.result == float(result)
 AssertionError
         """.strip().format(step_file=step_file)
@@ -122,7 +117,7 @@ AssertionError
         step background.
         """
 
-        stream = TestWrapperIO()
+        stream = io.StringIO()
 
         failing_feature = 'features/wrong_expectations_background.feature'
 
@@ -145,7 +140,7 @@ AssertionError
         step_file = self.step_module_filename('features.steps')
 
         step_stack_frame = """
-  File "{step_file}", line 62, in assert_result
+  File "{step_file}", line 57, in assert_result
     assert world.result == float(result)
 AssertionError
         """.strip().format(step_file=step_file)
@@ -157,7 +152,7 @@ AssertionError
         Test that a failing feature in Chinese fails tests.
         """
 
-        stream = TestWrapperIO()
+        stream = io.StringIO()
 
         failing_feature = 'features/wrong_expectations_zh.feature'
 
@@ -172,28 +167,17 @@ AssertionError
 
         self.assertIn(error_header, output)
 
-        if PY3:
-            feature_stack_frame = """
+        feature_stack_frame = """
   File "{feature}", line 12, in 添加两个数值
     那么结果应该是40
-            """.strip().format(feature=os.path.abspath(failing_feature))
+        """.strip().format(feature=os.path.abspath(failing_feature))
 
-            self.assertIn(feature_stack_frame, output)
-        else:
-            # Cannot use non-ASCII method names in Python 2
-            feature_stack_frame = """
-  File "{feature}", line 12, in
-            """.strip().format(feature=os.path.abspath(failing_feature))
-
-            self.assertIn(feature_stack_frame, output)
-
-            feature_code_line = "那么结果应该是40"
-            self.assertIn(feature_code_line, output)
+        self.assertIn(feature_stack_frame, output)
 
         step_file = self.step_module_filename('features.steps')
 
         step_stack_frame = """
-  File "{step_file}", line 62, in assert_result
+  File "{step_file}", line 57, in assert_result
     assert world.result == float(result)
 AssertionError
         """.strip().format(step_file=step_file)
@@ -205,7 +189,7 @@ AssertionError
         Check the behavior when a step is not defined.
         """
 
-        stream = TestWrapperIO()
+        stream = io.StringIO()
 
         failing_feature = 'features/step_not_found.feature'
 
@@ -223,7 +207,7 @@ AssertionError
         Check the behavior when a step is not defined with a Chinese feature.
         """
 
-        stream = TestWrapperIO()
+        stream = io.StringIO()
 
         failing_feature = 'features/step_not_found_zh.feature'
 
@@ -256,7 +240,7 @@ AssertionError
         scenario outline.
         """
 
-        stream = TestWrapperIO()
+        stream = io.StringIO()
 
         failing_feature = 'features/wrong_expectations.feature'
 
@@ -287,7 +271,7 @@ AssertionError
         step_file = self.step_module_filename('features.steps')
 
         step_stack_frame = """
-  File "{step_file}", line 62, in assert_result
+  File "{step_file}", line 57, in assert_result
     assert world.result == float(result)
 AssertionError
         """.strip().format(step_file=step_file)

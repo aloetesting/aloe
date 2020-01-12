@@ -3,11 +3,6 @@
 Test step and callback registry.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-
 import unittest
 
 from nose.tools import (
@@ -95,8 +90,7 @@ def test_replacing_step():
 
     steps = StepDict()
 
-    # This has to be more than re._MAXCACHE; currently 100 on Python 2.7 and
-    # 512 on Python 3.5
+    # This has to be more than re._MAXCACHE; currently 512 on Python 3.8
     step_count = 1024
 
     sentence = "sentence {0}".format

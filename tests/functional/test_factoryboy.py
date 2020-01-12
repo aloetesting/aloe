@@ -2,12 +2,6 @@
 Test Factory Boy steps.
 """
 
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
-# pylint:disable=redefined-builtin, unused-wildcard-import, wildcard-import
-from builtins import *
-# pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
-
 from aloe.testing import (
     FeatureTest,
     in_directory,

@@ -2,14 +2,6 @@
 Cucumber-esque outputter for Nose.
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-# pylint:disable=redefined-builtin, unused-wildcard-import, wildcard-import
-from builtins import *
-# pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
-
 import os
 import sys
 from contextlib import contextmanager
@@ -26,7 +18,7 @@ from aloe.registry import (
 )
 from aloe.strings import ljust, represent_table
 from aloe.tools import hook_not_reentrant
-from aloe.utils import memoizedproperty, PY3
+from aloe.utils import memoizedproperty
 from nose.result import TextTestResult
 
 # A decorator to add callbacks which wrap the steps looser than all the other
@@ -118,8 +110,7 @@ class Terminal(object):
             before the write.
         """
 
-        # On Python 2, the default output encoding is ASCII
-        self.stream.write(arg if PY3 else arg.encode('utf-8'))
+        self.stream.write(arg)
 
         if return_:
             self.stream.write(self.move_up * arg.count('\n'))

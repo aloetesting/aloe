@@ -3,16 +3,6 @@
 Registry of steps and hooks called when running scenarios.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-# pylint:disable=redefined-builtin
-from builtins import bytes
-from builtins import super
-from builtins import str
-# pylint:enable=redefined-builtin
-
 import re
 from collections import OrderedDict
 from functools import wraps, partial

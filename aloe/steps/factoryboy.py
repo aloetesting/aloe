@@ -12,12 +12,6 @@ To activate these steps import :mod:`aloe.steps.factoryboy` into your
 .. _factory_boy: https://factoryboy.readthedocs.io/en/latest/
 """
 
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
-# pylint:disable=redefined-builtin, unused-wildcard-import, wildcard-import
-from builtins import *
-# pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
-
 import re
 
 from aloe import before, step

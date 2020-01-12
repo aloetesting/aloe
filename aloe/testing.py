@@ -2,14 +2,6 @@
 Utilities for testing libraries using Aloe.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-# pylint:disable=redefined-builtin
-from builtins import super
-# pylint:enable=redefined-builtin
-
 import io
 import os
 import sys
@@ -27,20 +19,6 @@ from aloe.registry import (
     STEP_REGISTRY,
 )
 from aloe.runner import Runner
-from aloe.utils import PY3, TestWrapperIO
-
-# When the outer Nose captures output, it's a different type between Python 2
-# and 3.
-if PY3:
-    CAPTURED_OUTPUTS = (io.StringIO,)
-else:
-    # io.StringIO is an alias to cStringIO.StringIO, which is a function and
-    # not a type
-    import StringIO  # pylint:disable=import-error
-    CAPTURED_OUTPUTS = (
-        type(io.StringIO()),
-        StringIO.StringIO,
-    )
 
 
 @contextmanager
@@ -273,10 +251,10 @@ class FeatureTest(unittest.TestCase):
         stream = kwargs.get('stream')
         force_color = kwargs.get('force_color', False)
 
-        if stream is None and isinstance(sys.stdout, CAPTURED_OUTPUTS):
+        if stream is None and isinstance(sys.stdout, io.StringIO):
             # Don't show results of running the inner tests if the outer Nose
             # redirects output
-            stream = TestWrapperIO()
+            stream = io.StringIO()
 
         # Reset the state of callbacks and steps so that individual tests don't
         # affect each other
@@ -320,7 +298,7 @@ class FeatureTest(unittest.TestCase):
             assert result.success
             return result
         except AssertionError:
-            if isinstance(result.captured_stream, CAPTURED_OUTPUTS):
+            if isinstance(result.captured_stream, io.StringIO):
                 print("--Output--")
                 print(result.captured_stream.getvalue())
                 print("--END--")
@@ -336,7 +314,7 @@ class FeatureTest(unittest.TestCase):
             assert not result.success
             return result
         except AssertionError:
-            if isinstance(result.captured_stream, CAPTURED_OUTPUTS):
+            if isinstance(result.captured_stream, io.StringIO):
                 print("--Output--")
                 print(result.captured_stream.getvalue())
                 print("--END--")

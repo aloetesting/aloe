@@ -2,22 +2,9 @@
 Miscellaneous utilities used internally by Aloe.
 """
 
-from __future__ import print_function
-from __future__ import unicode_literals
-from __future__ import division
-from __future__ import absolute_import
-# pylint:disable=redefined-builtin, unused-wildcard-import, wildcard-import
-from builtins import *
-# pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
-
-import io
 import re
-import sys
 
-try:
-    from functools import lru_cache
-except ImportError:
-    from repoze.lru import lru_cache
+from functools import lru_cache
 from contextlib import contextmanager
 
 
@@ -25,41 +12,6 @@ from contextlib import contextmanager
 def dummy_cm():
     """A dummy context manager to compare other decorated functions to."""
     pass
-
-
-PY3 = sys.version_info >= (3, 0)
-
-
-def identifier(value):
-    """
-    Make a valid identifier from a string on either Python 2 or Python 3.
-
-    Python 2 limits identifiers to ASCII characters, so unicode must be
-    encoded.
-    """
-
-    if PY3:
-        return value
-    else:
-        return value.encode('unicode_escape')
-
-
-if PY3:
-    TestWrapperIO = io.StringIO  # pylint:disable=invalid-name
-else:
-    class TestWrapperIO(io.StringIO):
-        """A wrapper for capturing Nose output in tests."""
-
-        def write(self, str_):
-            """
-            Write a string to the stream. In case of Python 2, accept both str
-            and unicode.
-            """
-
-            try:
-                super().write(str_)
-            except TypeError:
-                super().write(str_.decode('utf-8'))
 
 
 def unwrap_function(func):
@@ -103,7 +55,6 @@ class memoizedproperty(object):  # pylint:disable=invalid-name
         self.func = func
         self.name = func.__name__
         self.__doc__ = func.__doc__
-        self.__func__ = func  # Compatibility with python-future's newsuper
 
     def __get__(self, instance, owner):
         """Compute the value and cache it in the class dict."""

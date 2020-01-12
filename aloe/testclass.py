@@ -2,17 +2,6 @@
 Base test class for tests generated from scenarios.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-# pylint:disable=redefined-builtin
-from builtins import zip
-from builtins import str
-from builtins import range
-from builtins import super
-# pylint:enable=redefined-builtin
-
 import ast
 import unittest
 from contextlib import contextmanager
@@ -33,7 +22,6 @@ from aloe.registry import (
     PriorityClass,
     STEP_REGISTRY,
 )
-from aloe.utils import identifier
 
 
 class TestStep(Step):
@@ -190,7 +178,7 @@ class TestCase(unittest.TestCase):
             for scenario in scenarios
         })
 
-        class_name = identifier(feature.name)
+        class_name = feature.name
 
         testclass = type(class_name, (cls,), members)
         testclass.feature.testclass = testclass

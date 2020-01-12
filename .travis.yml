@@ -12,8 +12,6 @@ matrix:
       env: PYLINT_FLAGS=
     - python: "3.5"
       env: PYLINT_FLAGS=
-    - python: "2.7"
-      env: PYLINT_FLAGS="--disable bad-continuation,bad-option-value"
 
 install:
     - pip install -r requirements.txt
