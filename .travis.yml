@@ -5,13 +5,9 @@ language: python
 matrix:
   include:
     - python: "3.8"
-      env: PYLINT_FLAGS=
     - python: "3.7"
-      env: PYLINT_FLAGS=
     - python: "3.6"
-      env: PYLINT_FLAGS=
     - python: "3.5"
-      env: PYLINT_FLAGS=
 
 install:
     - pip install -r requirements.txt
@@ -25,7 +21,7 @@ cache:
 
 script:
     - pycodestyle .
-    - pylint $PYLINT_FLAGS aloe aloe_sphinx tests
+    - pylint aloe aloe_sphinx tests
     - coverage erase
     - coverage run -m nose
     - coverage report
