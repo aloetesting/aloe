@@ -3,15 +3,8 @@
 Filesystem-related utilities.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-
 import os
 import fnmatch
-
-from future.utils import raise_from
 
 from nose.importer import Importer
 
@@ -58,12 +51,9 @@ class FeatureLoader(object):
                 try:
                     cls.importer.importFromPath(filename, module_name)
                 except ImportError as exc:
-                    raise_from(
-                        StepDiscoveryError(
-                            "Cannot load step definition file: '%s'" % filename
-                        ),
-                        exc
-                    )
+                    raise StepDiscoveryError(
+                        "Cannot load step definition file: '%s'" % filename
+                    ) from exc
 
     @classmethod
     def find_feature_directories(cls, dir_):

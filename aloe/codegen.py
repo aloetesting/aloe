@@ -2,16 +2,9 @@
 Code generation helpers
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-
 import ast
 from contextlib import contextmanager
 from textwrap import dedent
-
-from aloe.utils import identifier
 
 
 FUNCTION_DEF_SAMPLE = ast.parse('def func(): pass')
@@ -36,7 +29,7 @@ def make_function(source, context=None, source_file=None, name=None):
 
     # Set or record the function name
     if name is not None:
-        func.body[0].name = name = identifier(name)
+        func.body[0].name = name
     else:
         name = func.body[0].name
 

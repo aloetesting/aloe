@@ -3,14 +3,6 @@
 Test Gherkin parser.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-# pylint:disable=redefined-builtin
-from builtins import zip
-# pylint:enable=redefined-builtin
-
 from nose.tools import assert_equal, assert_raises
 
 from aloe.parser import Feature, Scenario, Background

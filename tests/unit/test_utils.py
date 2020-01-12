@@ -2,12 +2,6 @@
 Test utility functions.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-from future.utils import with_metaclass
-
 import sys
 import unittest
 
@@ -97,7 +91,7 @@ class MemoizedTest(unittest.TestCase):
     def test_memoizedtype(self):
         """Test memoizedtype."""
 
-        class Memoized(with_metaclass(memoizedtype, object)):
+        class Memoized(metaclass=memoizedtype):
             """A class to test memoizedtype."""
 
             counter = 0

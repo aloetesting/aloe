@@ -3,12 +3,7 @@
 Test level 3 outputter
 """
 
-from __future__ import (absolute_import, division,
-                        print_function, unicode_literals)
-# pylint:disable=redefined-builtin, unused-wildcard-import, wildcard-import
-from builtins import *
-# pylint:enable=redefined-builtin, unused-wildcard-import, wildcard-import
-
+import io
 import os
 from contextlib import contextmanager
 
@@ -17,7 +12,6 @@ from aloe.testing import (
     FeatureTest,
     in_directory,
 )
-from aloe.utils import TestWrapperIO
 from mock import patch
 
 
@@ -66,7 +60,7 @@ class OutputterTest(FeatureTest):
     def test_uncolored_output(self):
         """Test streamed output"""
 
-        stream = TestWrapperIO()
+        stream = io.StringIO()
 
         with patch('aloe.result.AloeTestResult.printSummary'):
             self.run_features(self.feature, verbosity=3, stream=stream)
@@ -122,7 +116,7 @@ Feature: Highlighting
     def test_color_output(self):
         """Test streamed output with color"""
 
-        stream = TestWrapperIO()
+        stream = io.StringIO()
 
         with \
                 patch('aloe.result.Terminal', new=MockTerminal), \
@@ -195,7 +189,7 @@ t.green(Given I have a table:)
     def test_customized_color_output(self):
         """Test streamed color output with overridden colors."""
 
-        stream = TestWrapperIO()
+        stream = io.StringIO()
 
         with self.environment_override('CUCUMBER_COLORS',
                                        'failed=magenta:passed=blue'):
@@ -257,7 +251,7 @@ t.blue(Given I have a table:)
     def test_tty_output(self):
         """Test streamed output with tty control codes"""
 
-        stream = TestWrapperIO()
+        stream = io.StringIO()
 
         with \
                 patch('aloe.result.Terminal', new=MockTerminal) as mock_term, \
