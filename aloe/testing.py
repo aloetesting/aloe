@@ -175,7 +175,7 @@ class TestGherkinPlugin(GherkinPlugin):
         for scenario in super().loadTestsFromFile(file_):
             yield scenario
 
-        self.runner.tests_run.append(file_)
+        self.runner.tests_run.append(file_)  # pylint:disable=no-member
 
 
 class TestRunner(Runner):
