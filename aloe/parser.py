@@ -702,7 +702,7 @@ class Feature(HeaderNode, TaggedNode):
                 filename=filename,
             )
         except ParserError as ex:
-            raise AloeSyntaxError(filename, str(ex))
+            raise AloeSyntaxError(filename, str(ex)) from ex
 
     @classmethod
     def from_string(cls, string, language=None):
