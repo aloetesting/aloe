@@ -87,7 +87,8 @@ class SimpleIntegrationTest(unittest.TestCase):
                 try:
                     import pty  # pylint:disable=import-outside-toplevel
                 except ImportError:
-                    raise unittest.SkipTest("PTY support unavailable.")
+                    raise unittest.SkipTest("PTY support unavailable.") \
+                        from None
 
                 chunks = [b'']
 

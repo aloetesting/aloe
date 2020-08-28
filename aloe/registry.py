@@ -269,8 +269,8 @@ class StepDict(object):
         except re.error as exc:
             raise StepLoadingError("Error when trying to compile:\n"
                                    "  regex: %r\n"
-                                   "  for function: %s\n"
-                                   "  error: %s" % (sentence, func, exc))
+                                   "  for function: %s" % (sentence, func)) \
+                from exc
 
     def _attr_is_step(self, attr, obj):
         """Test whether an object's attribute is a step."""
